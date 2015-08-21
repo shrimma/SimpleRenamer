@@ -4,6 +4,7 @@ namespace SimpleRenamer.Framework
     public class TVEpisode
     {
         public string FilePath { get; set; }
+        public string TVDBShowId { get; set; }
         public string ShowName { get; set; }
         public string Season { get; set; }
         public string Episode { get; set; }

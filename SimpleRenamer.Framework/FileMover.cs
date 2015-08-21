@@ -19,14 +19,21 @@ namespace SimpleRenamer.Framework
                 Directory.CreateDirectory(destinationDirectory);
             }
 
-            //copy the file if settings want this
-            if (settings.CopyFiles)
+            try
             {
-                File.Copy(episode.FilePath, destinationFilePath);
+                //copy the file if settings want this
+                if (settings.CopyFiles)
+                {
+                    File.Copy(episode.FilePath, destinationFilePath);
+                }
+                else
+                {
+                    File.Move(episode.FilePath, destinationFilePath);
+                }
             }
-            else
+            catch
             {
-                File.Move(episode.FilePath, destinationFilePath);
+
             }
             return true;
         }

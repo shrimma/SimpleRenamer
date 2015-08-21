@@ -27,11 +27,11 @@ namespace SimpleRenamer.ConsoleApp
                 tempEp = FileMatcher.SearchMe(fileName);
                 if (tempEp != null)
                 {
-                    Console.WriteLine("Show: {0}, Season: {1}, Episode: {2}", tempEp.ShowName, tempEp.Season, tempEp.Episode);
                     //now lets scrape the episode name and incorporate this in the filename (if setting allows)
                     if (settings.RenameFiles)
                     {
-                        tempEp = TVShowMatcher.ScrapeDetails(tempEp, settings);
+                        //TODO we need to sort this out bruv
+                        LolTemp(tempEp, settings);
                     }
                     else
                     {
@@ -43,6 +43,12 @@ namespace SimpleRenamer.ConsoleApp
             }
         }
 
+        private static async void LolTemp(TVEpisode episode, Settings settings)
+        {
+            TVEpisode newEp = await TVShowMatcher.ScrapeDetails(episode, settings);
+            Console.WriteLine("Show:{0}, Season:{1},Episode:{2}, Name:{3}", newEp.ShowName, newEp.Season, newEp.Episode, newEp.EpisodeName);
+        }
+
         /// <summary>
         /// Set temp values for the console test
         /// </summary>
@@ -50,7 +56,7 @@ namespace SimpleRenamer.ConsoleApp
         {
             settings = new Settings();
             settings.SubDirectories = true;
-            settings.RenameFiles = false;
+            settings.RenameFiles = true;
             settings.CopyFiles = true;
             settings.NewFileNameFormat = "{ShowName} - S{Season}E{Episode} - {EpisodeName}}";
             settings.ValidExtensions = new List<string>();
