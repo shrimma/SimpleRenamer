@@ -5,7 +5,7 @@ namespace SimpleRenamer.Framework
 {
     public class ShowNameMapping
     {
-        List<Mapping> Mappings { get; set; }
+        public List<Mapping> Mappings { get; set; }
     }
 
     public class Mapping
@@ -14,5 +14,18 @@ namespace SimpleRenamer.Framework
         public string FileShowName { get; set; }
         [XmlAttribute]
         public string TVDBShowName { get; set; }
+        [XmlAttribute]
+        public string TVDBShowID { get; set; }
+
+        public Mapping(string fileShowName, string tvdbShowName, string tvdbShowID)
+        {
+            FileShowName = fileShowName;
+            TVDBShowName = tvdbShowName;
+            TVDBShowID = tvdbShowID;
+        }
+
+        public Mapping()
+        {
+        }
     }
 }
