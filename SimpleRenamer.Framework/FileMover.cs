@@ -46,13 +46,22 @@ namespace SimpleRenamer.Framework
             int season;
             int.TryParse(episode.Season, out season);
             //use the destination folder and showname etc to define final destination
-            string destinationDirectory = Path.Combine(settings.DestinationFolder, episode.ShowName, string.Format("Season {0}", season));
-            string destinationFilePath = Path.Combine(destinationDirectory, episode.NewFileName + ext);
+            string showDirectory = Path.Combine(settings.DestinationFolder, episode.ShowName);
+            string seasonDirectory = Path.Combine(showDirectory, string.Format("Season {0}", season));
+            string destinationFilePath = Path.Combine(seasonDirectory, episode.NewFileName + ext);
 
             //create our destinaion folder if it doesn't already exist
-            if (!Directory.Exists(destinationDirectory))
+            if (!Directory.Exists(seasonDirectory))
             {
-                Directory.CreateDirectory(destinationDirectory);
+                Directory.CreateDirectory(seasonDirectory);
+            }
+
+            if (true)
+            {
+                //Grab Show banner if required
+                bool bannerResult = await BannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
+                //Grab Season banner if required
+                bannerResult = await BannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
             }
 
             try

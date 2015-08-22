@@ -11,6 +11,8 @@ namespace SimpleRenamer.Framework
         public string EpisodeName { get; set; }
         public string NewFileName { get; set; }
         public bool SkippedExactSelection { get; set; }
+        public string SeasonImage { get; set; }
+        public string ShowImage { get; set; }
         public TVEpisode(string filePath, string showName, string season, string episode)
         {
             FilePath = filePath;

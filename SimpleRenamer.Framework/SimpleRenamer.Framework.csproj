@@ -62,6 +62,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BannerDownloader.cs" />
     <Compile Include="FileMover.cs" />
     <Compile Include="FileMoveResult.cs" />
     <Compile Include="FileWatcher.cs" />

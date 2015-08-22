@@ -15,7 +15,20 @@ namespace SimpleRenamer
         public MainWindow()
         {
             InitializeComponent();
+            this.Closing += MainWindow_Closing;
         }
+        void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (!RunButton.IsEnabled)
+            {
+                e.Cancel = true;
+            }
+            else
+            {
+                this.Hide();
+            }
+        }
+
         public Settings settings;
 
         private async void RunButton_Click(object sender, RoutedEventArgs e)
@@ -24,7 +37,7 @@ namespace SimpleRenamer
             RunButton.IsEnabled = false;
             try
             {
-                LogTextBox.Text = string.Format("{0} - Starting", DateTime.Now);
+                LogTextBox.Text = string.Format("{0} - Starting", DateTime.Now.ToShortTimeString());
                 SetSettings();
                 List<string> videoFiles = await FileWatcher.SearchTheseFoldersAsync(settings);
                 List<TVEpisode> episodes = await MatchTVShows(videoFiles, settings);
@@ -39,7 +52,7 @@ namespace SimpleRenamer
 
         private void WriteNewLineToTextBox(string text)
         {
-            LogTextBox.Text += string.Format("\n{0} - {1}", DateTime.Now, text);
+            LogTextBox.Text += string.Format("\n{0} - {1}", DateTime.Now.ToShortTimeString(), text);
         }
 
         /// <summary>
@@ -85,7 +98,7 @@ namespace SimpleRenamer
                     {
                         tempEp.NewFileName = Path.GetFileNameWithoutExtension(tempEp.FilePath);
                     }
-                    WriteNewLineToTextBox(string.Format("Show:{0}, Season:{1},Episode:{2}, Name:{3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
+                    WriteNewLineToTextBox(string.Format("{0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
                     episodes.Add(tempEp);
                 }
             }

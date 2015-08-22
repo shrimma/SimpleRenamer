@@ -8,6 +8,6 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Button Name="RunButton" Grid.Row="0" Content="Run" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="RunButton_Click"/>
-        <TextBox Grid.Row="1" Name="LogTextBox" HorizontalAlignment="Left" Height="277" Margin="10" TextWrapping="Wrap" VerticalAlignment="Top" Width="498" AcceptsReturn="True" IsReadOnly="True" ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+        <TextBox Grid.Row="1" Name="LogTextBox" HorizontalAlignment="Left" Height="277" Margin="10" TextWrapping="Wrap" VerticalAlignment="Top" Width="498" AcceptsReturn="True" IsReadOnly="True" ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
     </Grid>
 </Window>

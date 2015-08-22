@@ -148,6 +148,11 @@ namespace SimpleRenamer.Framework
             Series matchedSeries = await tvdbManager.GetSeries(serId, Language.English);
             episode.ShowName = matchedSeries.Title;
             episode.EpisodeName = matchedSeries.Episodes.Where(s => s.SeasonNumber.Value == season && s.Number == episodeNumber).FirstOrDefault().Title;
+            List<SeasonBanner> seasonBanners = matchedSeries.Banners.OfType<SeasonBanner>().Where(s => s.Season.Value == season && s.IsWide == false && s.Language == Language.English).ToList();
+            List<PosterBanner> seriesBanners = matchedSeries.Banners.OfType<PosterBanner>().Where(s => s.Language == Language.English).ToList();
+            episode.SeasonImage = seasonBanners.OrderByDescending(s => s.Rating).FirstOrDefault().RemotePath;
+            episode.ShowImage = seriesBanners.OrderByDescending(s => s.Rating).FirstOrDefault().RemotePath;
+
             //if the user selected this show then create a new mapping entry
             if (newMatch)
             {
@@ -166,6 +171,10 @@ namespace SimpleRenamer.Framework
         public static string selectedSeriesId;
         public static async Task<string> SelectSpecificShow(TVEpisode episode, Settings settings, IReadOnlyCollection<Series> series)
         {
+            uint season = 0;
+            uint.TryParse(episode.Season, out season);
+            int episodeNumber = 0;
+            int.TryParse(episode.Episode, out episodeNumber);
             taskComplete = new TaskCompletionSource<bool>();
             selectedSeriesId = null;
             SelectShowWpfForm wpfForm = new SelectShowWpfForm();
@@ -187,6 +196,7 @@ namespace SimpleRenamer.Framework
                 wpfForm.ShowViews.Add(new ShowView(s.Id.ToString(), s.Title, s.FirstAired.Value.Year.ToString(), desc));
             }
             wpfForm.SetView();
+            wpfForm.SetTitle(string.Format("Simple TV Renamer - Select Show for file {0}", Path.GetFileName(episode.FilePath)));
             wpfForm.RaiseCustomEvent += new EventHandler<CustomEventArgs>(WindowClosedEvent1);
             wpfForm.Show();
             await taskComplete.Task;
