@@ -45,7 +45,7 @@ namespace SimpleRenamer.ConsoleApp
 
         private static async void LolTemp(TVEpisode episode, Settings settings)
         {
-            TVEpisode newEp = await TVShowMatcher.ScrapeDetails(episode, settings);
+            TVEpisode newEp = await TVShowMatcher.ScrapeDetailsAsync(episode, settings);
             Console.WriteLine("Show:{0}, Season:{1},Episode:{2}, Name:{3}", newEp.ShowName, newEp.Season, newEp.Episode, newEp.EpisodeName);
         }
 
