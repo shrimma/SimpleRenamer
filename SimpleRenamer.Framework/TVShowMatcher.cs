@@ -198,7 +198,7 @@ namespace SimpleRenamer.Framework
             wpfForm.SetView();
             wpfForm.SetTitle(string.Format("Simple TV Renamer - Select Show for file {0}", Path.GetFileName(episode.FilePath)));
             wpfForm.RaiseCustomEvent += new EventHandler<CustomEventArgs>(WindowClosedEvent1);
-            wpfForm.Show();
+            wpfForm.ShowDialog();
             await taskComplete.Task;
             return selectedSeriesId;
         }

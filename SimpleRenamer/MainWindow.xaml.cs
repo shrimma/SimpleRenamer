@@ -1,6 +1,7 @@
 ﻿using SimpleRenamer.Framework;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,11 +15,14 @@ namespace SimpleRenamer
     public partial class MainWindow : Window
     {
         public CancellationTokenSource cts;
+        public Settings settings;
+
         public MainWindow()
         {
             InitializeComponent();
             this.Closing += MainWindow_Closing;
         }
+
         void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (!RunButton.IsEnabled)
@@ -31,7 +35,20 @@ namespace SimpleRenamer
             }
         }
 
-        public Settings settings;
+        public Settings GetSettings()
+        {
+            Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            Settings mySettings = new Settings();
+            mySettings.SubDirectories = bool.Parse(configuration.AppSettings.Settings["SubDirectories"].Value);
+            mySettings.RenameFiles = bool.Parse(configuration.AppSettings.Settings["RenameFiles"].Value);
+            mySettings.CopyFiles = bool.Parse(configuration.AppSettings.Settings["CopyFiles"].Value);
+            mySettings.NewFileNameFormat = configuration.AppSettings.Settings["NewFileNameFormat"].Value;
+            mySettings.ValidExtensions = new List<string>(configuration.AppSettings.Settings["ValidExtensions"].Value.Split(new char[] { ';' }));
+            mySettings.WatchFolders = new List<string>(configuration.AppSettings.Settings["WatchFolders"].Value.Split(new char[] { ';' }));
+            mySettings.DestinationFolder = configuration.AppSettings.Settings["DestinationFolder"].Value;
+
+            return mySettings;
+        }
 
         private async void RunButton_Click(object sender, RoutedEventArgs e)
         {
@@ -41,8 +58,8 @@ namespace SimpleRenamer
             CancelButton.IsEnabled = true;
             try
             {
+                settings = GetSettings();
                 LogTextBox.Text = string.Format("{0} - Starting", DateTime.Now.ToShortTimeString());
-                SetSettings();
                 List<string> videoFiles = FileWatcher.SearchTheseFoldersAsync(settings, cts.Token);
                 List<TVEpisode> episodes = await MatchTVShows(videoFiles, settings, cts.Token);
                 await MoveTVShows(episodes, settings, cts.Token);
@@ -159,7 +176,19 @@ namespace SimpleRenamer
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
+            //show the settings window
+            SettingsWindow settingsWindow = new SettingsWindow();
+            settingsWindow.ShowDialog();
+            App.Current.MainWindow = settingsWindow;
 
+
+            //set an event to monitor when settings window is closed
+            settingsWindow.Closing += settingsWindow_Closing;
+        }
+
+        void settingsWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            App.Current.MainWindow = this;
         }
     }
 }
