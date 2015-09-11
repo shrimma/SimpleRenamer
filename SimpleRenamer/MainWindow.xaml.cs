@@ -66,7 +66,9 @@ namespace SimpleRenamer
                 settings = GetSettings();
                 LogTextBox.Text = string.Format("{0} - Starting", DateTime.Now.ToShortTimeString());
                 List<string> videoFiles = FileWatcher.SearchTheseFoldersAsync(settings, cts.Token);
+                WriteNewLineToTextBox(string.Format("Found {0} files within the watch folders", videoFiles.Count));
                 await MatchTVShows(videoFiles, settings, cts.Token);
+                WriteNewLineToTextBox(string.Format("Matched {0} files", scannedEpisodes.Count));
             }
             catch (OperationCanceledException)
             {
@@ -144,8 +146,21 @@ namespace SimpleRenamer
                     {
                         tempEp.NewFileName = Path.GetFileNameWithoutExtension(tempEp.FilePath);
                     }
-                    WriteNewLineToTextBox(string.Format("{0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
-                    scannedEpisodes.Add(tempEp);
+                    WriteNewLineToTextBox(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
+                    //only add the file if it needs renaming/moving
+                    int season;
+                    int.TryParse(tempEp.Season, out season);
+                    string destinationDirectory = Path.Combine(settings.DestinationFolder, tempEp.ShowName, string.Format("Season {0}", season));
+                    string destinationFilePath = Path.Combine(destinationDirectory, tempEp.NewFileName + Path.GetExtension(tempEp.FilePath));
+                    if (!tempEp.FilePath.Equals(destinationFilePath))
+                    {
+                        WriteNewLineToTextBox(string.Format("Will move with name {0}", tempEp.NewFileName));
+                        scannedEpisodes.Add(tempEp);
+                    }
+                    else
+                    {
+                        WriteNewLineToTextBox(string.Format("File is already in good location {0}", tempEp.FilePath));
+                    }
                 }
             }
         }
