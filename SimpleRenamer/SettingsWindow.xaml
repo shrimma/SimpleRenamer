@@ -58,6 +58,7 @@
                 <TextBox Name="DestinationTextBox" Margin="5" Text="{Binding Path=DestinationFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="295"/>
                 <Button Name="BrowseDestinationButton" Content="..." HorizontalAlignment="Right" Margin="0,5,0,5" VerticalAlignment="Top" Width="15" Click="BrowseDestinationButton_Click"/>
             </StackPanel>
+            <Button Name="RegexExpressionButton" Content="Regex Expressions" HorizontalAlignment="Left" Margin="0,5,0,5" VerticalAlignment="Top" Width="150" Click="RegexExpressionButton_Click"/>
         </StackPanel>
         <StackPanel Grid.Row="1" Orientation="Horizontal" >
             <Button Name="SaveButton" Content="Save" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="SaveButton_Click"/>

@@ -145,5 +145,11 @@ namespace SimpleRenamer
         {
             validExtensions.Remove((string)WatchListBox.SelectedItem);
         }
+
+        private void RegexExpressionButton_Click(object sender, RoutedEventArgs e)
+        {
+            RegexExpressions form = new RegexExpressions();
+            form.ShowDialog();
+        }
     }
 }

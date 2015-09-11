@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RegexFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <RegexExpressions>
+    <RegexExpression IsEnabled="true">^((?&lt;series_name&gt;.+?)[. _-]+)?s(?&lt;season_num&gt;\d+)[. _-]*e(?&lt;ep_num&gt;\d+)(([. _-]*e|-)(?&lt;extra_ep_num&gt;(?!(1080|720)[pi])\d+))*[. _-]*((?&lt;extra_info&gt;.+?)((?&lt;![. _-])-(?&lt;release_group&gt;[^-]+))?)?$</RegexExpression>
+    <RegexExpression IsEnabled="true">^((?&lt;series_name&gt;.+?)[\[. _-]+)?(?&lt;season_num&gt;\d+)x(?&lt;ep_num&gt;\d+)(([. _-]*x|-)(?&lt;extra_ep_num&gt;(?!(1080|720)[pi])(?!(?&lt;=x)264)\d+))*[\]. _-]*((?&lt;extra_info&gt;.+?)((?&lt;![. _-])-(?&lt;release_group&gt;[^-]+))?)?$</RegexExpression>
+    <RegexExpression IsEnabled="true">^((?&lt;series_name&gt;.*[^ (_.])[ (_.]+((?&lt;ShowYearA&gt;\d{4})([ (_.]+S(?&lt;season_num&gt;\d{1,2})E(?&lt;ep_num&gt;\d{1,2}))?|(?&lt;!\d{4}[ (_.])S(?&lt;SeasonB&gt;\d{1,2})E(?&lt;EpisodeB&gt;\d{1,2})|(?&lt;EpisodeC&gt;\d{3}))|(?&lt;ShowNameB&gt;.+))</RegexExpression>
+  </RegexExpressions>
+</RegexFile>

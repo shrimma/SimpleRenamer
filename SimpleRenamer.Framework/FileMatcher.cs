@@ -1,39 +1,38 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace SimpleRenamer.Framework
 {
     public static class FileMatcher
     {
+        private static RegexFile regexExpressions = null;
+        private static string regexFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "RegexExpressions.xml");
         public static TVEpisode SearchMe(string fileName)
         {
             string showname = null;
             string season = null;
             string episode = null;
 
-            string standard = @"^((?<series_name>.+?)[. _-]+)?s(?<season_num>\d+)[. _-]*e(?<ep_num>\d+)(([. _-]*e|-)(?<extra_ep_num>(?!(1080|720)[pi])\d+))*[. _-]*((?<extra_info>.+?)((?<![. _-])-(?<release_group>[^-]+))?)?$";
-            string Fov = @"^((?<series_name>.+?)[\[. _-]+)?(?<season_num>\d+)x(?<ep_num>\d+)(([. _-]*x|-)(?<extra_ep_num>(?!(1080|720)[pi])(?!(?<=x)264)\d+))*[\]. _-]*((?<extra_info>.+?)((?<![. _-])-(?<release_group>[^-]+))?)?$";
-            string wtf = @"^((?<series_name>.*[^ (_.])[ (_.]+((?<ShowYearA>\d{4})([ (_.]+S(?<season_num>\d{1,2})E(?<ep_num>\d{1,2}))?|(?<!\d{4}[ (_.])S(?<SeasonB>\d{1,2})E(?<EpisodeB>\d{1,2})|(?<EpisodeC>\d{3}))|(?<ShowNameB>.+))";
-            List<string> regexExp = new List<string>();
-            regexExp.Add(standard);
-            regexExp.Add(Fov);
-            regexExp.Add(wtf);
             try
             {
-                foreach (string exp in regexExp)
+                regexExpressions = ReadExpressionFile();
+                foreach (RegexExpression exp in regexExpressions.RegexExpressions)
                 {
-                    //process the file name                
-                    Regex regexStandard = new Regex(exp, RegexOptions.IgnoreCase);
-                    Match tvshow = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
-                    showname = GetTrueShowName(tvshow.Groups["series_name"].Value);
-                    season = tvshow.Groups["season_num"].Value;
-                    episode = tvshow.Groups["ep_num"].Value;
-
-                    if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
+                    if (exp.IsEnabled)
                     {
-                        return new TVEpisode(fileName, showname, season, episode);
+                        //process the file name                
+                        Regex regexStandard = new Regex(exp.Expression, RegexOptions.IgnoreCase);
+                        Match tvshow = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
+                        showname = GetTrueShowName(tvshow.Groups["series_name"].Value);
+                        season = tvshow.Groups["season_num"].Value;
+                        episode = tvshow.Groups["ep_num"].Value;
+
+                        if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
+                        {
+                            return new TVEpisode(fileName, showname, season, episode);
+                        }
                     }
                 }
             }
@@ -50,27 +49,24 @@ namespace SimpleRenamer.Framework
             string season = null;
             string episode = null;
 
-            string standard = @"^((?<series_name>.+?)[. _-]+)?s(?<season_num>\d+)[. _-]*e(?<ep_num>\d+)(([. _-]*e|-)(?<extra_ep_num>(?!(1080|720)[pi])\d+))*[. _-]*((?<extra_info>.+?)((?<![. _-])-(?<release_group>[^-]+))?)?$";
-            string Fov = @"^((?<series_name>.+?)[\[. _-]+)?(?<season_num>\d+)x(?<ep_num>\d+)(([. _-]*x|-)(?<extra_ep_num>(?!(1080|720)[pi])(?!(?<=x)264)\d+))*[\]. _-]*((?<extra_info>.+?)((?<![. _-])-(?<release_group>[^-]+))?)?$";
-            string wtf = @"^((?<series_name>.*[^ (_.])[ (_.]+((?<ShowYearA>\d{4})([ (_.]+S(?<season_num>\d{1,2})E(?<ep_num>\d{1,2}))?|(?<!\d{4}[ (_.])S(?<SeasonB>\d{1,2})E(?<EpisodeB>\d{1,2})|(?<EpisodeC>\d{3}))|(?<ShowNameB>.+))";
-            List<string> regexExp = new List<string>();
-            regexExp.Add(standard);
-            regexExp.Add(Fov);
-            regexExp.Add(wtf);
             try
             {
-                foreach (string exp in regexExp)
+                regexExpressions = ReadExpressionFile();
+                foreach (RegexExpression exp in regexExpressions.RegexExpressions)
                 {
-                    //process the file name                
-                    Regex regexStandard = new Regex(exp, RegexOptions.IgnoreCase);
-                    Match tvshow = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
-                    showname = GetTrueShowName(tvshow.Groups["series_name"].Value);
-                    season = tvshow.Groups["season_num"].Value;
-                    episode = tvshow.Groups["ep_num"].Value;
-
-                    if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
+                    if (exp.IsEnabled)
                     {
-                        return new TVEpisode(fileName, showname, season, episode);
+                        //process the file name                
+                        Regex regexStandard = new Regex(exp.Expression, RegexOptions.IgnoreCase);
+                        Match tvshow = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
+                        showname = GetTrueShowName(tvshow.Groups["series_name"].Value);
+                        season = tvshow.Groups["season_num"].Value;
+                        episode = tvshow.Groups["ep_num"].Value;
+
+                        if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
+                        {
+                            return new TVEpisode(fileName, showname, season, episode);
+                        }
                     }
                 }
             }
@@ -81,7 +77,39 @@ namespace SimpleRenamer.Framework
             return null;
         }
 
-        public static string GetTrueShowName(string input)
+        public static RegexFile ReadExpressionFile()
+        {
+            RegexFile snm = new RegexFile();
+            //if the file doesn't yet exist then set a new version
+            if (!File.Exists(regexFilePath))
+            {
+                return snm;
+            }
+            else
+            {
+                using (FileStream fs = new FileStream(regexFilePath, FileMode.Open))
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(RegexFile));
+                    snm = (RegexFile)serializer.Deserialize(fs);
+                }
+                return snm;
+            }
+        }
+
+        public static void WriteExpressionFile(RegexFile regexMatchers)
+        {
+            //only write the file if there is data
+            if (regexMatchers != null && regexMatchers.RegexExpressions.Count > 0)
+            {
+                using (TextWriter writer = new StreamWriter(regexFilePath))
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(RegexFile));
+                    serializer.Serialize(writer, regexMatchers);
+                }
+            }
+        }
+
+        private static string GetTrueShowName(string input)
         {
             string output = null;
             string[] words = input.Split('.');
@@ -102,7 +130,7 @@ namespace SimpleRenamer.Framework
             return output.Trim();
         }
 
-        public static bool IsJoiningWord(string input)
+        private static bool IsJoiningWord(string input)
         {
             foreach (string word in JoiningWords)
             {
@@ -113,7 +141,7 @@ namespace SimpleRenamer.Framework
             }
             return false;
         }
-        public static string[] JoiningWords
+        private static string[] JoiningWords
         {
             get { return joiningWords.Split(','); }
         }
