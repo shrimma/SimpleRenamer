@@ -58,6 +58,7 @@
     <Compile Include="AddExtensions.xaml.cs">
       <DependentUpon>AddExtensions.xaml</DependentUpon>
     </Compile>
+    <Compile Include="InverseBooleanConverter.cs" />
     <Compile Include="RegexExpressions.xaml.cs">
       <DependentUpon>RegexExpressions.xaml</DependentUpon>
     </Compile>

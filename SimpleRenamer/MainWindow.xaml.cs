@@ -1,6 +1,7 @@
 ﻿using SimpleRenamer.Framework;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
 using System.IO;
 using System.Threading;
@@ -16,10 +17,13 @@ namespace SimpleRenamer
     {
         public CancellationTokenSource cts;
         public Settings settings;
+        private ObservableCollection<TVEpisode> scannedEpisodes;
 
         public MainWindow()
         {
             InitializeComponent();
+            scannedEpisodes = new ObservableCollection<TVEpisode>();
+            ShowsListBox.ItemsSource = scannedEpisodes;
             this.Closing += MainWindow_Closing;
         }
 
@@ -55,14 +59,14 @@ namespace SimpleRenamer
             cts = new CancellationTokenSource();
             RunButton.IsEnabled = false;
             SettingsButton.IsEnabled = false;
+            ActionButton.IsEnabled = false;
             CancelButton.IsEnabled = true;
             try
             {
                 settings = GetSettings();
                 LogTextBox.Text = string.Format("{0} - Starting", DateTime.Now.ToShortTimeString());
                 List<string> videoFiles = FileWatcher.SearchTheseFoldersAsync(settings, cts.Token);
-                List<TVEpisode> episodes = await MatchTVShows(videoFiles, settings, cts.Token);
-                await MoveTVShows(episodes, settings, cts.Token);
+                await MatchTVShows(videoFiles, settings, cts.Token);
             }
             catch (OperationCanceledException)
             {
@@ -74,6 +78,10 @@ namespace SimpleRenamer
                 RunButton.IsEnabled = true;
                 SettingsButton.IsEnabled = true;
                 CancelButton.IsEnabled = false;
+                if (scannedEpisodes.Count > 0)
+                {
+                    ActionButton.IsEnabled = true;
+                }
             }
         }
 
@@ -110,9 +118,9 @@ namespace SimpleRenamer
             settings.DestinationFolder = @"C:\Temp\Root\";
         }
 
-        public async Task<List<TVEpisode>> MatchTVShows(List<string> videoFiles, Settings settings, CancellationToken ct)
+        public async Task MatchTVShows(List<string> videoFiles, Settings settings, CancellationToken ct)
         {
-            List<TVEpisode> episodes = new List<TVEpisode>();
+            scannedEpisodes.Clear();
             List<Task<TVEpisode>> tasks = new List<Task<TVEpisode>>();
             //spin up a task for each file
             foreach (string fileName in videoFiles)
@@ -137,20 +145,19 @@ namespace SimpleRenamer
                         tempEp.NewFileName = Path.GetFileNameWithoutExtension(tempEp.FilePath);
                     }
                     WriteNewLineToTextBox(string.Format("{0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
-                    episodes.Add(tempEp);
+                    scannedEpisodes.Add(tempEp);
                 }
             }
-            return episodes;
         }
 
-        public async Task<bool> MoveTVShows(List<TVEpisode> episodes, Settings settings, CancellationToken ct)
+        public async Task<bool> MoveTVShows(Settings settings, CancellationToken ct)
         {
             List<Task<FileMoveResult>> tasks = new List<Task<FileMoveResult>>();
-            foreach (TVEpisode ep in episodes)
+            foreach (TVEpisode ep in scannedEpisodes)
             {
-                if (ep.SkippedExactSelection)
+                if (!ep.ActionThis)
                 {
-                    WriteNewLineToTextBox(string.Format("Skipped {0} as user didn't select exact show match.", ep.FilePath));
+                    WriteNewLineToTextBox(string.Format("Skipped {0} as user chose not to action.", ep.FilePath));
                 }
                 else
                 {
@@ -164,6 +171,7 @@ namespace SimpleRenamer
                 if (r.Success)
                 {
                     WriteNewLineToTextBox(string.Format("Successfully {2} {0} to {1}", r.Episode.FilePath, r.Episode.NewFileName, settings.CopyFiles ? "Copied" : "Moved"));
+                    scannedEpisodes.Remove(r.Episode);
                 }
                 else
                 {
@@ -179,16 +187,32 @@ namespace SimpleRenamer
             //show the settings window
             SettingsWindow settingsWindow = new SettingsWindow();
             settingsWindow.ShowDialog();
-            App.Current.MainWindow = settingsWindow;
-
-
-            //set an event to monitor when settings window is closed
-            settingsWindow.Closing += settingsWindow_Closing;
         }
 
-        void settingsWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private async void ActionButton_Click(object sender, RoutedEventArgs e)
         {
-            App.Current.MainWindow = this;
+            cts = new CancellationTokenSource();
+            RunButton.IsEnabled = false;
+            SettingsButton.IsEnabled = false;
+            ActionButton.IsEnabled = false;
+            CancelButton.IsEnabled = true;
+            try
+            {
+                settings = GetSettings();
+                LogTextBox.Text = string.Format("{0} - Starting", DateTime.Now.ToShortTimeString());
+                await MoveTVShows(settings, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                WriteNewLineToTextBox("User canceled.");
+            }
+            finally
+            {
+                WriteNewLineToTextBox("Finished");
+                RunButton.IsEnabled = true;
+                SettingsButton.IsEnabled = true;
+                CancelButton.IsEnabled = false;
+            }
         }
     }
 }

@@ -13,6 +13,7 @@ namespace SimpleRenamer.Framework
         public bool SkippedExactSelection { get; set; }
         public string SeasonImage { get; set; }
         public string ShowImage { get; set; }
+        public bool ActionThis { get; set; }
         public TVEpisode(string filePath, string showName, string season, string episode)
         {
             FilePath = filePath;
@@ -20,6 +21,7 @@ namespace SimpleRenamer.Framework
             Season = season;
             Episode = episode;
             SkippedExactSelection = false;
+            ActionThis = true;
         }
 
         public TVEpisode(string filePath, string showName, string season, string episode, string episodeName)
@@ -30,6 +32,7 @@ namespace SimpleRenamer.Framework
             Episode = episode;
             EpisodeName = episodeName;
             SkippedExactSelection = false;
+            ActionThis = true;
         }
     }
 }

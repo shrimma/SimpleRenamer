@@ -130,6 +130,7 @@ namespace SimpleRenamer.Framework
             }
             else
             {
+                episode.ActionThis = false;
                 episode.SkippedExactSelection = true;
             }
 
