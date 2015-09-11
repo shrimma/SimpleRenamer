@@ -73,6 +73,9 @@
       <DependentUpon>SelectShowWpfForm.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs" />
+    <Compile Include="ShowDetailsForm.xaml.cs">
+      <DependentUpon>ShowDetailsForm.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ShowNameMapping.cs" />
     <Compile Include="TaskExtensions.cs" />
     <Compile Include="TVEpisode.cs" />
@@ -89,6 +92,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="SelectShowWpfForm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ShowDetailsForm.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

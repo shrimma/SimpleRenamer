@@ -58,10 +58,17 @@ namespace SimpleRenamer.Framework
 
             if (true)
             {
-                //Grab Show banner if required
-                bool bannerResult = await BannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
-                //Grab Season banner if required
-                bannerResult = await BannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
+                bool bannerResult;
+                if (!string.IsNullOrEmpty(episode.ShowImage))
+                {
+                    //Grab Show banner if required
+                    bannerResult = await BannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
+                }
+                if (!string.IsNullOrEmpty(episode.SeasonImage))
+                {
+                    //Grab Season banner if required
+                    bannerResult = await BannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
+                }
             }
 
             try
