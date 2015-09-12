@@ -60,6 +60,8 @@ namespace SimpleRenamer
             RunButton.IsEnabled = false;
             SettingsButton.IsEnabled = false;
             ActionButton.IsEnabled = false;
+            MatchShowButton.IsEnabled = false;
+            IgnoreShowButton.IsEnabled = false;
             CancelButton.IsEnabled = true;
             try
             {
@@ -228,6 +230,66 @@ namespace SimpleRenamer
                 SettingsButton.IsEnabled = true;
                 CancelButton.IsEnabled = false;
             }
+        }
+
+        private async void MatchShowButton_Click(object sender, RoutedEventArgs e)
+        {
+            settings = GetSettings();
+            TVEpisode temp = (TVEpisode)ShowsListBox.SelectedItem;
+            temp = await TVShowMatcher.SelectShowFromList(temp, settings);
+            ShowsListBox.SelectedItem = temp;
+        }
+
+        private void IgnoreShowButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult mbr = MessageBox.Show("Are you sure?", "Ignore this?", MessageBoxButton.OKCancel);
+            if (mbr == MessageBoxResult.OK)
+            {
+                TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
+                IgnoreList ignoreList = IgnoreListFramework.ReadIgnoreList();
+                if (!ignoreList.IgnoreFiles.Contains(tempEp.FilePath))
+                {
+                    ignoreList.IgnoreFiles.Add(tempEp.FilePath);
+                    scannedEpisodes.Remove(tempEp);
+                    IgnoreListFramework.WriteExpressionFile(ignoreList);
+                }
+            }
+        }
+
+        private void ShowsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            TVEpisode temp = (TVEpisode)ShowsListBox.SelectedItem;
+            if (temp != null)
+            {
+                IgnoreShowButton.IsEnabled = true;
+            }
+            else
+            {
+                IgnoreShowButton.IsEnabled = false;
+            }
+            if (temp != null && temp.SkippedExactSelection)
+            {
+                MatchShowButton.IsEnabled = true;
+            }
+            else
+            {
+                MatchShowButton.IsEnabled = false;
+            }
+            if (temp != null && !temp.SkippedExactSelection)
+            {
+                ShowDetailButton.IsEnabled = true;
+            }
+            else
+            {
+                ShowDetailButton.IsEnabled = false;
+            }
+        }
+
+        private void ShowDetailButton_Click(object sender, RoutedEventArgs e)
+        {
+            TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
+            ShowDetailsForm sdf = new ShowDetailsForm(tempEp.TVDBShowId);
+            sdf.ShowDialog();
         }
     }
 }

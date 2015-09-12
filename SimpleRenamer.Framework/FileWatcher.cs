@@ -16,6 +16,8 @@ namespace SimpleRenamer.Framework
         {
             List<string> foundFiles = new List<string>();
 
+            IgnoreList ignoreList = IgnoreListFramework.ReadIgnoreList();
+
             //FOR EACH WATCH FOLDER
             foreach (string folder in settings.WatchFolders)
             {
@@ -23,7 +25,7 @@ namespace SimpleRenamer.Framework
                 if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
                 {
                     //search the folder for files with video extensions
-                    List<string> temp = SearchThisFolder(folder, settings);
+                    List<string> temp = SearchThisFolder(folder, settings, ignoreList);
                     //if we find any files here add to the global list
                     if (temp.Count > 0)
                     {
@@ -41,12 +43,13 @@ namespace SimpleRenamer.Framework
         /// <param name="dir">The folder to search</param>
         /// <param name="settings">Our current settings</param>
         /// <returns></returns>
-        private static List<string> SearchThisFolder(string dir, Settings settings)
+        private static List<string> SearchThisFolder(string dir, Settings settings, IgnoreList ignoreList)
         {
             List<string> foundFiles = new List<string>();
             foreach (string file in Directory.GetFiles(dir, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
-                if (IsValidExtension(Path.GetExtension(file), settings))
+                //if the path is valid and the file isn't set to ignore
+                if (IsValidExtension(Path.GetExtension(file), settings) && !ignoreList.IgnoreFiles.Contains(file))
                 {
                     foundFiles.Add(file);
                 }
@@ -59,6 +62,8 @@ namespace SimpleRenamer.Framework
         {
             List<string> foundFiles = new List<string>();
 
+            IgnoreList ignoreList = IgnoreListFramework.ReadIgnoreList();
+
             //FOR EACH WATCH FOLDER
             foreach (string folder in settings.WatchFolders)
             {
@@ -66,7 +71,7 @@ namespace SimpleRenamer.Framework
                 if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
                 {
                     //search the folder for files with video extensions
-                    List<string> temp = SearchThisFolderAsync(folder, settings);
+                    List<string> temp = SearchThisFolderAsync(folder, settings, ignoreList);
                     //if we find any files here add to the global list
                     if (temp.Count > 0)
                     {
@@ -86,12 +91,12 @@ namespace SimpleRenamer.Framework
         /// <param name="dir">The folder to search</param>
         /// <param name="settings">Our current settings</param>
         /// <returns></returns>
-        private static List<string> SearchThisFolderAsync(string dir, Settings settings)
+        private static List<string> SearchThisFolderAsync(string dir, Settings settings, IgnoreList ignoreList)
         {
             List<string> foundFiles = new List<string>();
             foreach (string file in Directory.GetFiles(dir, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
-                if (IsValidExtension(Path.GetExtension(file), settings))
+                if (IsValidExtension(Path.GetExtension(file), settings) && !ignoreList.IgnoreFiles.Contains(file))
                 {
                     foundFiles.Add(file);
                 }

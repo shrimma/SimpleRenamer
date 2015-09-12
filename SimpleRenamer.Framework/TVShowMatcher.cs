@@ -114,24 +114,25 @@ namespace SimpleRenamer.Framework
             //IF we have more than 1 result then popup the selection form so user can choose the exact match
             if (series.Count > 1)
             {
-                seriesId = await SelectSpecificShow(episode, settings, series);
+                //seriesId = await SelectSpecificShow(episode, settings, series);
+                episode.ActionThis = false;
+                episode.SkippedExactSelection = true;
             }
             else if (series.Count == 1)
             {
                 //if theres only one match then it is easy
                 seriesList.MoveNext();
                 seriesId = seriesList.Current.Id.ToString();
-            }
-
-            //if seriesID is populated then grab the episode name (it's possible to be null if user skipped the selection
-            if (!string.IsNullOrEmpty(seriesId))
-            {
-                episode = await ScrapeSpecificShow(episode, settings, seriesId, true);
-            }
-            else
-            {
-                episode.ActionThis = false;
-                episode.SkippedExactSelection = true;
+                //if seriesID is populated then grab the episode name (it's possible to be null if user skipped the selection
+                if (!string.IsNullOrEmpty(seriesId))
+                {
+                    episode = await ScrapeSpecificShow(episode, settings, seriesId, true);
+                }
+                else
+                {
+                    episode.ActionThis = false;
+                    episode.SkippedExactSelection = true;
+                }
             }
 
             return episode;
@@ -176,12 +177,16 @@ namespace SimpleRenamer.Framework
 
         public static TaskCompletionSource<bool> taskComplete;
         public static string selectedSeriesId;
-        public static async Task<string> SelectSpecificShow(TVEpisode episode, Settings settings, IReadOnlyCollection<Series> series)
+        public static async Task<TVEpisode> SelectShowFromList(TVEpisode episode, Settings settings)
         {
             uint season = 0;
             uint.TryParse(episode.Season, out season);
             int episodeNumber = 0;
             int.TryParse(episode.Episode, out episodeNumber);
+
+            TheTvdbManager tvdbManager = new TheTvdbManager(apiKey);
+            var series = await tvdbManager.SearchSeries(episode.ShowName, Language.English);
+
             taskComplete = new TaskCompletionSource<bool>();
             selectedSeriesId = null;
             SelectShowWpfForm wpfForm = new SelectShowWpfForm();
@@ -207,7 +212,25 @@ namespace SimpleRenamer.Framework
             wpfForm.RaiseCustomEvent += new EventHandler<CustomEventArgs>(WindowClosedEvent1);
             wpfForm.ShowDialog();
             await taskComplete.Task;
-            return selectedSeriesId;
+
+            //if user selected a match then scrape the details
+            if (!string.IsNullOrEmpty(selectedSeriesId))
+            {
+                episode = await ScrapeSpecificShow(episode, settings, selectedSeriesId, true);
+                episode.ActionThis = true;
+                episode.SkippedExactSelection = false;
+
+                //generate the file name and update the mapping file
+                episode = GenerateFileName(episode, settings);
+                WriteMappingFile();
+            }
+            else
+            {
+                episode.ActionThis = false;
+                episode.SkippedExactSelection = true;
+            }
+
+            return episode;
         }
 
         public static void WindowClosedEvent1(object sender, CustomEventArgs e)

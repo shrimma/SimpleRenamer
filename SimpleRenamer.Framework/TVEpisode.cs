@@ -1,19 +1,175 @@
 ﻿
+using System.ComponentModel;
 namespace SimpleRenamer.Framework
 {
-    public class TVEpisode
+    public class TVEpisode : INotifyPropertyChanged
     {
-        public string FilePath { get; set; }
-        public string TVDBShowId { get; set; }
-        public string ShowName { get; set; }
-        public string Season { get; set; }
-        public string Episode { get; set; }
-        public string EpisodeName { get; set; }
-        public string NewFileName { get; set; }
-        public bool SkippedExactSelection { get; set; }
-        public string SeasonImage { get; set; }
-        public string ShowImage { get; set; }
-        public bool ActionThis { get; set; }
+        #region INotifyPropertyChanged implementation
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void Notify(string propertyName)
+        {
+            if (this.PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+        #endregion INotifyPropertyChanged implementation
+
+        private string filePath;
+        public string FilePath
+        {
+            get { return filePath; }
+            set
+            {
+                if (value != filePath)
+                {
+                    filePath = value;
+                    Notify("FilePath");
+                }
+            }
+        }
+
+        private string tvdbShowId;
+        public string TVDBShowId
+        {
+            get { return tvdbShowId; }
+            set
+            {
+                if (value != tvdbShowId)
+                {
+                    tvdbShowId = value;
+                    Notify("TVDBShowId");
+                }
+            }
+        }
+
+        private string showName;
+        public string ShowName
+        {
+            get { return showName; }
+            set
+            {
+                if (value != showName)
+                {
+                    showName = value;
+                    Notify("ShowName");
+                }
+            }
+        }
+
+        private string season;
+        public string Season
+        {
+            get { return season; }
+            set
+            {
+                if (value != season)
+                {
+                    season = value;
+                    Notify("Season");
+                }
+            }
+        }
+
+        private string episode;
+        public string Episode
+        {
+            get { return episode; }
+            set
+            {
+                if (value != episode)
+                {
+                    episode = value;
+                    Notify("Episode");
+                }
+            }
+        }
+
+        private string episodeName;
+        public string EpisodeName
+        {
+            get { return episodeName; }
+            set
+            {
+                if (value != episodeName)
+                {
+                    episodeName = value;
+                    Notify("EpisodeName");
+                }
+            }
+        }
+
+        private string newFileName;
+        public string NewFileName
+        {
+            get { return newFileName; }
+            set
+            {
+                if (value != newFileName)
+                {
+                    newFileName = value;
+                    Notify("NewFileName");
+                }
+            }
+        }
+
+        private bool skippedExactSelection;
+        public bool SkippedExactSelection
+        {
+            get { return skippedExactSelection; }
+            set
+            {
+                if (value != skippedExactSelection)
+                {
+                    skippedExactSelection = value;
+                    Notify("SkippedExactSelection");
+                }
+            }
+        }
+
+        private string seasonImage;
+        public string SeasonImage
+        {
+            get { return seasonImage; }
+            set
+            {
+                if (value != seasonImage)
+                {
+                    seasonImage = value;
+                    Notify("SeasonImage");
+                }
+            }
+        }
+
+        private string showImage;
+        public string ShowImage
+        {
+            get { return showImage; }
+            set
+            {
+                if (value != showImage)
+                {
+                    showImage = value;
+                    Notify("ShowImage");
+                }
+            }
+        }
+
+        private bool actionThis;
+        public bool ActionThis
+        {
+            get { return actionThis; }
+            set
+            {
+                if (value != actionThis)
+                {
+                    actionThis = value;
+                    Notify("ActionThis");
+                }
+            }
+        }
+
         public TVEpisode(string filePath, string showName, string season, string episode)
         {
             FilePath = filePath;

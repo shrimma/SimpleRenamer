@@ -66,6 +66,7 @@
     <Compile Include="FileMover.cs" />
     <Compile Include="FileMoveResult.cs" />
     <Compile Include="FileWatcher.cs" />
+    <Compile Include="IgnoreList.cs" />
     <Compile Include="InverseBooleanConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FileMatcher.cs" />
