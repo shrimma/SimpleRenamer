@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 namespace SimpleRenamer.Framework
 {
@@ -87,7 +86,6 @@ namespace SimpleRenamer.Framework
         {
             try
             {
-                Thread.Sleep(2000);
                 FileInfo fromFile = new FileInfo(episode.FilePath);
                 FileInfo toFile = new FileInfo(destinationFilePath);
                 if (QuickOperation(settings, fromFile, toFile))
