@@ -167,9 +167,10 @@ namespace SimpleRenamer
             }
         }
 
-        public async Task<bool> MoveTVShows(Settings settings, CancellationToken ct)
+        public async Task<List<FileMoveResult>> ProcessTVShows(Settings settings, CancellationToken ct)
         {
             List<Task<FileMoveResult>> tasks = new List<Task<FileMoveResult>>();
+            List<FileMoveResult> ProcessFiles = new List<FileMoveResult>();
             foreach (TVEpisode ep in scannedEpisodes)
             {
                 if (!ep.ActionThis)
@@ -178,7 +179,7 @@ namespace SimpleRenamer
                 }
                 else
                 {
-                    tasks.Add(FileMover.MoveFileAsync(ep, settings));
+                    tasks.Add(FileMover.CreateDirectoriesAndDownloadBannersAsync(ep, settings));
                 }
             }
             foreach (var t in tasks.InCompletionOrder())
@@ -187,16 +188,16 @@ namespace SimpleRenamer
                 FileMoveResult r = await t;
                 if (r.Success)
                 {
-                    WriteNewLineToTextBox(string.Format("Successfully {2} {0} to {1}", r.Episode.FilePath, r.Episode.NewFileName, settings.CopyFiles ? "Copied" : "Moved"));
-                    scannedEpisodes.Remove(r.Episode);
+                    ProcessFiles.Add(r);
+                    WriteNewLineToTextBox(string.Format("Successfully processed directory for: {0}", r.Episode.FilePath));
                 }
                 else
                 {
-                    WriteNewLineToTextBox(string.Format("Failed to {1} {0}", r.Episode.FilePath, settings.CopyFiles ? "Copy" : "Move"));
+                    WriteNewLineToTextBox(string.Format("Failed to process directory for: {0}", r.Episode.FilePath));
                 }
             }
 
-            return true;
+            return ProcessFiles;
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
@@ -216,8 +217,14 @@ namespace SimpleRenamer
             try
             {
                 settings = GetSettings();
+                //process the folders and jpg downloads async
                 LogTextBox.Text = string.Format("{0} - Starting", DateTime.Now.ToShortTimeString());
-                await MoveTVShows(settings, cts.Token);
+                List<FileMoveResult> filesToMove = await ProcessTVShows(settings, cts.Token);
+
+                if (filesToMove != null && filesToMove.Count > 0)
+                {
+                    await MoveTVShows(filesToMove, settings, cts.Token);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -229,7 +236,35 @@ namespace SimpleRenamer
                 RunButton.IsEnabled = true;
                 SettingsButton.IsEnabled = true;
                 CancelButton.IsEnabled = false;
+                ButtonsStackPanel.Visibility = System.Windows.Visibility.Visible;
+                ProgressStackPanel.Visibility = System.Windows.Visibility.Collapsed;
             }
+        }
+
+        public async Task MoveTVShows(List<FileMoveResult> filesToMove, Settings settings, CancellationToken ct)
+        {
+            ButtonsStackPanel.Visibility = System.Windows.Visibility.Collapsed;
+            ProgressStackPanel.Visibility = System.Windows.Visibility.Visible;
+            FileMoveProgressBar.Maximum = filesToMove.Count;
+            BackgroundQueue bgQueue = new BackgroundQueue();
+            //actually move/copy the files one at a time
+            foreach (FileMoveResult fmr in filesToMove)
+            {
+                ct.ThrowIfCancellationRequested();
+                bool result = await bgQueue.QueueTask(() => FileMover.MoveFile(fmr.Episode, settings, fmr.DestinationFilePath));
+                FileMoveProgressBar.Value++;
+                if (result)
+                {
+                    scannedEpisodes.Remove(fmr.Episode);
+                    WriteNewLineToTextBox(string.Format("Successfully {2} {0} to {1}", fmr.Episode.FilePath, fmr.DestinationFilePath, settings.CopyFiles ? "copied" : "moved"));
+                }
+                else
+                {
+                    WriteNewLineToTextBox(string.Format("Failed to {2} {0} to {1}", fmr.Episode.FilePath, fmr.DestinationFilePath, settings.CopyFiles ? "copy" : "move"));
+                }
+            }
+            //add a bit of delay before the progress bar disappears
+            await bgQueue.QueueTask(() => Thread.Sleep(1000));
         }
 
         private async void MatchShowButton_Click(object sender, RoutedEventArgs e)

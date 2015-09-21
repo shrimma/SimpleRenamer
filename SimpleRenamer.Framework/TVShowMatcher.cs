@@ -169,7 +169,12 @@ namespace SimpleRenamer.Framework
                 {
                     showNameMapping.Mappings = new List<Mapping>();
                 }
-                showNameMapping.Mappings.Add(new Mapping(episode.ShowName, matchedSeries.Title, matchedSeries.Id.ToString()));
+                //add the mapping if it doesn't yet exist
+                Mapping map = new Mapping(episode.ShowName, matchedSeries.Title, matchedSeries.Id.ToString());
+                if (!showNameMapping.Mappings.Contains(map))
+                {
+                    showNameMapping.Mappings.Add(map);
+                }
             }
 
             return episode;
