@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using TheTVDBSharp;
@@ -13,34 +14,30 @@ namespace SimpleRenamer.Framework
     {
         private static string apiKey = "820147144A5BB54E";
         private static string mappingFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "SelectedShowMapping.xml");
-        private static ShowNameMapping showNameMapping = null;
         /// <summary>
         /// Scrape the TVDB and use the results for a better file name
         /// </summary>
         /// <param name="episode"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public static async Task<TVEpisode> ScrapeDetailsAsync(TVEpisode episode, Settings settings)
+        public static async Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode, Settings settings, ShowNameMapping showNameMapping)
         {
-            //read the mapping file and try and find any already selected matches
-            ReadMappingFile();
-            episode = FixMismatchTitles(episode, settings);
+            //read the mapping file and try and find any already selected matches            
+            episode = FixMismatchTitles(episode, settings, showNameMapping);
+            TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
             //scrape the episode name - if we haven't already got the show ID then search for it
             if (string.IsNullOrEmpty(episode.TVDBShowId))
             {
-                episode = await ScrapeShowAsync(episode, settings);
+                episodeScrape = await ScrapeShowAsync(episode, settings);
             }
             else
             {
-                episode = await ScrapeSpecificShow(episode, settings, episode.TVDBShowId, false);
+                episodeScrape = await ScrapeSpecificShow(episode, settings, episode.TVDBShowId, false);
             }
 
             //generate the new file name
-            episode = GenerateFileName(episode, settings);
-
-            //write the mapping file
-            WriteMappingFile();
-            return episode;
+            episodeScrape.tvep = GenerateFileName(episodeScrape.tvep, settings);
+            return episodeScrape;
         }
 
         /// <summary>
@@ -49,7 +46,7 @@ namespace SimpleRenamer.Framework
         /// <param name="episode"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public static TVEpisode FixMismatchTitles(TVEpisode episode, Settings settings)
+        public static TVEpisode FixMismatchTitles(TVEpisode episode, Settings settings, ShowNameMapping showNameMapping)
         {
             if (showNameMapping != null && showNameMapping.Mappings != null && showNameMapping.Mappings.Count > 0)
             {
@@ -59,7 +56,7 @@ namespace SimpleRenamer.Framework
                     {
                         episode.TVDBShowId = m.TVDBShowID;
                         episode.ShowName = m.TVDBShowName;
-                        break;
+                        return episode;
                     }
                 }
             }
@@ -67,13 +64,13 @@ namespace SimpleRenamer.Framework
             return episode;
         }
 
-        private static void ReadMappingFile()
+        public static ShowNameMapping ReadMappingFile()
         {
             ShowNameMapping snm = new ShowNameMapping();
             //if the file doesn't yet exist then set a new version
             if (!File.Exists(mappingFilePath))
             {
-                showNameMapping = snm;
+                return snm;
             }
             else
             {
@@ -82,11 +79,11 @@ namespace SimpleRenamer.Framework
                     XmlSerializer serializer = new XmlSerializer(typeof(ShowNameMapping));
                     snm = (ShowNameMapping)serializer.Deserialize(fs);
                 }
-                showNameMapping = snm;
+                return snm;
             }
         }
 
-        private static void WriteMappingFile()
+        public static void WriteMappingFile(ShowNameMapping showNameMapping)
         {
             //only write the file if there is data
             if (showNameMapping != null && showNameMapping.Mappings.Count > 0)
@@ -105,8 +102,9 @@ namespace SimpleRenamer.Framework
         /// <param name="episode">The episode to scrape</param>
         /// <param name="settings">Our current settings</param>
         /// <returns></returns>
-        public static async Task<TVEpisode> ScrapeShowAsync(TVEpisode episode, Settings settings)
+        public static async Task<TVEpisodeScrape> ScrapeShowAsync(TVEpisode episode, Settings settings)
         {
+            TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
             TheTvdbManager tvdbManager = new TheTvdbManager(apiKey);
             var series = await tvdbManager.SearchSeries(episode.ShowName, Language.English);
             var seriesList = series.GetEnumerator();
@@ -117,6 +115,7 @@ namespace SimpleRenamer.Framework
                 //seriesId = await SelectSpecificShow(episode, settings, series);
                 episode.ActionThis = false;
                 episode.SkippedExactSelection = true;
+                episodeScrape.tvep = episode;
             }
             else if (series.Count == 1)
             {
@@ -126,19 +125,19 @@ namespace SimpleRenamer.Framework
                 //if seriesID is populated then grab the episode name (it's possible to be null if user skipped the selection
                 if (!string.IsNullOrEmpty(seriesId))
                 {
-                    episode = await ScrapeSpecificShow(episode, settings, seriesId, true);
+                    episodeScrape = await ScrapeSpecificShow(episode, settings, seriesId, true);
                 }
                 else
                 {
                     episode.ActionThis = false;
                     episode.SkippedExactSelection = true;
+                    episodeScrape.tvep = episode;
                 }
             }
-
-            return episode;
+            return episodeScrape;
         }
 
-        public static async Task<TVEpisode> ScrapeSpecificShow(TVEpisode episode, Settings settings, string seriesId, bool newMatch)
+        public static async Task<TVEpisodeScrape> ScrapeSpecificShow(TVEpisode episode, Settings settings, string seriesId, bool newMatch)
         {
             uint season = 0;
             uint.TryParse(episode.Season, out season);
@@ -161,23 +160,7 @@ namespace SimpleRenamer.Framework
                 episode.ShowImage = seriesBanners.OrderByDescending(s => s.Rating).FirstOrDefault().RemotePath;
             }
 
-            //if the user selected this show then create a new mapping entry
-            if (newMatch)
-            {
-                //if this is our first mapping then create new
-                if (showNameMapping.Mappings == null)
-                {
-                    showNameMapping.Mappings = new List<Mapping>();
-                }
-                //add the mapping if it doesn't yet exist
-                Mapping map = new Mapping(episode.ShowName, matchedSeries.Title, matchedSeries.Id.ToString());
-                if (!showNameMapping.Mappings.Contains(map))
-                {
-                    showNameMapping.Mappings.Add(map);
-                }
-            }
-
-            return episode;
+            return new TVEpisodeScrape(episode, matchedSeries);
         }
 
         public static TaskCompletionSource<bool> taskComplete;
@@ -218,24 +201,37 @@ namespace SimpleRenamer.Framework
             wpfForm.ShowDialog();
             await taskComplete.Task;
 
+
+            TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
             //if user selected a match then scrape the details
             if (!string.IsNullOrEmpty(selectedSeriesId))
             {
-                episode = await ScrapeSpecificShow(episode, settings, selectedSeriesId, true);
-                episode.ActionThis = true;
-                episode.SkippedExactSelection = false;
+                episodeScrape = await ScrapeSpecificShow(episode, settings, selectedSeriesId, true);
+                episodeScrape.tvep.ActionThis = true;
+                episodeScrape.tvep.SkippedExactSelection = false;
 
                 //generate the file name and update the mapping file
-                episode = GenerateFileName(episode, settings);
-                WriteMappingFile();
+                episodeScrape.tvep = GenerateFileName(episode, settings);
+
+                if (episodeScrape.series != null)
+                {
+                    ShowNameMapping showNameMapping = TVShowMatcher.ReadMappingFile();
+                    Mapping map = new Mapping(episodeScrape.tvep.ShowName, episodeScrape.series.Title, episodeScrape.series.Id.ToString());
+                    if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
+                    {
+                        showNameMapping.Mappings.Add(map);
+                    }
+                    TVShowMatcher.WriteMappingFile(showNameMapping);
+                }
             }
             else
             {
                 episode.ActionThis = false;
                 episode.SkippedExactSelection = true;
+                episodeScrape.tvep = episode;
             }
 
-            return episode;
+            return episodeScrape.tvep;
         }
 
         public static void WindowClosedEvent1(object sender, CustomEventArgs e)
@@ -267,10 +263,17 @@ namespace SimpleRenamer.Framework
             }
             if (temp.Contains("{EpisodeName}"))
             {
-                temp = temp.Replace("{EpisodeName}", episode.EpisodeName);
+                temp = temp.Replace("{EpisodeName}", RemoveSpecialCharacters(episode.EpisodeName));
             }
             episode.NewFileName = temp;
             return episode;
+        }
+
+        private static string RemoveSpecialCharacters(string input)
+        {
+            string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+            Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+            return r.Replace(input, "");
         }
     }
 }

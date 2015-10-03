@@ -31,7 +31,7 @@ namespace SimpleRenamer.ConsoleApp
                     if (settings.RenameFiles)
                     {
                         //TODO we need to sort this out bruv
-                        LolTemp(tempEp, settings);
+                        //LolTemp(tempEp, settings);
                     }
                     else
                     {
@@ -43,11 +43,11 @@ namespace SimpleRenamer.ConsoleApp
             }
         }
 
-        private static async void LolTemp(TVEpisode episode, Settings settings)
-        {
-            TVEpisode newEp = await TVShowMatcher.ScrapeDetailsAsync(episode, settings);
-            Console.WriteLine("Show:{0}, Season:{1},Episode:{2}, Name:{3}", newEp.ShowName, newEp.Season, newEp.Episode, newEp.EpisodeName);
-        }
+        //private static async void LolTemp(TVEpisode episode, Settings settings)
+        //{
+        //    TVEpisode newEp = await TVShowMatcher.ScrapeDetailsAsync(episode, settings);
+        //    Console.WriteLine("Show:{0}, Season:{1},Episode:{2}, Name:{3}", newEp.ShowName, newEp.Season, newEp.Episode, newEp.EpisodeName);
+        //}
 
         /// <summary>
         /// Set temp values for the console test

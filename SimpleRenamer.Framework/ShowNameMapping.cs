@@ -5,7 +5,8 @@ namespace SimpleRenamer.Framework
 {
     public class ShowNameMapping
     {
-        public List<Mapping> Mappings { get; set; }
+        private List<Mapping> mappings = new List<Mapping>();
+        public List<Mapping> Mappings { get { return mappings; } }
     }
 
     public class Mapping
@@ -16,12 +17,15 @@ namespace SimpleRenamer.Framework
         public string TVDBShowName { get; set; }
         [XmlAttribute]
         public string TVDBShowID { get; set; }
+        [XmlAttribute]
+        public string CustomFolderName { get; set; }
 
         public Mapping(string fileShowName, string tvdbShowName, string tvdbShowID)
         {
             FileShowName = fileShowName;
             TVDBShowName = tvdbShowName;
             TVDBShowID = tvdbShowID;
+            CustomFolderName = string.Empty;
         }
 
         public Mapping()

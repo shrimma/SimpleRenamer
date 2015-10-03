@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -125,6 +126,8 @@ namespace SimpleRenamer
         public async Task MatchTVShows(List<string> videoFiles, Settings settings, CancellationToken ct)
         {
             scannedEpisodes.Clear();
+            ShowNameMapping showNameMapping = TVShowMatcher.ReadMappingFile();
+            ShowNameMapping originalMapping = TVShowMatcher.ReadMappingFile();
             List<Task<TVEpisode>> tasks = new List<Task<TVEpisode>>();
             //spin up a task for each file
             foreach (string fileName in videoFiles)
@@ -136,12 +139,22 @@ namespace SimpleRenamer
             {
                 ct.ThrowIfCancellationRequested();
                 TVEpisode tempEp = await t;
+                TVEpisodeScrape scrapeResult = null;
                 if (tempEp != null)
                 {
                     //scrape the episode name and incorporate this in the filename (if setting allows)
                     if (settings.RenameFiles)
                     {
-                        tempEp = await TVShowMatcher.ScrapeDetailsAsync(tempEp, settings);
+                        scrapeResult = await TVShowMatcher.ScrapeDetailsAsync(tempEp, settings, showNameMapping);
+                        tempEp = scrapeResult.tvep;
+                        if (scrapeResult.series != null)
+                        {
+                            Mapping map = new Mapping(scrapeResult.tvep.ShowName, scrapeResult.series.Title, scrapeResult.series.Id.ToString());
+                            if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
+                            {
+                                showNameMapping.Mappings.Add(map);
+                            }
+                        }
                         ct.ThrowIfCancellationRequested();
                     }
                     else
@@ -165,35 +178,63 @@ namespace SimpleRenamer
                     }
                 }
             }
+            if (showNameMapping.Mappings != originalMapping.Mappings || showNameMapping.Mappings.Count != originalMapping.Mappings.Count)
+            {
+                TVShowMatcher.WriteMappingFile(showNameMapping);
+            }
+        }
+
+        public class ShowSeason
+        {
+            public string Show { get; set; }
+            public string Season { get; set; }
+
+            public ShowSeason(string show, string season)
+            {
+                Show = show;
+                Season = season;
+            }
         }
 
         public async Task<List<FileMoveResult>> ProcessTVShows(Settings settings, CancellationToken ct)
         {
             List<Task<FileMoveResult>> tasks = new List<Task<FileMoveResult>>();
+            List<ShowSeason> uniqueShowSeasons = new List<ShowSeason>();
             List<FileMoveResult> ProcessFiles = new List<FileMoveResult>();
+            FileMoveProgressBar.Value = 0;
+            FileMoveProgressBar.Maximum = scannedEpisodes.Count;
+            BackgroundQueue bgQueue = new BackgroundQueue();
             foreach (TVEpisode ep in scannedEpisodes)
             {
                 if (!ep.ActionThis)
                 {
                     WriteNewLineToTextBox(string.Format("Skipped {0} as user chose not to action.", ep.FilePath));
+                    FileMoveProgressBar.Value++;
                 }
                 else
                 {
-                    tasks.Add(FileMover.CreateDirectoriesAndDownloadBannersAsync(ep, settings));
-                }
-            }
-            foreach (var t in tasks.InCompletionOrder())
-            {
-                ct.ThrowIfCancellationRequested();
-                FileMoveResult r = await t;
-                if (r.Success)
-                {
-                    ProcessFiles.Add(r);
-                    WriteNewLineToTextBox(string.Format("Successfully processed directory for: {0}", r.Episode.FilePath));
-                }
-                else
-                {
-                    WriteNewLineToTextBox(string.Format("Failed to process directory for: {0}", r.Episode.FilePath));
+                    //check if this show season combo is already going to be processed
+                    ShowSeason showSeason = new ShowSeason(ep.ShowName, ep.Season);
+                    if (uniqueShowSeasons.Contains(showSeason))
+                    {
+                        ProcessFiles.Add(new FileMoveResult(true, ep));
+                        FileMoveProgressBar.Value++;
+                    }
+                    else
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        FileMoveResult result = await await bgQueue.QueueTask(() => FileMover.CreateDirectoriesAndDownloadBannersAsync(ep, settings));
+                        FileMoveProgressBar.Value++;
+                        if (result.Success)
+                        {
+                            ProcessFiles.Add(result);
+                            WriteNewLineToTextBox(string.Format("Successfully processed directory for: {0}", result.Episode.FilePath));
+                        }
+                        else
+                        {
+                            WriteNewLineToTextBox(string.Format("Failed to process directory for: {0}", result.Episode.FilePath));
+                        }
+                    }
                 }
             }
 
@@ -214,6 +255,8 @@ namespace SimpleRenamer
             SettingsButton.IsEnabled = false;
             ActionButton.IsEnabled = false;
             CancelButton.IsEnabled = true;
+            ButtonsStackPanel.Visibility = System.Windows.Visibility.Collapsed;
+            ProgressStackPanel.Visibility = System.Windows.Visibility.Visible;
             try
             {
                 settings = GetSettings();
@@ -243,8 +286,7 @@ namespace SimpleRenamer
 
         public async Task MoveTVShows(List<FileMoveResult> filesToMove, Settings settings, CancellationToken ct)
         {
-            ButtonsStackPanel.Visibility = System.Windows.Visibility.Collapsed;
-            ProgressStackPanel.Visibility = System.Windows.Visibility.Visible;
+            FileMoveProgressBar.Value = 0;
             FileMoveProgressBar.Maximum = filesToMove.Count;
             BackgroundQueue bgQueue = new BackgroundQueue();
             //actually move/copy the files one at a time
@@ -313,10 +355,12 @@ namespace SimpleRenamer
             if (temp != null && !temp.SkippedExactSelection)
             {
                 ShowDetailButton.IsEnabled = true;
+                EditButton.IsEnabled = true;
             }
             else
             {
                 ShowDetailButton.IsEnabled = false;
+                EditButton.IsEnabled = false;
             }
         }
 
@@ -326,5 +370,53 @@ namespace SimpleRenamer
             ShowDetailsForm sdf = new ShowDetailsForm(tempEp.TVDBShowId);
             sdf.ShowDialog();
         }
+
+        private void EditButton_Click(object sender, RoutedEventArgs e)
+        {
+            TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
+            ShowsListBox.IsEnabled = false;
+            IgnoreShowButton.IsEnabled = false;
+            MatchShowButton.IsEnabled = false;
+            ShowDetailButton.IsEnabled = false;
+            EditButton.IsEnabled = false;
+
+            ShowNameTextBox.Text = tempEp.ShowName;
+            ShowNameTextBox.Visibility = System.Windows.Visibility.Visible;
+            EditOkButton.Visibility = System.Windows.Visibility.Visible;
+            ShowNameTextBox.Focus();
+        }
+
+        private void EditOkButton_Click(object sender, RoutedEventArgs e)
+        {
+            TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
+            string oldTitle = tempEp.ShowName;
+            string newTitle = ShowNameTextBox.Text;
+
+            if (!newTitle.Equals(oldTitle))
+            {
+                MessageBoxResult mbr = MessageBox.Show("Are you sure you want to change this shows name?", "Confirmation", MessageBoxButton.OKCancel);
+                if (mbr == MessageBoxResult.OK)
+                {
+                    foreach (TVEpisode tve in scannedEpisodes)
+                    {
+                        if (tve.ShowName.Equals(oldTitle))
+                        {
+                            tve.ShowName = newTitle;
+                        }
+                    }
+                }
+            }
+
+            ShowsListBox.IsEnabled = true;
+            IgnoreShowButton.IsEnabled = true;
+            MatchShowButton.IsEnabled = true;
+            ShowDetailButton.IsEnabled = true;
+            EditButton.IsEnabled = true;
+            ShowNameTextBox.Text = "";
+            ShowNameTextBox.Visibility = System.Windows.Visibility.Hidden;
+            EditOkButton.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+
     }
 }
