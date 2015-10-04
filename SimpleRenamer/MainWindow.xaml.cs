@@ -19,10 +19,14 @@ namespace SimpleRenamer
         public CancellationTokenSource cts;
         public Settings settings;
         private ObservableCollection<TVEpisode> scannedEpisodes;
+        log4net.ILog log;
 
         public MainWindow()
         {
             InitializeComponent();
+            log4net.Config.XmlConfigurator.Configure();
+            log = log4net.LogManager.GetLogger(typeof(MainWindow));
+            log.Info("Starting Application");
             scannedEpisodes = new ObservableCollection<TVEpisode>();
             ShowsListBox.ItemsSource = scannedEpisodes;
             this.Closing += MainWindow_Closing;
@@ -30,6 +34,7 @@ namespace SimpleRenamer
 
         void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            WriteNewLineToTextBox("Closing");
             if (!RunButton.IsEnabled)
             {
                 e.Cancel = true;
@@ -75,7 +80,15 @@ namespace SimpleRenamer
             }
             catch (OperationCanceledException)
             {
-                WriteNewLineToTextBox("User canceled.");
+                WriteNewLineToTextBox("User canceled scan.");
+            }
+            catch (Exception ex)
+            {
+                log.Fatal(ex.Message);
+                if (ex.InnerException != null)
+                {
+                    log.Fatal(ex.InnerException.Message);
+                }
             }
             finally
             {
@@ -102,6 +115,7 @@ namespace SimpleRenamer
         private void WriteNewLineToTextBox(string text)
         {
             LogTextBox.Text += string.Format("\n{0} - {1}", DateTime.Now.ToShortTimeString(), text);
+            log.Info(text);
         }
 
         /// <summary>
@@ -201,6 +215,7 @@ namespace SimpleRenamer
             List<Task<FileMoveResult>> tasks = new List<Task<FileMoveResult>>();
             List<ShowSeason> uniqueShowSeasons = new List<ShowSeason>();
             List<FileMoveResult> ProcessFiles = new List<FileMoveResult>();
+            ShowNameMapping snm = TVShowMatcher.ReadMappingFile();
             FileMoveProgressBar.Value = 0;
             FileMoveProgressBar.Maximum = scannedEpisodes.Count;
             BackgroundQueue bgQueue = new BackgroundQueue();
@@ -213,6 +228,7 @@ namespace SimpleRenamer
                 }
                 else
                 {
+                    Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(ep.TVDBShowId)).FirstOrDefault();
                     //check if this show season combo is already going to be processed
                     ShowSeason showSeason = new ShowSeason(ep.ShowName, ep.Season);
                     if (uniqueShowSeasons.Contains(showSeason))
@@ -223,7 +239,7 @@ namespace SimpleRenamer
                     else
                     {
                         ct.ThrowIfCancellationRequested();
-                        FileMoveResult result = await await bgQueue.QueueTask(() => FileMover.CreateDirectoriesAndDownloadBannersAsync(ep, settings));
+                        FileMoveResult result = await await bgQueue.QueueTask(() => FileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, settings));
                         FileMoveProgressBar.Value++;
                         if (result.Success)
                         {
@@ -271,7 +287,15 @@ namespace SimpleRenamer
             }
             catch (OperationCanceledException)
             {
-                WriteNewLineToTextBox("User canceled.");
+                WriteNewLineToTextBox("User canceled actions.");
+            }
+            catch (Exception ex)
+            {
+                log.Fatal(ex.Message);
+                if (ex.InnerException != null)
+                {
+                    log.Fatal(ex.InnerException.Message);
+                }
             }
             finally
             {
@@ -374,16 +398,34 @@ namespace SimpleRenamer
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
             TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
-            ShowsListBox.IsEnabled = false;
-            IgnoreShowButton.IsEnabled = false;
-            MatchShowButton.IsEnabled = false;
-            ShowDetailButton.IsEnabled = false;
-            EditButton.IsEnabled = false;
+            ShowNameMapping snm = TVShowMatcher.ReadMappingFile();
+            if (snm != null && snm.Mappings.Count > 0)
+            {
+                Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(tempEp.TVDBShowId)).FirstOrDefault();
+                if (mapping != null)
+                {
+                    EditShowWindow esw = new EditShowWindow(settings, tempEp, mapping);
+                    esw.RaiseCustomEvent += new EventHandler<EditShowEventArgs>(EditShowWindowClosedEvent);
+                    esw.ShowDialog();
+                }
+            }
+        }
 
-            ShowNameTextBox.Text = tempEp.ShowName;
-            ShowNameTextBox.Visibility = System.Windows.Visibility.Visible;
-            EditOkButton.Visibility = System.Windows.Visibility.Visible;
-            ShowNameTextBox.Focus();
+        public static void EditShowWindowClosedEvent(object sender, EditShowEventArgs e)
+        {
+            if (e.Mapping != null)
+            {
+                ShowNameMapping snm = TVShowMatcher.ReadMappingFile();
+                if (snm != null && snm.Mappings.Count > 0)
+                {
+                    Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(e.Mapping.TVDBShowID)).FirstOrDefault();
+                    if (mapping != null)
+                    {
+                        mapping.CustomFolderName = e.NewFolder;
+                        TVShowMatcher.WriteMappingFile(snm);
+                    }
+                }
+            }
         }
 
         private void EditOkButton_Click(object sender, RoutedEventArgs e)
@@ -417,6 +459,14 @@ namespace SimpleRenamer
             EditOkButton.Visibility = System.Windows.Visibility.Hidden;
         }
 
+        private enum LogLevel
+        {
+            Debug,
+            Info,
+            Warn,
+            Error,
+            Fatal
+        }
 
     }
 }

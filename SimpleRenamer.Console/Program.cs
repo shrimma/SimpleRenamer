@@ -11,9 +11,20 @@ namespace SimpleRenamer.ConsoleApp
         public static void Main(string[] args)
         {
             Console.WriteLine("Starting");
-            SetSettings();
-            List<string> videoFiles = FileWatcher.SearchTheseFolders(settings);
-            MatchTVShows(videoFiles, settings);
+            //SetSettings();
+            //List<string> videoFiles = FileWatcher.SearchTheseFolders(settings);
+            //MatchTVShows(videoFiles, settings);
+            log4net.Config.XmlConfigurator.Configure();
+            log4net.ILog log = log4net.LogManager.GetLogger(typeof(Program));
+
+            log.Info("beginning loop");
+
+            for (int c = 0; c < 100; ++c)
+            {
+                log.DebugFormat("iteration #{0}", c);
+            }
+
+            log.Info("loop has completed");
             Console.WriteLine("Ending");
             Console.ReadLine();
         }

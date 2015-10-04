@@ -40,14 +40,22 @@ namespace SimpleRenamer.Framework
             return true;
         }
 
-        public static async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Settings settings)
+        public static async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, Settings settings)
         {
             FileMoveResult result = new FileMoveResult(true, episode);
             string ext = Path.GetExtension(episode.FilePath);
             int season;
             int.TryParse(episode.Season, out season);
             //use the destination folder and showname etc to define final destination
-            string showDirectory = Path.Combine(settings.DestinationFolder, episode.ShowName);
+            string showDirectory = string.Empty;
+            if (mapping != null && !string.IsNullOrEmpty(mapping.CustomFolderName))
+            {
+                showDirectory = Path.Combine(settings.DestinationFolder, mapping.CustomFolderName);
+            }
+            else
+            {
+                showDirectory = Path.Combine(settings.DestinationFolder, episode.ShowName);
+            }
             string seasonDirectory = Path.Combine(showDirectory, string.Format("Season {0}", season));
             result.DestinationFilePath = Path.Combine(seasonDirectory, episode.NewFileName + ext);
 
