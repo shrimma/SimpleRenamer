@@ -35,7 +35,7 @@ namespace SimpleRenamer.Framework
                 episodeScrape = await ScrapeSpecificShow(episode, settings, episode.TVDBShowId, false);
             }
 
-            //generate the new file name
+            //generate the new file name            
             episodeScrape.tvep = GenerateFileName(episodeScrape.tvep, settings);
             return episodeScrape;
         }
@@ -54,8 +54,14 @@ namespace SimpleRenamer.Framework
                 {
                     if (m.FileShowName.Equals(episode.ShowName))
                     {
-                        episode.TVDBShowId = m.TVDBShowID;
-                        episode.ShowName = m.TVDBShowName;
+                        if (!string.IsNullOrEmpty(m.TVDBShowID))
+                        {
+                            episode.TVDBShowId = m.TVDBShowID;
+                        }
+                        if (!string.IsNullOrEmpty(m.TVDBShowName))
+                        {
+                            episode.ShowName = m.TVDBShowName;
+                        }
                         return episode;
                     }
                 }
@@ -263,7 +269,7 @@ namespace SimpleRenamer.Framework
             }
             if (temp.Contains("{EpisodeName}"))
             {
-                temp = temp.Replace("{EpisodeName}", RemoveSpecialCharacters(episode.EpisodeName));
+                temp = temp.Replace("{EpisodeName}", string.IsNullOrEmpty(episode.EpisodeName) ? "" : RemoveSpecialCharacters(episode.EpisodeName));
             }
             episode.NewFileName = temp;
             return episode;

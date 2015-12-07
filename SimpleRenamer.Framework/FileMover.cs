@@ -40,7 +40,7 @@ namespace SimpleRenamer.Framework
             return true;
         }
 
-        public static async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, Settings settings)
+        public static async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, Settings settings, bool downloadBanner)
         {
             FileMoveResult result = new FileMoveResult(true, episode);
             string ext = Path.GetExtension(episode.FilePath);
@@ -67,8 +67,7 @@ namespace SimpleRenamer.Framework
 
             try
             {
-                //TODO add this as a setting
-                if (true)
+                if (downloadBanner)
                 {
                     bool bannerResult;
                     if (!string.IsNullOrEmpty(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))

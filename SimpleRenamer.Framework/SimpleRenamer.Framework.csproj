@@ -94,7 +94,7 @@
     <Content Include="RegexExpressions.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="tv.ico" />
+    <Resource Include="tv.ico" />
     <Content Include="TVDB.txt" />
   </ItemGroup>
   <ItemGroup>
