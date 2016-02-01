@@ -33,8 +33,9 @@ namespace SimpleRenamer.Framework
                     File.Move(episode.FilePath, destinationFilePath);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.TraceException(ex);
                 return false;
             }
             return true;
@@ -82,9 +83,10 @@ namespace SimpleRenamer.Framework
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                //we don't really care if image download failed
+                Logger.TraceException(ex);
+                //we don't really care if image download fails
             }
             return result;
         }
@@ -105,9 +107,9 @@ namespace SimpleRenamer.Framework
                 }
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
-                //TODO some error handling would be nice
+                Logger.TraceException(ex);
                 return false;
             }
         }
@@ -160,9 +162,9 @@ namespace SimpleRenamer.Framework
 
                 KeepTimestamps(fromFile, toFile);
             }
-            catch (System.Exception e)
+            catch (Exception ex)
             {
-
+                Logger.TraceException(ex);
             }
         }
 
@@ -270,8 +272,9 @@ namespace SimpleRenamer.Framework
                 }
 
             } // try
-            catch (System.Threading.ThreadAbortException)
+            catch (System.Threading.ThreadAbortException tae)
             {
+                Logger.TraceException(tae);
                 if (useWin32)
                 {
                     NicelyStopAndCleanUp_Win32(copier, toFile);
@@ -284,6 +287,7 @@ namespace SimpleRenamer.Framework
             }
             catch (Exception ex)
             {
+                Logger.TraceException(ex);
                 if (useWin32)
                 {
                     NicelyStopAndCleanUp_Win32(copier, toFile);

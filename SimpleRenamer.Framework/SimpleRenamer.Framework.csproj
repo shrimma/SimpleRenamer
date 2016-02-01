@@ -72,6 +72,7 @@
     <Compile Include="FileMover.cs" />
     <Compile Include="FileMoveResult.cs" />
     <Compile Include="FileWatcher.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="IgnoreList.cs" />
     <Compile Include="InverseBooleanConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -85,6 +86,7 @@
       <DependentUpon>ShowDetailsForm.xaml</DependentUpon>
     </Compile>
     <Compile Include="ShowNameMapping.cs" />
+    <Compile Include="ShowSeason.cs" />
     <Compile Include="TaskExtensions.cs" />
     <Compile Include="TVEpisode.cs" />
     <Compile Include="TVShowMatcher.cs" />

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -36,8 +37,9 @@ namespace SimpleRenamer.Framework
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.TraceException(ex);
                 return null;
             }
             return null;
@@ -70,8 +72,9 @@ namespace SimpleRenamer.Framework
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.TraceException(ex);
                 return null;
             }
             return null;
