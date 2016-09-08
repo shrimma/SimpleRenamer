@@ -2,7 +2,7 @@
 
 namespace SimpleRenamer.Framework
 {
-    public class ConfigurationManager : IConfigurationManager
+    public class AppConfigurationManager : IConfigurationManager
     {
         public string TvDbApiKey
         {

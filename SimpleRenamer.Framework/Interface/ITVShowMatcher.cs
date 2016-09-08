@@ -5,9 +5,9 @@ namespace SimpleRenamer.Framework.Interface
 {
     public interface ITVShowMatcher
     {
-        Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode, Settings settings, ShowNameMapping showNameMapping);
+        Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode, ShowNameMapping showNameMapping);
         Task<ShowNameMapping> ReadMappingFileAsync();
         Task<bool> WriteMappingFileAsync(ShowNameMapping showNameMapping);
-        Task<TVEpisode> SelectShowFromList(TVEpisode episode, Settings settings);
+        Task<TVEpisode> SelectShowFromList(TVEpisode episode);
     }
 }

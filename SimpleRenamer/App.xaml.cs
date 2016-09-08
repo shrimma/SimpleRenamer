@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using SimpleRenamer.DependencyInjection;
+using SimpleRenamer.Framework.Interface;
 using System.Windows;
 
 namespace SimpleRenamer
@@ -13,5 +9,25 @@ namespace SimpleRenamer
     /// </summary>
     public partial class App : Application
     {
+        private IDependencyInjectionContext injection;
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+            ConfigureContainer();
+            ComposeObjects();
+            Current.MainWindow.Show();
+        }
+
+        private void ConfigureContainer()
+        {
+            injection = new DependencyInjectionContext();
+            injection.Initialize();
+        }
+
+        private void ComposeObjects()
+        {
+            Current.MainWindow = this.injection.GetService<MainWindow>();
+        }
     }
 }

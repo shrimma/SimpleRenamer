@@ -9,8 +9,7 @@ namespace SimpleRenamer.DependencyInjection.Modules
         public override void Load()
         {
             Bind<ILogger>().To<Logger>().InSingletonScope();
-            Bind<IBackgroundQueue>().To<BackgroundQueue>();
-            Bind<IConfigurationManager>().To<ConfigurationManager>();
+            Bind<IConfigurationManager>().To<AppConfigurationManager>();
         }
     }
 }

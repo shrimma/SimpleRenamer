@@ -10,18 +10,30 @@ namespace SimpleRenamer.Framework
     {
         private bool? OnMonoCached;
         private IBannerDownloader bannerDownloader;
+        private ILogger logger;
+        private Settings settings;
 
-        public FileMover(IBannerDownloader bannerDl)
+        public FileMover(IBannerDownloader bannerDl, ILogger log, ISettingsFactory settingsFactory)
         {
             if (bannerDl == null)
             {
                 throw new ArgumentNullException(nameof(bannerDl));
             }
+            if (settingsFactory == null)
+            {
+                throw new ArgumentNullException(nameof(settingsFactory));
+            }
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
 
             bannerDownloader = bannerDl;
+            logger = log;
+            settings = settingsFactory.GetSettings();
         }
 
-        public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, Settings settings, bool downloadBanner)
+        public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, bool downloadBanner)
         {
             FileMoveResult result = new FileMoveResult(true, episode);
             string ext = Path.GetExtension(episode.FilePath);
@@ -65,19 +77,19 @@ namespace SimpleRenamer.Framework
             }
             catch (Exception ex)
             {
-                Logger.TraceException(ex);
+                logger.TraceException(ex);
                 //we don't really care if image download fails
             }
             return result;
         }
 
-        public async Task<bool> MoveFileAsync(TVEpisode episode, Settings settings, string destinationFilePath)
+        public async Task<bool> MoveFileAsync(TVEpisode episode, string destinationFilePath)
         {
             try
             {
                 FileInfo fromFile = new FileInfo(episode.FilePath);
                 FileInfo toFile = new FileInfo(destinationFilePath);
-                if (QuickOperation(settings, fromFile, toFile))
+                if (QuickOperation(fromFile, toFile))
                 {
                     OSMoveRename(fromFile, toFile);
                 }
@@ -89,12 +101,12 @@ namespace SimpleRenamer.Framework
             }
             catch (Exception ex)
             {
-                Logger.TraceException(ex);
+                logger.TraceException(ex);
                 return false;
             }
         }
 
-        private bool QuickOperation(Settings settings, FileInfo fromFile, FileInfo toFile)
+        private bool QuickOperation(FileInfo fromFile, FileInfo toFile)
         {
             if ((fromFile == null) || (toFile == null) || (fromFile.Directory == null) || (toFile.Directory == null))
             {
@@ -144,7 +156,7 @@ namespace SimpleRenamer.Framework
             }
             catch (Exception ex)
             {
-                Logger.TraceException(ex);
+                logger.TraceException(ex);
             }
         }
 
@@ -252,7 +264,7 @@ namespace SimpleRenamer.Framework
             } // try
             catch (System.Threading.ThreadAbortException tae)
             {
-                Logger.TraceException(tae);
+                logger.TraceException(tae);
                 if (useWin32)
                 {
                     NicelyStopAndCleanUp_Win32(copier, toFile);
@@ -265,7 +277,7 @@ namespace SimpleRenamer.Framework
             }
             catch (Exception ex)
             {
-                Logger.TraceException(ex);
+                logger.TraceException(ex);
                 if (useWin32)
                 {
                     NicelyStopAndCleanUp_Win32(copier, toFile);

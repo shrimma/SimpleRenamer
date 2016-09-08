@@ -12,6 +12,16 @@ namespace SimpleRenamer.Framework
     {
         private static RegexFile regexExpressions = null;
         private static string regexFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "RegexExpressions.xml");
+        private ILogger logger;
+
+        public FileMatcher(ILogger log)
+        {
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+            logger = log;
+        }
 
         public async Task<TVEpisode> SearchFileNameAsync(string fileName)
         {
@@ -42,7 +52,7 @@ namespace SimpleRenamer.Framework
             }
             catch (Exception ex)
             {
-                Logger.TraceException(ex);
+                logger.TraceException(ex);
                 return null;
             }
             return null;

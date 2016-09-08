@@ -5,8 +5,8 @@ namespace SimpleRenamer.Framework.Interface
 {
     public interface IFileMover
     {
-        Task<bool> MoveFileAsync(TVEpisode episode, Settings settings, string destinationFilePath);
+        Task<bool> MoveFileAsync(TVEpisode episode, string destinationFilePath);
 
-        Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, Settings settings, bool downloadBanner);
+        Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, bool downloadBanner);
     }
 }
