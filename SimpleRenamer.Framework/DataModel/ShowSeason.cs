@@ -1,5 +1,5 @@
 ﻿
-namespace SimpleRenamer.Framework
+namespace SimpleRenamer.Framework.DataModel
 {
     public class ShowSeason
     {

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using SimpleRenamer.Framework.Interface;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework
 {
-    public class BackgroundQueue
+    public class BackgroundQueue : IBackgroundQueue
     {
         private Task previousTask = Task.FromResult(true);
         private object key = new object();

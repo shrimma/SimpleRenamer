@@ -1,13 +1,25 @@
-﻿using System.IO;
+﻿using SimpleRenamer.Framework.Interface;
+using System;
+using System.IO;
 using System.Threading.Tasks;
 using TheTVDBSharp;
 
 namespace SimpleRenamer.Framework
 {
-    public static class BannerDownloader
+    public class BannerDownloader : IBannerDownloader
     {
-        private static string apiKey = "820147144A5BB54E";
-        public static async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder)
+        private string apiKey;
+
+        public BannerDownloader(IConfigurationManager configurationManager)
+        {
+            if (configurationManager == null)
+            {
+                throw new ArgumentNullException(nameof(configurationManager));
+            }
+            apiKey = configurationManager.TvDbApiKey;
+        }
+
+        public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder)
         {
             string fullBannerPath = Path.Combine(destinationFolder, "Folder.jpg");
             if (!File.Exists(fullBannerPath))

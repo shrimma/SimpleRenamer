@@ -219,7 +219,7 @@ namespace SimpleRenamer.Framework
                     msw = new BinaryWriter(new FileStream(tempName, FileMode.CreateNew));
                 }
 
-                for (; ; )
+                for (;;)
                 {
                     int n = useWin32 ? copier.ReadBlocks(kArrayLength) : msr.Read(dataArray, 0, kArrayLength);
                     if (n == 0)
