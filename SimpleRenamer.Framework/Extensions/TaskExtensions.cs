@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleRenamer.Framework
+namespace SimpleRenamer.Framework.Extensions
 {
     public static class TaskExtensions
     {
@@ -25,10 +25,10 @@ namespace SimpleRenamer.Framework
             return boxes.Select(box => box.Task);
         }
 
-        /// <summary> 
-        /// Propagates the status of the given task (which must be completed) to a task completion source 
-        /// (which should not be). 
-        /// </summary> 
+        /// <summary>
+        /// Propagates the status of the given task (which must be completed) to a task completion source
+        /// (which should not be).
+        /// </summary>
         private static void PropagateResult<T>(Task<T> completedTask,
             TaskCompletionSource<T> completionSource)
         {

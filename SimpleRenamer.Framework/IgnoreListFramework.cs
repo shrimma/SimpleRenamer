@@ -1,24 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.Interface;
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace SimpleRenamer.Framework
 {
-    public class IgnoreList
-    {
-        [XmlArrayItem("IgnoreFile")]
-        public List<string> IgnoreFiles { get; set; }
-
-        public IgnoreList()
-        {
-            IgnoreFiles = new List<string>();
-        }
-    }
-
-    public class IgnoreListFramework
+    public class IgnoreListFramework : IIgnoreListFramework
     {
         private static string ignoreFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "IgnoreFileList.xml");
-        public static IgnoreList ReadIgnoreList()
+        public async Task<IgnoreList> ReadIgnoreListAsync()
         {
             IgnoreList snm = new IgnoreList();
             //if the file doesn't yet exist then set a new version
@@ -37,7 +28,7 @@ namespace SimpleRenamer.Framework
             }
         }
 
-        public static void WriteExpressionFile(IgnoreList ignoreList)
+        public async Task<bool> WriteIgnoreListAsync(IgnoreList ignoreList)
         {
             //only write the file if there is data
             if (ignoreList != null && ignoreList.IgnoreFiles.Count > 0)
@@ -48,6 +39,8 @@ namespace SimpleRenamer.Framework
                     serializer.Serialize(writer, ignoreList);
                 }
             }
+
+            return true;
         }
     }
 }

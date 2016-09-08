@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.Interface;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,19 +12,22 @@ using TheTVDBSharp.Models;
 
 namespace SimpleRenamer.Framework
 {
-    public static class TVShowMatcher
+    public class TVShowMatcher : ITVShowMatcher
     {
-        private static string apiKey = "820147144A5BB54E";
-        private static string mappingFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "SelectedShowMapping.xml");
+        private string apiKey = "820147144A5BB54E";
+        private string mappingFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "SelectedShowMapping.xml");
+        private TaskCompletionSource<bool> taskComplete;
+        private string selectedSeriesId;
+
         /// <summary>
         /// Scrape the TVDB and use the results for a better file name
         /// </summary>
         /// <param name="episode"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public static async Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode, Settings settings, ShowNameMapping showNameMapping)
+        public async Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode, Settings settings, ShowNameMapping showNameMapping)
         {
-            //read the mapping file and try and find any already selected matches            
+            //read the mapping file and try and find any already selected matches
             episode = FixMismatchTitles(episode, settings, showNameMapping);
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
             //scrape the episode name - if we haven't already got the show ID then search for it
@@ -35,7 +40,7 @@ namespace SimpleRenamer.Framework
                 episodeScrape = await ScrapeSpecificShow(episode, settings, episode.TVDBShowId, false);
             }
 
-            //generate the new file name            
+            //generate the new file name
             episodeScrape.tvep = GenerateFileName(episodeScrape.tvep, settings);
             return episodeScrape;
         }
@@ -46,7 +51,7 @@ namespace SimpleRenamer.Framework
         /// <param name="episode"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public static TVEpisode FixMismatchTitles(TVEpisode episode, Settings settings, ShowNameMapping showNameMapping)
+        private TVEpisode FixMismatchTitles(TVEpisode episode, Settings settings, ShowNameMapping showNameMapping)
         {
             if (showNameMapping != null && showNameMapping.Mappings != null && showNameMapping.Mappings.Count > 0)
             {
@@ -70,7 +75,7 @@ namespace SimpleRenamer.Framework
             return episode;
         }
 
-        public static ShowNameMapping ReadMappingFile()
+        public async Task<ShowNameMapping> ReadMappingFileAsync()
         {
             ShowNameMapping snm = new ShowNameMapping();
             //if the file doesn't yet exist then set a new version
@@ -89,7 +94,7 @@ namespace SimpleRenamer.Framework
             }
         }
 
-        public static void WriteMappingFile(ShowNameMapping showNameMapping)
+        public async Task<bool> WriteMappingFileAsync(ShowNameMapping showNameMapping)
         {
             //only write the file if there is data
             if (showNameMapping != null && showNameMapping.Mappings.Count > 0)
@@ -100,6 +105,8 @@ namespace SimpleRenamer.Framework
                     serializer.Serialize(writer, showNameMapping);
                 }
             }
+
+            return true;
         }
 
         /// <summary>
@@ -108,7 +115,7 @@ namespace SimpleRenamer.Framework
         /// <param name="episode">The episode to scrape</param>
         /// <param name="settings">Our current settings</param>
         /// <returns></returns>
-        public static async Task<TVEpisodeScrape> ScrapeShowAsync(TVEpisode episode, Settings settings)
+        private async Task<TVEpisodeScrape> ScrapeShowAsync(TVEpisode episode, Settings settings)
         {
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
             TheTvdbManager tvdbManager = new TheTvdbManager(apiKey);
@@ -143,7 +150,7 @@ namespace SimpleRenamer.Framework
             return episodeScrape;
         }
 
-        public static async Task<TVEpisodeScrape> ScrapeSpecificShow(TVEpisode episode, Settings settings, string seriesId, bool newMatch)
+        private async Task<TVEpisodeScrape> ScrapeSpecificShow(TVEpisode episode, Settings settings, string seriesId, bool newMatch)
         {
             uint season = 0;
             uint.TryParse(episode.Season, out season);
@@ -169,9 +176,7 @@ namespace SimpleRenamer.Framework
             return new TVEpisodeScrape(episode, matchedSeries);
         }
 
-        public static TaskCompletionSource<bool> taskComplete;
-        public static string selectedSeriesId;
-        public static async Task<TVEpisode> SelectShowFromList(TVEpisode episode, Settings settings)
+        public async Task<TVEpisode> SelectShowFromList(TVEpisode episode, Settings settings)
         {
             uint season = 0;
             uint.TryParse(episode.Season, out season);
@@ -240,7 +245,7 @@ namespace SimpleRenamer.Framework
             return episodeScrape.tvep;
         }
 
-        public static void WindowClosedEvent1(object sender, CustomEventArgs e)
+        private void WindowClosedEvent1(object sender, CustomEventArgs e)
         {
             selectedSeriesId = e.ID;
             taskComplete.SetResult(true);
@@ -252,7 +257,7 @@ namespace SimpleRenamer.Framework
         /// <param name="episode">The episode to rename</param>
         /// <param name="settings">Our current settings</param>
         /// <returns></returns>
-        public static TVEpisode GenerateFileName(TVEpisode episode, Settings settings)
+        private TVEpisode GenerateFileName(TVEpisode episode, Settings settings)
         {
             string temp = settings.NewFileNameFormat;
             if (temp.Contains("{ShowName}"))

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using SimpleRenamer.Framework.DataModel;
+using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework.Interface
 {

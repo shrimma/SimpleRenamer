@@ -45,6 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DependencyInjectionContext.cs" />
+    <Compile Include="Modules\ActionModule.cs" />
+    <Compile Include="Modules\FrameworkModule.cs" />
+    <Compile Include="Modules\ScanModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

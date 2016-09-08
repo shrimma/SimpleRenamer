@@ -1,14 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
-namespace SimpleRenamer.Framework
+namespace SimpleRenamer.Framework.DataModel
 {
-    public class ShowNameMapping
-    {
-        private List<Mapping> mappings = new List<Mapping>();
-        public List<Mapping> Mappings { get { return mappings; } }
-    }
-
     public class Mapping
     {
         [XmlAttribute]

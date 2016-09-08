@@ -1,4 +1,5 @@
-﻿using SimpleRenamer.Framework.Interface;
+﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.Interface;
 using System;
 using System.IO;
 using System.Text.RegularExpressions;

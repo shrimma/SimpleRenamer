@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace SimpleRenamer.Framework
+namespace SimpleRenamer.Framework.DataModel
 {
     public class Settings : INotifyPropertyChanged
     {
