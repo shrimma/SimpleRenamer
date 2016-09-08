@@ -71,6 +71,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackgroundQueue.cs" />
     <Compile Include="BannerDownloader.cs" />
     <Compile Include="AppConfigurationManager.cs" />
     <Compile Include="DataModel\IgnoreList.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="FileMover.cs" />
     <Compile Include="DataModel\FileMoveResult.cs" />
     <Compile Include="FileWatcher.cs" />
+    <Compile Include="Interface\IBackgroundQueue.cs" />
     <Compile Include="Interface\IBannerDownloader.cs" />
     <Compile Include="Interface\IConfigurationManager.cs" />
     <Compile Include="Interface\IDependencyInjectionContext.cs" />

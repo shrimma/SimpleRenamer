@@ -27,9 +27,11 @@ namespace SimpleRenamer
         private ITVShowMatcher tvShowMatcher;
         private IFileMatcher fileMatcher;
         private IIgnoreListFramework ignoreListFramework;
+        private IBackgroundQueue backgroundQueue;
+        private IFileMover fileMover;
         private Settings settings;
 
-        public MainWindow(ILogger log, IFileWatcher fileWatch, ITVShowMatcher tvShowMatch, IFileMatcher fileMatch, ISettingsFactory settingsFactory, IIgnoreListFramework ignore)
+        public MainWindow(ILogger log, IFileWatcher fileWatch, ITVShowMatcher tvShowMatch, IFileMatcher fileMatch, ISettingsFactory settingsFactory, IIgnoreListFramework ignore, IBackgroundQueue backgroundQ, IFileMover fileMove)
         {
             if (log == null)
             {
@@ -55,11 +57,21 @@ namespace SimpleRenamer
             {
                 throw new ArgumentNullException(nameof(ignore));
             }
+            if (backgroundQ == null)
+            {
+                throw new ArgumentNullException(nameof(backgroundQ));
+            }
+            if (fileMove == null)
+            {
+                throw new ArgumentNullException(nameof(fileMove));
+            }
             logger = log;
             fileWatcher = fileWatch;
             tvShowMatcher = tvShowMatch;
             fileMatcher = fileMatch;
             ignoreListFramework = ignore;
+            backgroundQueue = backgroundQ;
+            fileMover = fileMove;
 
             try
             {
@@ -239,7 +251,6 @@ namespace SimpleRenamer
             ShowNameMapping snm = await tvShowMatcher.ReadMappingFileAsync();
             FileMoveProgressBar.Value = 0;
             FileMoveProgressBar.Maximum = scannedEpisodes.Count;
-            BackgroundQueue bgQueue = new BackgroundQueue();
             try
             {
                 foreach (TVEpisode ep in scannedEpisodes)
@@ -268,7 +279,7 @@ namespace SimpleRenamer
                             if (alreadyGrabbedBanners)
                             {
                                 //if we have already processed this show season combo then dont download the banners again
-                                FileMoveResult result = await await bgQueue.QueueTask(() => FileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, settings, false));
+                                FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, false));
                                 if (result.Success)
                                 {
                                     ProcessFiles.Add(result);
@@ -279,7 +290,7 @@ namespace SimpleRenamer
                             else
                             {
                                 ct.ThrowIfCancellationRequested();
-                                FileMoveResult result = await await bgQueue.QueueTask(() => FileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, settings, true));
+                                FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, true));
                                 if (result.Success)
                                 {
                                     ProcessFiles.Add(result);
@@ -295,7 +306,7 @@ namespace SimpleRenamer
                         }
                         else
                         {
-                            FileMoveResult result = await await bgQueue.QueueTask(() => FileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, settings, false));
+                            FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false));
                             if (result.Success)
                             {
                                 ProcessFiles.Add(result);
@@ -372,12 +383,11 @@ namespace SimpleRenamer
             {
                 FileMoveProgressBar.Value = 0;
                 FileMoveProgressBar.Maximum = filesToMove.Count;
-                BackgroundQueue bgQueue = new BackgroundQueue();
                 //actually move/copy the files one at a time
                 foreach (FileMoveResult fmr in filesToMove)
                 {
                     ct.ThrowIfCancellationRequested();
-                    bool result = await bgQueue.QueueTask(() => FileMover.MoveFile(fmr.Episode, settings, fmr.DestinationFilePath));
+                    bool result = await await backgroundQueue.QueueTask(() => fileMover.MoveFileAsync(fmr.Episode, fmr.DestinationFilePath));
                     FileMoveProgressBar.Value++;
                     if (result)
                     {
@@ -390,7 +400,7 @@ namespace SimpleRenamer
                     }
                 }
                 //add a bit of delay before the progress bar disappears
-                await bgQueue.QueueTask(() => Thread.Sleep(1000));
+                await backgroundQueue.QueueTask(() => Thread.Sleep(1000));
             }
             catch (Exception ex)
             {
