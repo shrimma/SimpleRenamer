@@ -1,4 +1,4 @@
-﻿using SimpleRenamer.Framework;
+﻿using SimpleRenamer.Framework.DataModel;
 using System;
 using System.IO;
 using System.Windows;
@@ -10,9 +10,9 @@ namespace SimpleRenamer
     /// </summary>
     public partial class EditShowWindow : Window
     {
-        private static Settings currentSettings;
-        private static TVEpisode currentEpisode;
-        private static Mapping currentMapping;
+        private Settings currentSettings;
+        private TVEpisode currentEpisode;
+        private Mapping currentMapping;
         public event EventHandler<EditShowEventArgs> RaiseCustomEvent;
 
         public EditShowWindow()

@@ -515,7 +515,7 @@ namespace SimpleRenamer
         {
             try
             {
-                EditShowWindow esw = new EditShowWindow(tempEp, mapping);
+                EditShowWindow esw = new EditShowWindow(settings, tempEp, mapping);
                 esw.RaiseCustomEvent += new EventHandler<EditShowEventArgs>(EditShowWindowClosedEvent);
                 esw.ShowDialog();
             }
@@ -525,7 +525,7 @@ namespace SimpleRenamer
             }
         }
 
-        public async Task EditShowWindowClosedEvent(object sender, EditShowEventArgs e)
+        public async void EditShowWindowClosedEvent(object sender, EditShowEventArgs e)
         {
             try
             {
