@@ -62,7 +62,7 @@ namespace SimpleRenamer
                 throw new ArgumentNullException(nameof(backgroundQ));
             }
             if (fileMove == null)
-            {
+        {
                 throw new ArgumentNullException(nameof(fileMove));
             }
             logger = log;
@@ -159,7 +159,7 @@ namespace SimpleRenamer
             catch (Exception ex)
             {
                 logger.TraceException(ex);
-            }
+        }
         }
 
         public async Task MatchTVShows(List<string> videoFiles, CancellationToken ct)
@@ -204,7 +204,7 @@ namespace SimpleRenamer
                         {
                             tempEp.NewFileName = Path.GetFileNameWithoutExtension(tempEp.FilePath);
                         }
-                        logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
+                        logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3} - TVDBShowId: {4}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName, tempEp.TVDBShowId));
                         //only add the file if it needs renaming/moving
                         int season;
                         int.TryParse(tempEp.Season, out season);
@@ -478,7 +478,9 @@ namespace SimpleRenamer
         {
             try
             {
+                WriteNewLineToTextBox("Show Detail button clicked");
                 TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
+                WriteNewLineToTextBox(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
                 ShowDetailsForm sdf = new ShowDetailsForm(tempEp.TVDBShowId);
                 sdf.ShowDialog();
             }
@@ -494,7 +496,7 @@ namespace SimpleRenamer
             {
                 logger.TraceMessage("Edit button clicked");
                 TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
-                logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}", tempEp.ShowName, tempEp.Season, tempEp.Episode));
+                logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
                 ShowNameMapping snm = await tvShowMatcher.ReadMappingFileAsync();
                 if (snm != null && snm.Mappings.Count > 0)
                 {
@@ -504,6 +506,10 @@ namespace SimpleRenamer
                     {
                         logger.TraceMessage(string.Format("Mapping found {0}", mapping.FileShowName));
                         ShowEditShowWindow(tempEp, mapping);
+                    }
+                    else
+                    {
+                        WriteNewLineToTextBox(string.Format("Mapping could not be found!"));
                     }
                 }
             }
