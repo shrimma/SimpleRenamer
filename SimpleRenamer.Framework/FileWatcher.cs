@@ -34,6 +34,7 @@ namespace SimpleRenamer.Framework
         }
         public async Task<List<string>> SearchTheseFoldersAsync(CancellationToken ct)
         {
+            logger.TraceMessage("SearchTheseFoldersAsync - Start");
             List<string> foundFiles = new List<string>();
             IgnoreList ignoreList = await ignoreListFramework.ReadIgnoreListAsync();
 
@@ -55,6 +56,7 @@ namespace SimpleRenamer.Framework
                 ct.ThrowIfCancellationRequested();
             }
 
+            logger.TraceMessage("SearchTheseFoldersAsync - End");
             return foundFiles;
         }
 
@@ -66,6 +68,7 @@ namespace SimpleRenamer.Framework
         /// <returns></returns>
         private List<string> SearchThisFolder(string dir, IgnoreList ignoreList)
         {
+            logger.TraceMessage("SearchThisFolder - Start");
             List<string> foundFiles = new List<string>();
             foreach (string file in Directory.GetFiles(dir, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
@@ -75,6 +78,7 @@ namespace SimpleRenamer.Framework
                 }
             }
 
+            logger.TraceMessage("SearchThisFolder - End");
             return foundFiles;
         }
 
@@ -86,13 +90,17 @@ namespace SimpleRenamer.Framework
         /// <returns></returns>
         private bool IsValidExtension(string input)
         {
+            logger.TraceMessage("SearchThisFolderIsValidExtension - Start");
             foreach (string extension in settings.ValidExtensions)
             {
                 if (input.ToLowerInvariant().Equals(extension.ToLowerInvariant()))
                 {
+                    logger.TraceMessage("SearchThisFolderIsValidExtension - True");
                     return true;
                 }
             }
+
+            logger.TraceMessage("SearchThisFolderIsValidExtension - False");
             return false;
         }
     }

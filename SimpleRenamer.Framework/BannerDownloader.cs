@@ -9,22 +9,33 @@ namespace SimpleRenamer.Framework
     public class BannerDownloader : IBannerDownloader
     {
         private string apiKey;
+        private ILogger logger;
+        private TheTvdbManager tvdbManager;
 
-        public BannerDownloader(IConfigurationManager configurationManager)
+        public BannerDownloader(IConfigurationManager configurationManager, ILogger log)
         {
             if (configurationManager == null)
             {
                 throw new ArgumentNullException(nameof(configurationManager));
             }
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+            //grab our API key and init a new tvdb manager
             apiKey = configurationManager.TvDbApiKey;
+            tvdbManager = new TheTvdbManager(apiKey);
+
+            //init our logger
+            logger = log;
         }
 
         public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder)
         {
+            logger.TraceMessage("SaveBannerAsync - Start");
             string fullBannerPath = Path.Combine(destinationFolder, "Folder.jpg");
             if (!File.Exists(fullBannerPath))
             {
-                TheTvdbManager tvdbManager = new TheTvdbManager(apiKey);
                 using (Stream stream = await tvdbManager.GetBanner(tvdbBannerPath))
                 {
                     using (FileStream fileStream = File.Create(fullBannerPath, (int)stream.Length))
@@ -37,6 +48,7 @@ namespace SimpleRenamer.Framework
                 }
             }
 
+            logger.TraceMessage("SaveBannerAsync - End");
             return true;
         }
     }

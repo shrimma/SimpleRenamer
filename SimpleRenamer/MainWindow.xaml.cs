@@ -92,7 +92,7 @@ namespace SimpleRenamer
         {
             try
             {
-                WriteNewLineToTextBox("Closing");
+                logger.TraceMessage("Closing");
                 if (!RunButton.IsEnabled)
                 {
                     e.Cancel = true;
@@ -119,16 +119,15 @@ namespace SimpleRenamer
             CancelButton.IsEnabled = true;
             try
             {
-                LogTextBox.Text = string.Format("{0} - Starting", DateTime.Now.ToShortTimeString());
+                logger.TraceMessage(string.Format("Starting"));
                 List<string> videoFiles = await fileWatcher.SearchTheseFoldersAsync(cts.Token);
-                WriteNewLineToTextBox(string.Format("Found {0} files within the watch folders", videoFiles.Count));
+                logger.TraceMessage(string.Format("Found {0} files within the watch folders", videoFiles.Count));
                 await MatchTVShows(videoFiles, cts.Token);
-                WriteNewLineToTextBox(string.Format("Matched {0} files", scannedEpisodes.Count));
+                logger.TraceMessage(string.Format("Matched {0} files", scannedEpisodes.Count));
             }
             catch (OperationCanceledException)
             {
-                WriteNewLineToTextBox("User canceled scan.");
-                logger.TraceMessage("User cancelled scan");
+                logger.TraceMessage("User canceled scan");
             }
             catch (Exception ex)
             {
@@ -136,7 +135,7 @@ namespace SimpleRenamer
             }
             finally
             {
-                WriteNewLineToTextBox("Finished");
+                logger.TraceMessage("Finished");
                 RunButton.IsEnabled = true;
                 SettingsButton.IsEnabled = true;
                 CancelButton.IsEnabled = false;
@@ -163,12 +162,6 @@ namespace SimpleRenamer
             }
         }
 
-        private void WriteNewLineToTextBox(string text)
-        {
-            LogTextBox.Text += string.Format("\n{0} - {1}", DateTime.Now.ToShortTimeString(), text);
-            logger.TraceMessage(text);
-        }
-
         public async Task MatchTVShows(List<string> videoFiles, CancellationToken ct)
         {
             try
@@ -180,7 +173,7 @@ namespace SimpleRenamer
                 //spin up a task for each file
                 foreach (string fileName in videoFiles)
                 {
-                    WriteNewLineToTextBox(string.Format("Trying to match {0}", fileName));
+                    logger.TraceMessage(string.Format("Trying to match {0}", fileName));
                     tasks.Add(fileMatcher.SearchFileNameAsync(fileName));
                 }
                 //as each task completes
@@ -191,7 +184,7 @@ namespace SimpleRenamer
                     TVEpisodeScrape scrapeResult = null;
                     if (tempEp != null)
                     {
-                        WriteNewLineToTextBox(string.Format("Matched {0}", tempEp.EpisodeName));
+                        logger.TraceMessage(string.Format("Matched {0}", tempEp.EpisodeName));
                         //scrape the episode name and incorporate this in the filename (if setting allows)
                         if (settings.RenameFiles)
                         {
@@ -211,7 +204,7 @@ namespace SimpleRenamer
                         {
                             tempEp.NewFileName = Path.GetFileNameWithoutExtension(tempEp.FilePath);
                         }
-                        WriteNewLineToTextBox(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
+                        logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
                         //only add the file if it needs renaming/moving
                         int season;
                         int.TryParse(tempEp.Season, out season);
@@ -219,17 +212,17 @@ namespace SimpleRenamer
                         string destinationFilePath = Path.Combine(destinationDirectory, tempEp.NewFileName + Path.GetExtension(tempEp.FilePath));
                         if (!tempEp.FilePath.Equals(destinationFilePath))
                         {
-                            WriteNewLineToTextBox(string.Format("Will move with name {0}", tempEp.NewFileName));
+                            logger.TraceMessage(string.Format("Will move with name {0}", tempEp.NewFileName));
                             scannedEpisodes.Add(tempEp);
                         }
                         else
                         {
-                            WriteNewLineToTextBox(string.Format("File is already in good location {0}", tempEp.FilePath));
+                            logger.TraceMessage(string.Format("File is already in good location {0}", tempEp.FilePath));
                         }
                     }
                     else
                     {
-                        WriteNewLineToTextBox(string.Format("Couldn't find a match!"));
+                        logger.TraceMessage(string.Format("Couldn't find a match!"));
                     }
                 }
                 if (showNameMapping.Mappings != originalMapping.Mappings || showNameMapping.Mappings.Count != originalMapping.Mappings.Count)
@@ -257,7 +250,7 @@ namespace SimpleRenamer
                 {
                     if (!ep.ActionThis)
                     {
-                        WriteNewLineToTextBox(string.Format("Skipped {0} as user chose not to action.", ep.FilePath));
+                        logger.TraceMessage(string.Format("Skipped {0} as user chose not to action.", ep.FilePath));
                         FileMoveProgressBar.Value++;
                     }
                     else
@@ -283,7 +276,7 @@ namespace SimpleRenamer
                                 if (result.Success)
                                 {
                                     ProcessFiles.Add(result);
-                                    WriteNewLineToTextBox(string.Format("Successfully processed file without banners: {0}", result.Episode.FilePath));
+                                    logger.TraceMessage(string.Format("Successfully processed file without banners: {0}", result.Episode.FilePath));
                                 }
                                 FileMoveProgressBar.Value++;
                             }
@@ -295,11 +288,11 @@ namespace SimpleRenamer
                                 {
                                     ProcessFiles.Add(result);
                                     uniqueShowSeasons.Add(showSeason);
-                                    WriteNewLineToTextBox(string.Format("Successfully processed file and downloaded banners: {0}", result.Episode.FilePath));
+                                    logger.TraceMessage(string.Format("Successfully processed file and downloaded banners: {0}", result.Episode.FilePath));
                                 }
                                 else
                                 {
-                                    WriteNewLineToTextBox(string.Format("Failed to process {0}", result.Episode.FilePath));
+                                    logger.TraceMessage(string.Format("Failed to process {0}", result.Episode.FilePath));
                                 }
                                 FileMoveProgressBar.Value++;
                             }
@@ -310,7 +303,7 @@ namespace SimpleRenamer
                             if (result.Success)
                             {
                                 ProcessFiles.Add(result);
-                                WriteNewLineToTextBox(string.Format("Successfully processed file without renaming: {0}", result.Episode.FilePath));
+                                logger.TraceMessage(string.Format("Successfully processed file without renaming: {0}", result.Episode.FilePath));
                             }
                         }
                     }
@@ -349,7 +342,7 @@ namespace SimpleRenamer
             try
             {
                 //process the folders and jpg downloads async
-                LogTextBox.Text = string.Format("{0} - Starting", DateTime.Now.ToShortTimeString());
+                logger.TraceMessage(string.Format("Starting"));
                 List<FileMoveResult> filesToMove = await ProcessTVShows(cts.Token);
 
                 if (filesToMove != null && filesToMove.Count > 0)
@@ -359,8 +352,7 @@ namespace SimpleRenamer
             }
             catch (OperationCanceledException)
             {
-                WriteNewLineToTextBox("User canceled actions.");
-                logger.TraceMessage("User cancelled scan");
+                logger.TraceMessage("User canceled actions");
             }
             catch (Exception ex)
             {
@@ -368,7 +360,7 @@ namespace SimpleRenamer
             }
             finally
             {
-                WriteNewLineToTextBox("Finished");
+                logger.TraceMessage("Finished");
                 RunButton.IsEnabled = true;
                 SettingsButton.IsEnabled = true;
                 CancelButton.IsEnabled = false;
@@ -392,11 +384,11 @@ namespace SimpleRenamer
                     if (result)
                     {
                         scannedEpisodes.Remove(fmr.Episode);
-                        WriteNewLineToTextBox(string.Format("Successfully {2} {0} to {1}", fmr.Episode.FilePath, fmr.DestinationFilePath, settings.CopyFiles ? "copied" : "moved"));
+                        logger.TraceMessage(string.Format("Successfully {2} {0} to {1}", fmr.Episode.FilePath, fmr.DestinationFilePath, settings.CopyFiles ? "copied" : "moved"));
                     }
                     else
                     {
-                        WriteNewLineToTextBox(string.Format("Failed to {2} {0} to {1}", fmr.Episode.FilePath, fmr.DestinationFilePath, settings.CopyFiles ? "copy" : "move"));
+                        logger.TraceMessage(string.Format("Failed to {2} {0} to {1}", fmr.Episode.FilePath, fmr.DestinationFilePath, settings.CopyFiles ? "copy" : "move"));
                     }
                 }
                 //add a bit of delay before the progress bar disappears
@@ -500,17 +492,17 @@ namespace SimpleRenamer
         {
             try
             {
-                WriteNewLineToTextBox("Edit button clicked");
+                logger.TraceMessage("Edit button clicked");
                 TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
-                WriteNewLineToTextBox(string.Format("For show {0}, season {1}, episode {2}", tempEp.ShowName, tempEp.Season, tempEp.Episode));
+                logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}", tempEp.ShowName, tempEp.Season, tempEp.Episode));
                 ShowNameMapping snm = await tvShowMatcher.ReadMappingFileAsync();
                 if (snm != null && snm.Mappings.Count > 0)
                 {
-                    WriteNewLineToTextBox(string.Format("Mappings available"));
+                    logger.TraceMessage(string.Format("Mappings available"));
                     Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(tempEp.TVDBShowId)).FirstOrDefault();
                     if (mapping != null)
                     {
-                        WriteNewLineToTextBox(string.Format("Mapping found {0}", mapping.FileShowName));
+                        logger.TraceMessage(string.Format("Mapping found {0}", mapping.FileShowName));
                         ShowEditShowWindow(tempEp, mapping);
                     }
                 }

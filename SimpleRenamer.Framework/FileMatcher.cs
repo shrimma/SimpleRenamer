@@ -25,6 +25,7 @@ namespace SimpleRenamer.Framework
 
         public async Task<TVEpisode> SearchFileNameAsync(string fileName)
         {
+            logger.TraceMessage("SearchFileNameAsync - Start");
             string showname = null;
             string season = null;
             string episode = null;
@@ -45,6 +46,7 @@ namespace SimpleRenamer.Framework
 
                         if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
                         {
+                            logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
                             return new TVEpisode(fileName, showname, season, episode);
                         }
                     }
@@ -55,15 +57,19 @@ namespace SimpleRenamer.Framework
                 logger.TraceException(ex);
                 return null;
             }
+
+            logger.TraceMessage("SearchFileNameAsync - End NULL");
             return null;
         }
 
         public async Task<RegexFile> ReadExpressionFileAsync()
         {
+            logger.TraceMessage("ReadExpressionFileAsync - Start");
             RegexFile snm = new RegexFile();
             //if the file doesn't yet exist then set a new version
             if (!File.Exists(regexFilePath))
             {
+                logger.TraceMessage("ReadExpressionFileAsync - File doesn't exist so returning new object");
                 return snm;
             }
             else
@@ -73,12 +79,14 @@ namespace SimpleRenamer.Framework
                     XmlSerializer serializer = new XmlSerializer(typeof(RegexFile));
                     snm = (RegexFile)serializer.Deserialize(fs);
                 }
+                logger.TraceMessage("ReadExpressionFileAsync - File exists returning populated expressions");
                 return snm;
             }
         }
 
         public async Task<bool> WriteExpressionFileAsync(RegexFile regexMatchers)
         {
+            logger.TraceMessage("WriteExpressionFileAsync - Start");
             //only write the file if there is data
             if (regexMatchers != null && regexMatchers.RegexExpressions.Count > 0)
             {
@@ -89,11 +97,13 @@ namespace SimpleRenamer.Framework
                 }
             }
 
+            logger.TraceMessage("WriteExpressionFileAsync - End");
             return true;
         }
 
         private string GetTrueShowName(string input)
         {
+            logger.TraceMessage("GetTrueShowName - Start");
             string output = null;
             string[] words = input.Split('.');
             int i = 1;
@@ -110,18 +120,23 @@ namespace SimpleRenamer.Framework
                 }
                 i++;
             }
+
+            logger.TraceMessage("GetTrueShowName - End");
             return output.Trim();
         }
 
         private bool IsJoiningWord(string input)
         {
+            logger.TraceMessage("IsJoiningWord - Start");
             foreach (string word in JoiningWords)
             {
                 if (input.Equals(word.ToLowerInvariant()))
                 {
+                    logger.TraceMessage("IsJoiningWord - True");
                     return true;
                 }
             }
+            logger.TraceMessage("IsJoiningWord - False");
             return false;
         }
         private string[] JoiningWords

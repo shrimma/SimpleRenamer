@@ -23,6 +23,7 @@ namespace SimpleRenamer.Framework
         private static string ignoreFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "IgnoreFileList.xml");
         public async Task<IgnoreList> ReadIgnoreListAsync()
         {
+            logger.TraceMessage("ReadIgnoreListAsync - Start");
             IgnoreList snm = new IgnoreList();
             //if the file doesn't yet exist then set a new version
             if (!File.Exists(ignoreFilePath))
@@ -44,6 +45,7 @@ namespace SimpleRenamer.Framework
 
         public async Task<bool> WriteIgnoreListAsync(IgnoreList ignoreList)
         {
+            logger.TraceMessage("WriteIgnoreListAsync - Start");
             //only write the file if there is data
             if (ignoreList != null && ignoreList.IgnoreFiles.Count > 0)
             {
@@ -59,6 +61,7 @@ namespace SimpleRenamer.Framework
                 logger.TraceMessage(string.Format("Ignore list empty so not writing the file {0}", ignoreFilePath));
             }
 
+            logger.TraceMessage("WriteIgnoreListAsync - End");
             return true;
         }
     }

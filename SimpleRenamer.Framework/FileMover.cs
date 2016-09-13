@@ -35,6 +35,7 @@ namespace SimpleRenamer.Framework
 
         public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, bool downloadBanner)
         {
+            logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - Start");
             FileMoveResult result = new FileMoveResult(true, episode);
             string ext = Path.GetExtension(episode.FilePath);
             int season;
@@ -80,11 +81,14 @@ namespace SimpleRenamer.Framework
                 logger.TraceException(ex);
                 //we don't really care if image download fails
             }
+
+            logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - End");
             return result;
         }
 
         public async Task<bool> MoveFileAsync(TVEpisode episode, string destinationFilePath)
         {
+            logger.TraceMessage("MoveFileAsync - Start");
             try
             {
                 FileInfo fromFile = new FileInfo(episode.FilePath);
@@ -97,6 +101,8 @@ namespace SimpleRenamer.Framework
                 {
                     CopyItOurself(settings, fromFile, toFile);
                 }
+
+                logger.TraceMessage("MoveFileAsync - End");
                 return true;
             }
             catch (Exception ex)
@@ -108,11 +114,13 @@ namespace SimpleRenamer.Framework
 
         private bool QuickOperation(FileInfo fromFile, FileInfo toFile)
         {
+            logger.TraceMessage("QuickOperation - Start");
             if ((fromFile == null) || (toFile == null) || (fromFile.Directory == null) || (toFile.Directory == null))
             {
                 return false;
             }
 
+            logger.TraceMessage("QuickOperation - End");
             return (settings.RenameFiles && !settings.CopyFiles && (fromFile.Directory.Root.FullName.ToLower() == toFile.Directory.Root.FullName.ToLower())); // same device ... TODO: UNC paths?
         }
 
@@ -138,6 +146,7 @@ namespace SimpleRenamer.Framework
 
         private void OSMoveRename(FileInfo fromFile, FileInfo toFile)
         {
+            logger.TraceMessage("OSMoveRename - Start");
             try
             {
                 if (FileIsSame(fromFile, toFile))
@@ -158,6 +167,7 @@ namespace SimpleRenamer.Framework
             {
                 logger.TraceException(ex);
             }
+            logger.TraceMessage("OSMoveRename - End");
         }
 
         private bool OnMono()
@@ -176,6 +186,7 @@ namespace SimpleRenamer.Framework
 
         private void CopyItOurself(Settings settings, FileInfo fromFile, FileInfo toFile)
         {
+            logger.TraceMessage("CopyItOurself - Start");
             const int kArrayLength = 1 * 1024 * 1024;
             Byte[] dataArray = new Byte[kArrayLength];
 
@@ -287,6 +298,8 @@ namespace SimpleRenamer.Framework
                     NicelyStopAndCleanUp_Streams(msr, msw, toFile);
                 }
             }
+
+            logger.TraceMessage("CopyItOurself - Start");
         }
 
         private void NicelyStopAndCleanUp_Win32(WinFileIO copier, FileInfo toFile)

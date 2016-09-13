@@ -20,6 +20,7 @@ namespace SimpleRenamer.Framework
         private string selectedSeriesId;
         private ILogger logger;
         private Settings settings;
+        private TheTvdbManager tvdbManager;
 
         public TVShowMatcher(IConfigurationManager configurationManager, ILogger log, ISettingsFactory settingsFactory)
         {
@@ -37,6 +38,7 @@ namespace SimpleRenamer.Framework
             }
 
             apiKey = configurationManager.TvDbApiKey;
+            tvdbManager = new TheTvdbManager(apiKey);
             logger = log;
             settings = settingsFactory.GetSettings();
         }
@@ -49,6 +51,7 @@ namespace SimpleRenamer.Framework
         /// <returns></returns>
         public async Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode, ShowNameMapping showNameMapping)
         {
+            logger.TraceMessage("ScrapeDetailsAsync - Start");
             //read the mapping file and try and find any already selected matches
             episode = FixMismatchTitles(episode, showNameMapping);
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
@@ -64,6 +67,8 @@ namespace SimpleRenamer.Framework
 
             //generate the new file name
             episodeScrape.tvep = GenerateFileName(episodeScrape.tvep);
+
+            logger.TraceMessage("ScrapeDetailsAsync - End");
             return episodeScrape;
         }
 
@@ -75,6 +80,7 @@ namespace SimpleRenamer.Framework
         /// <returns></returns>
         private TVEpisode FixMismatchTitles(TVEpisode episode, ShowNameMapping showNameMapping)
         {
+            logger.TraceMessage("FixMismatchTitles - Start");
             if (showNameMapping != null && showNameMapping.Mappings != null && showNameMapping.Mappings.Count > 0)
             {
                 foreach (Mapping m in showNameMapping.Mappings)
@@ -89,20 +95,23 @@ namespace SimpleRenamer.Framework
                         {
                             episode.ShowName = m.TVDBShowName;
                         }
-                        return episode;
+                        break;
                     }
                 }
             }
 
+            logger.TraceMessage("FixMismatchTitles - End");
             return episode;
         }
 
         public async Task<ShowNameMapping> ReadMappingFileAsync()
         {
+            logger.TraceMessage("ReadMappingFileAsync - Start");
             ShowNameMapping snm = new ShowNameMapping();
             //if the file doesn't yet exist then set a new version
             if (!File.Exists(mappingFilePath))
             {
+                logger.TraceMessage("ReadMappingFileAsync - File doesn't yet exist so returning new object");
                 return snm;
             }
             else
@@ -112,12 +121,14 @@ namespace SimpleRenamer.Framework
                     XmlSerializer serializer = new XmlSerializer(typeof(ShowNameMapping));
                     snm = (ShowNameMapping)serializer.Deserialize(fs);
                 }
+                logger.TraceMessage("ReadMappingFileAsync - File exists so returning populated object");
                 return snm;
             }
         }
 
         public async Task<bool> WriteMappingFileAsync(ShowNameMapping showNameMapping)
         {
+            logger.TraceMessage("WriteMappingFileAsync - Start");
             //only write the file if there is data
             if (showNameMapping != null && showNameMapping.Mappings.Count > 0)
             {
@@ -128,6 +139,7 @@ namespace SimpleRenamer.Framework
                 }
             }
 
+            logger.TraceMessage("WriteMappingFileAsync - End");
             return true;
         }
 
@@ -139,8 +151,8 @@ namespace SimpleRenamer.Framework
         /// <returns></returns>
         private async Task<TVEpisodeScrape> ScrapeShowAsync(TVEpisode episode)
         {
+            logger.TraceMessage("ScrapeShowAsync - Start");
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
-            TheTvdbManager tvdbManager = new TheTvdbManager(apiKey);
             var series = await tvdbManager.SearchSeries(episode.ShowName, Language.English);
             var seriesList = series.GetEnumerator();
             string seriesId = string.Empty;
@@ -168,18 +180,20 @@ namespace SimpleRenamer.Framework
                     episodeScrape.tvep = episode;
                 }
             }
+
+            logger.TraceMessage("ScrapeShowAsync - End");
             return episodeScrape;
         }
 
         private async Task<TVEpisodeScrape> ScrapeSpecificShow(TVEpisode episode, string seriesId, bool newMatch)
         {
+            logger.TraceMessage("ScrapeSpecificShow - Start");
             uint season = 0;
             uint.TryParse(episode.Season, out season);
             int episodeNumber = 0;
             int.TryParse(episode.Episode, out episodeNumber);
             uint serId = 0;
             uint.TryParse(seriesId, out serId);
-            TheTvdbManager tvdbManager = new TheTvdbManager(apiKey);
             Series matchedSeries = await tvdbManager.GetSeries(serId, Language.English);
             episode.ShowName = matchedSeries.Title;
             episode.EpisodeName = matchedSeries.Episodes.Where(s => s.SeasonNumber.Value == season && s.Number == episodeNumber).FirstOrDefault().Title;
@@ -194,17 +208,18 @@ namespace SimpleRenamer.Framework
                 episode.ShowImage = seriesBanners.OrderByDescending(s => s.Rating).FirstOrDefault().RemotePath;
             }
 
+            logger.TraceMessage("ScrapeSpecificShow - End");
             return new TVEpisodeScrape(episode, matchedSeries);
         }
 
         public async Task<TVEpisode> SelectShowFromList(TVEpisode episode)
         {
+            logger.TraceMessage("SelectShowFromList - Start");
             uint season = 0;
             uint.TryParse(episode.Season, out season);
             int episodeNumber = 0;
             int.TryParse(episode.Episode, out episodeNumber);
 
-            TheTvdbManager tvdbManager = new TheTvdbManager(apiKey);
             var series = await tvdbManager.SearchSeries(episode.ShowName, Language.English);
 
             taskComplete = new TaskCompletionSource<bool>();
@@ -263,6 +278,7 @@ namespace SimpleRenamer.Framework
                 episodeScrape.tvep = episode;
             }
 
+            logger.TraceMessage("SelectShowFromList - End");
             return episodeScrape.tvep;
         }
 
@@ -280,6 +296,8 @@ namespace SimpleRenamer.Framework
         /// <returns></returns>
         private TVEpisode GenerateFileName(TVEpisode episode)
         {
+            logger.TraceMessage("GenerateFileName - Start");
+
             string temp = settings.NewFileNameFormat;
             if (temp.Contains("{ShowName}"))
             {
@@ -298,13 +316,17 @@ namespace SimpleRenamer.Framework
                 temp = temp.Replace("{EpisodeName}", string.IsNullOrEmpty(episode.EpisodeName) ? "" : RemoveSpecialCharacters(episode.EpisodeName));
             }
             episode.NewFileName = temp;
+
+            logger.TraceMessage("GenerateFileName - End");
             return episode;
         }
 
-        private static string RemoveSpecialCharacters(string input)
+        private string RemoveSpecialCharacters(string input)
         {
+            logger.TraceMessage("RemoveSpecialCharacters - Start");
             string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
             Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+            logger.TraceMessage("RemoveSpecialCharacters - End");
             return r.Replace(input, "");
         }
     }
