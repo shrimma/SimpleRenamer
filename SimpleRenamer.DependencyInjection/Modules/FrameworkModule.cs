@@ -10,7 +10,7 @@ namespace SimpleRenamer.DependencyInjection.Modules
         {
             Bind<ILogger>().To<Logger>().InSingletonScope();
             Bind<IBackgroundQueue>().To<BackgroundQueue>().InSingletonScope();
-            Bind<IConfigurationManager>().To<AppConfigurationManager>();
+            Bind<IConfigurationManager>().To<AppConfigurationManager>().InSingletonScope();
         }
     }
 }

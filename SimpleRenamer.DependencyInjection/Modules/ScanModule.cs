@@ -8,9 +8,9 @@ namespace SimpleRenamer.DependencyInjection.Modules
     {
         public override void Load()
         {
-            Bind<IFileMatcher>().To<FileMatcher>();
-            Bind<IFileWatcher>().To<FileWatcher>();
-            Bind<ITVShowMatcher>().To<TVShowMatcher>();
+            Bind<IFileMatcher>().To<FileMatcher>().InSingletonScope();
+            Bind<IFileWatcher>().To<FileWatcher>().InSingletonScope();
+            Bind<ITVShowMatcher>().To<TVShowMatcher>().InSingletonScope();
         }
     }
 }

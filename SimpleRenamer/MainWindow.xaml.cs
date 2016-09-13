@@ -347,7 +347,7 @@ namespace SimpleRenamer
 
                 if (filesToMove != null && filesToMove.Count > 0)
                 {
-                    await MoveTVShows(filesToMove, settings, cts.Token);
+                    await MoveTVShows(filesToMove, cts.Token);
                 }
             }
             catch (OperationCanceledException)
@@ -369,7 +369,7 @@ namespace SimpleRenamer
             }
         }
 
-        public async Task MoveTVShows(List<FileMoveResult> filesToMove, Settings settings, CancellationToken ct)
+        public async Task MoveTVShows(List<FileMoveResult> filesToMove, CancellationToken ct)
         {
             try
             {

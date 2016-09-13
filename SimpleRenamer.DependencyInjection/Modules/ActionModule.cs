@@ -8,9 +8,9 @@ namespace SimpleRenamer.DependencyInjection.Modules
     {
         public override void Load()
         {
-            Bind<IFileMover>().To<FileMover>();
-            Bind<IBannerDownloader>().To<BannerDownloader>();
-            Bind<IIgnoreListFramework>().To<IgnoreListFramework>();
+            Bind<IFileMover>().To<FileMover>().InSingletonScope();
+            Bind<IBannerDownloader>().To<BannerDownloader>().InSingletonScope();
+            Bind<IIgnoreListFramework>().To<IgnoreListFramework>().InSingletonScope();
         }
     }
 }
