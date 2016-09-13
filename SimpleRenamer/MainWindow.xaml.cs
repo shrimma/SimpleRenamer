@@ -207,7 +207,7 @@ namespace SimpleRenamer
                         {
                             tempEp.NewFileName = Path.GetFileNameWithoutExtension(tempEp.FilePath);
                         }
-                        WriteNewLineToTextBox(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
+                        WriteNewLineToTextBox(string.Format("Matched: {0} - S{1}E{2} - {3} - TVDBShowId: {4}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName, tempEp.TVDBShowId));
                         //only add the file if it needs renaming/moving
                         int season;
                         int.TryParse(tempEp.Season, out season);
@@ -487,7 +487,9 @@ namespace SimpleRenamer
         {
             try
             {
+                WriteNewLineToTextBox("Show Detail button clicked");
                 TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
+                WriteNewLineToTextBox(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
                 ShowDetailsForm sdf = new ShowDetailsForm(tempEp.TVDBShowId);
                 sdf.ShowDialog();
             }
@@ -503,7 +505,7 @@ namespace SimpleRenamer
             {
                 WriteNewLineToTextBox("Edit button clicked");
                 TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
-                WriteNewLineToTextBox(string.Format("For show {0}, season {1}, episode {2}", tempEp.ShowName, tempEp.Season, tempEp.Episode));
+                WriteNewLineToTextBox(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
                 ShowNameMapping snm = TVShowMatcher.ReadMappingFile();
                 if (snm != null && snm.Mappings.Count > 0)
                 {
@@ -513,6 +515,10 @@ namespace SimpleRenamer
                     {
                         WriteNewLineToTextBox(string.Format("Mapping found {0}", mapping.FileShowName));
                         ShowEditShowWindow(settings, tempEp, mapping);
+                    }
+                    else
+                    {
+                        WriteNewLineToTextBox(string.Format("Mapping could not be found!"));
                     }
                 }
             }

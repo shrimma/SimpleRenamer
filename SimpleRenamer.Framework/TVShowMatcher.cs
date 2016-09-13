@@ -153,6 +153,7 @@ namespace SimpleRenamer.Framework
             uint.TryParse(seriesId, out serId);
             TheTvdbManager tvdbManager = new TheTvdbManager(apiKey);
             Series matchedSeries = await tvdbManager.GetSeries(serId, Language.English);
+            episode.TVDBShowId = seriesId;
             episode.ShowName = matchedSeries.Title;
             episode.EpisodeName = matchedSeries.Episodes.Where(s => s.SeasonNumber.Value == season && s.Number == episodeNumber).FirstOrDefault().Title;
             List<SeasonBanner> seasonBanners = matchedSeries.Banners.OfType<SeasonBanner>().Where(s => s.Season.Value == season && s.IsWide == false && s.Language == Language.English).ToList();
