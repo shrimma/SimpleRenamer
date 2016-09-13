@@ -156,7 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SimpleRenamer.DependencyInjection\SimpleRenamer.DependencyInjection.csproj">
-      <Project>{332B44B6-606C-4330-B5E7-90268DBB6E1F}</Project>
+      <Project>{332b44b6-606c-4330-b5e7-90268dbb6e1f}</Project>
       <Name>SimpleRenamer.DependencyInjection</Name>
     </ProjectReference>
     <ProjectReference Include="..\SimpleRenamer.Framework\SimpleRenamer.Framework.csproj">

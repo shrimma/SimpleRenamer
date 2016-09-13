@@ -98,7 +98,6 @@
     <Compile Include="Interface\ITVShowMatcher.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="IgnoreListFramework.cs" />
-    <Compile Include="InverseBooleanConverter.cs" />
     <Compile Include="PerformActionsOnShows.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FileMatcher.cs" />

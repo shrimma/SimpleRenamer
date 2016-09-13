@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleRenamer.Framework.Interface;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,11 @@ namespace SimpleRenamer.Framework
     /// </summary>
     public partial class ShowDetailsForm : Window
     {
+        private ILogger logger;
+        public ShowDetailsForm(ILogger log)
+        {
+            logger = log;
+        }
         private static string apiKey = "820147144A5BB54E";
         public ShowDetailsForm(string showId)
         {
@@ -24,7 +30,7 @@ namespace SimpleRenamer.Framework
             }
             catch (Exception ex)
             {
-                Logger.TraceException(ex);
+                logger.TraceException(ex);
             }
         }
 

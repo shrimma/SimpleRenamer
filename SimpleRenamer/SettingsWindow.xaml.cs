@@ -1,8 +1,7 @@
-﻿using SimpleRenamer.Framework;
+﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.Interface;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Configuration;
 using System.IO;
 using System.Windows;
 using System.Windows.Forms;
@@ -14,16 +13,18 @@ namespace SimpleRenamer
     /// </summary>
     public partial class SettingsWindow : Window
     {
-        public static Settings currentSettings;
-        public static Settings oldSettings;
+        public Settings currentSettings;
+        public Settings oldSettings;
         public ObservableCollection<string> watchFolders;
         public ObservableCollection<string> validExtensions;
+        private ISettingsFactory settingsFactory;
 
-        public SettingsWindow()
+        public SettingsWindow(ISettingsFactory settingsFact)
         {
             InitializeComponent();
-            currentSettings = GetSettings();
-            oldSettings = GetSettings();
+            settingsFactory = settingsFact;
+            currentSettings = settingsFactory.GetSettings();
+            oldSettings = settingsFactory.GetSettings();
             this.DataContext = currentSettings;
             watchFolders = new ObservableCollection<string>(currentSettings.WatchFolders);
             WatchListBox.ItemsSource = watchFolders;
@@ -31,38 +32,9 @@ namespace SimpleRenamer
             ExtensionsListBox.ItemsSource = validExtensions;
         }
 
-        public Settings GetSettings()
-        {
-            Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            Settings mySettings = new Settings();
-            mySettings.SubDirectories = bool.Parse(configuration.AppSettings.Settings["SubDirectories"].Value);
-            mySettings.RenameFiles = bool.Parse(configuration.AppSettings.Settings["RenameFiles"].Value);
-            mySettings.CopyFiles = bool.Parse(configuration.AppSettings.Settings["CopyFiles"].Value);
-            mySettings.NewFileNameFormat = configuration.AppSettings.Settings["NewFileNameFormat"].Value;
-            mySettings.ValidExtensions = new List<string>(configuration.AppSettings.Settings["ValidExtensions"].Value.Split(new char[] { ';' }));
-            mySettings.WatchFolders = new List<string>(configuration.AppSettings.Settings["WatchFolders"].Value.Split(new char[] { ';' }));
-            mySettings.DestinationFolder = configuration.AppSettings.Settings["DestinationFolder"].Value;
-
-            return mySettings;
-        }
-
-        public void SaveSettings(Settings settings)
-        {
-            Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            configuration.AppSettings.Settings["SubDirectories"].Value = settings.SubDirectories.ToString();
-            configuration.AppSettings.Settings["RenameFiles"].Value = settings.RenameFiles.ToString();
-            configuration.AppSettings.Settings["CopyFiles"].Value = settings.CopyFiles.ToString();
-            configuration.AppSettings.Settings["NewFileNameFormat"].Value = settings.NewFileNameFormat;
-            configuration.AppSettings.Settings["ValidExtensions"].Value = string.Join(";", validExtensions);
-            configuration.AppSettings.Settings["WatchFolders"].Value = string.Join(";", watchFolders);
-            configuration.AppSettings.Settings["DestinationFolder"].Value = settings.DestinationFolder;
-            configuration.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
-        }
-
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            SaveSettings(currentSettings);
+            settingsFactory.SaveSettings(currentSettings);
             this.Close();
         }
 

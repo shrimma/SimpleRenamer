@@ -47,8 +47,8 @@ namespace SimpleRenamer.Framework
             List<ShowSeason> uniqueShowSeasons = new List<ShowSeason>();
             List<FileMoveResult> ProcessFiles = new List<FileMoveResult>();
             ShowNameMapping snm = await tvShowMatcher.ReadMappingFileAsync();
-            FileMoveProgressBar.Value = 0;
-            FileMoveProgressBar.Maximum = scannedEpisodes.Count;
+            //FileMoveProgressBar.Value = 0;
+            //FileMoveProgressBar.Maximum = scannedEpisodes.Count;
             try
             {
                 foreach (TVEpisode ep in scannedEpisodes)
@@ -56,7 +56,7 @@ namespace SimpleRenamer.Framework
                     if (!ep.ActionThis)
                     {
                         logger.TraceMessage(string.Format("Skipped {0} as user chose not to action.", ep.FilePath));
-                        FileMoveProgressBar.Value++;
+                        //FileMoveProgressBar.Value++;
                     }
                     else
                     {
@@ -83,7 +83,7 @@ namespace SimpleRenamer.Framework
                                     ProcessFiles.Add(result);
                                     logger.TraceMessage(string.Format("Successfully processed file without banners: {0}", result.Episode.FilePath));
                                 }
-                                FileMoveProgressBar.Value++;
+                                //FileMoveProgressBar.Value++;
                             }
                             else
                             {
@@ -99,7 +99,7 @@ namespace SimpleRenamer.Framework
                                 {
                                     logger.TraceMessage(string.Format("Failed to process {0}", result.Episode.FilePath));
                                 }
-                                FileMoveProgressBar.Value++;
+                                //FileMoveProgressBar.Value++;
                             }
                         }
                         else
@@ -125,17 +125,17 @@ namespace SimpleRenamer.Framework
         {
             try
             {
-                FileMoveProgressBar.Value = 0;
-                FileMoveProgressBar.Maximum = filesToMove.Count;
+                //FileMoveProgressBar.Value = 0;
+                //FileMoveProgressBar.Maximum = filesToMove.Count;
                 //actually move/copy the files one at a time
                 foreach (FileMoveResult fmr in filesToMove)
                 {
                     ct.ThrowIfCancellationRequested();
                     bool result = await await backgroundQueue.QueueTask(() => fileMover.MoveFileAsync(fmr.Episode, fmr.DestinationFilePath));
-                    FileMoveProgressBar.Value++;
+                    //FileMoveProgressBar.Value++;
                     if (result)
                     {
-                        scannedEpisodes.Remove(fmr.Episode);
+                        //scannedEpisodes.Remove(fmr.Episode);
                         logger.TraceMessage(string.Format("Successfully {2} {0} to {1}", fmr.Episode.FilePath, fmr.DestinationFilePath, settings.CopyFiles ? "copied" : "moved"));
                     }
                     else

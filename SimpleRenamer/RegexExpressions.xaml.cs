@@ -1,4 +1,5 @@
-﻿using SimpleRenamer.Framework;
+﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.Interface;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -13,11 +14,17 @@ namespace SimpleRenamer
         private RegexFile currentRegex;
         private RegexFile oldRegex;
         public ObservableCollection<RegexExpression> regExp;
+        private IFileMatcher fileMatcher;
+        public RegexExpressions(IFileMatcher fileMatch)
+        {
+            fileMatcher = fileMatch;
+        }
+
         public RegexExpressions()
         {
             InitializeComponent();
-            currentRegex = FileMatcher.ReadExpressionFile();
-            oldRegex = FileMatcher.ReadExpressionFile();
+            currentRegex = fileMatcher.ReadExpressionFileAsync().GetAwaiter().GetResult();
+            oldRegex = fileMatcher.ReadExpressionFileAsync().GetAwaiter().GetResult();
             regExp = new ObservableCollection<RegexExpression>(currentRegex.RegexExpressions);
             ExpressionsListBox.ItemsSource = regExp;
         }
@@ -32,10 +39,10 @@ namespace SimpleRenamer
             regExp.Remove((RegexExpression)ExpressionsListBox.SelectedItem);
         }
 
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             currentRegex.RegexExpressions = new List<RegexExpression>(regExp);
-            FileMatcher.WriteExpressionFile(currentRegex);
+            await fileMatcher.WriteExpressionFileAsync(currentRegex);
             this.Close();
         }
 

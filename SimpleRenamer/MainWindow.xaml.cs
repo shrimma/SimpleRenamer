@@ -29,9 +29,10 @@ namespace SimpleRenamer
         private IIgnoreListFramework ignoreListFramework;
         private IBackgroundQueue backgroundQueue;
         private IFileMover fileMover;
+        private IDependencyInjectionContext injectionContext;
         private Settings settings;
 
-        public MainWindow(ILogger log, IFileWatcher fileWatch, ITVShowMatcher tvShowMatch, IFileMatcher fileMatch, ISettingsFactory settingsFactory, IIgnoreListFramework ignore, IBackgroundQueue backgroundQ, IFileMover fileMove)
+        public MainWindow(ILogger log, IFileWatcher fileWatch, ITVShowMatcher tvShowMatch, IFileMatcher fileMatch, ISettingsFactory settingsFactory, IIgnoreListFramework ignore, IBackgroundQueue backgroundQ, IFileMover fileMove, IDependencyInjectionContext injection)
         {
             if (log == null)
             {
@@ -62,8 +63,12 @@ namespace SimpleRenamer
                 throw new ArgumentNullException(nameof(backgroundQ));
             }
             if (fileMove == null)
-        {
+            {
                 throw new ArgumentNullException(nameof(fileMove));
+            }
+            if (injection == null)
+            {
+                throw new ArgumentNullException(nameof(injection));
             }
             logger = log;
             fileWatcher = fileWatch;
@@ -72,6 +77,7 @@ namespace SimpleRenamer
             ignoreListFramework = ignore;
             backgroundQueue = backgroundQ;
             fileMover = fileMove;
+            injectionContext = injection;
 
             try
             {
@@ -159,7 +165,7 @@ namespace SimpleRenamer
             catch (Exception ex)
             {
                 logger.TraceException(ex);
-        }
+            }
         }
 
         public async Task MatchTVShows(List<string> videoFiles, CancellationToken ct)
@@ -321,7 +327,7 @@ namespace SimpleRenamer
             try
             {
                 //show the settings window
-                SettingsWindow settingsWindow = new SettingsWindow();
+                SettingsWindow settingsWindow = injectionContext.GetService<SettingsWindow>();
                 settingsWindow.ShowDialog();
             }
             catch (Exception ex)
@@ -420,7 +426,7 @@ namespace SimpleRenamer
             }
         }
 
-        private async Task IgnoreShowButton_Click(object sender, RoutedEventArgs e)
+        private async void IgnoreShowButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -478,9 +484,9 @@ namespace SimpleRenamer
         {
             try
             {
-                WriteNewLineToTextBox("Show Detail button clicked");
+                logger.TraceMessage("Show Detail button clicked");
                 TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
-                WriteNewLineToTextBox(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
+                logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
                 ShowDetailsForm sdf = new ShowDetailsForm(tempEp.TVDBShowId);
                 sdf.ShowDialog();
             }
@@ -490,7 +496,7 @@ namespace SimpleRenamer
             }
         }
 
-        private async Task EditButton_Click(object sender, RoutedEventArgs e)
+        private async void EditButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -509,7 +515,7 @@ namespace SimpleRenamer
                     }
                     else
                     {
-                        WriteNewLineToTextBox(string.Format("Mapping could not be found!"));
+                        logger.TraceMessage(string.Format("Mapping could not be found!"));
                     }
                 }
             }
