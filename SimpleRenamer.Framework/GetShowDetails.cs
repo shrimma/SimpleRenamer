@@ -1,5 +1,6 @@
 ﻿using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,22 @@ namespace SimpleRenamer.Framework
     {
         private ILogger logger;
         private string apiKey;
+
+        public GetShowDetails(ILogger log, IConfigurationManager configurationManager)
+        {
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+            if (configurationManager == null)
+            {
+                throw new ArgumentNullException(nameof(configurationManager));
+            }
+
+            logger = log;
+            apiKey = configurationManager.TvDbApiKey;
+        }
+
 
         public async Task<SeriesWithBanner> GetShowWithBanner(string showId)
         {

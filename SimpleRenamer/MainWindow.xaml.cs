@@ -1,6 +1,6 @@
 ﻿using SimpleRenamer.EventArguments;
-using SimpleRenamer.Framework;
 using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
 using System;
 using System.Collections.Generic;
@@ -98,12 +98,12 @@ namespace SimpleRenamer
 
         private void PerformActionsOnShows_RaiseFilePreProcessedEvent(object sender, FilePreProcessedEventArgs e)
         {
-            //TODO modify the progress bar here
+            FileMoveProgressBar.Value++;
         }
 
         private void PerformActionsOnShows_RaiseFileMovedEvent(object sender, FileMovedEventArgs e)
         {
-            //TODO modify the progress bar here!
+            FileMoveProgressBar.Value++;
             scannedEpisodes.Remove(e.Episode);
         }
 
@@ -140,6 +140,9 @@ namespace SimpleRenamer
             {
                 logger.TraceMessage(string.Format("Starting"));
                 scannedEpisodes = new ObservableCollection<TVEpisode>(await scanForShows.Scan(cts.Token));
+                logger.TraceMessage($"Grabbed {scannedEpisodes.Count} episodes");
+                ShowsListBox.ItemsSource = scannedEpisodes;
+                logger.TraceMessage($"Populated listbox with the scanned episodes");
             }
             catch (OperationCanceledException)
             {
