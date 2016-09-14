@@ -2,6 +2,7 @@
 using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
@@ -57,13 +58,15 @@ namespace SimpleRenamer
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+            currentSettings.ValidExtensions = new List<string>(validExtensions);
+            currentSettings.WatchFolders = new List<string>(watchFolders);
             settingsFactory.SaveSettings(currentSettings);
-            this.Close();
+            this.Hide();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            this.Hide();
         }
 
         private void AddFolderButton_Click(object sender, RoutedEventArgs e)
