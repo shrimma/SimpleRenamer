@@ -30,6 +30,7 @@ namespace SimpleRenamer.Framework
             logger = log;
         }
 
+        /// <inheritdoc/>        
         public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder)
         {
             logger.TraceMessage("SaveBannerAsync - Start");

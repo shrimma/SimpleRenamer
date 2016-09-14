@@ -66,7 +66,7 @@ namespace SimpleRenamer.Framework
                     bool bannerResult;
                     if (!string.IsNullOrEmpty(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
                     {
-                        //Grab Show banner if required
+                        //Grab Show banner if required                        
                         bannerResult = await bannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
                     }
                     if (!string.IsNullOrEmpty(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))

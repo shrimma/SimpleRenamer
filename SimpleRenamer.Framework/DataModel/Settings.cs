@@ -1,10 +1,9 @@
-﻿using SimpleRenamer.Framework.Interface;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace SimpleRenamer.Framework.DataModel
 {
-    public class Settings : INotifyPropertyChanged, ISettings
+    public class Settings : INotifyPropertyChanged
     {
         #region INotifyPropertyChanged implementation
         public event PropertyChangedEventHandler PropertyChanged;
