@@ -1,6 +1,5 @@
 ﻿using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
-using System;
 using System.Collections.Generic;
 using System.Configuration;
 
@@ -25,7 +24,25 @@ namespace SimpleRenamer.Framework
 
         public void SaveSettings(Settings settings)
         {
-            throw new NotImplementedException();
+            Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            configuration.AppSettings.Settings["SubDirectories"].Value = settings.SubDirectories.ToString();
+            configuration.AppSettings.Settings["RenameFiles"].Value = settings.RenameFiles.ToString();
+            configuration.AppSettings.Settings["CopyFiles"].Value = settings.CopyFiles.ToString();
+            configuration.AppSettings.Settings["NewFileNameFormat"].Value = settings.NewFileNameFormat;
+            string validExtensions = string.Empty;
+            foreach (string valid in settings.ValidExtensions)
+            {
+                validExtensions += valid + ";";
+            }
+            configuration.AppSettings.Settings["ValidExtensions"].Value = validExtensions.TrimEnd(';');
+            string watchFolders = string.Empty;
+            foreach (string folder in settings.WatchFolders)
+            {
+                watchFolders += folder + ";";
+            }
+            configuration.AppSettings.Settings["WatchFolders"].Value = watchFolders.TrimEnd(';');
+            configuration.AppSettings.Settings["DestinationFolder"].Value = settings.DestinationFolder;
+            configuration.Save(ConfigurationSaveMode.Modified);
         }
     }
 }
