@@ -16,8 +16,6 @@ namespace SimpleRenamer.Framework
     {
         private string apiKey;
         private string mappingFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "SelectedShowMapping.xml");
-        private TaskCompletionSource<bool> taskComplete;
-        private string selectedSeriesId;
         private ILogger logger;
         private Settings settings;
         private TheTvdbManager tvdbManager;
@@ -213,9 +211,9 @@ namespace SimpleRenamer.Framework
             return new TVEpisodeScrape(episode, matchedSeries);
         }
 
-        public async Task<TVEpisode> SelectShowFromList(TVEpisode episode)
+        public async Task<List<ShowView>> GetPossibleShowsForEpisode(TVEpisode episode)
         {
-            logger.TraceMessage("SelectShowFromList - Start");
+            logger.TraceMessage("GetPossibleShowsForEpisode - Start");
             uint season = 0;
             uint.TryParse(episode.Season, out season);
             int episodeNumber = 0;
@@ -223,10 +221,7 @@ namespace SimpleRenamer.Framework
 
             var series = await tvdbManager.SearchSeries(episode.ShowName, Language.English);
 
-            taskComplete = new TaskCompletionSource<bool>();
-            selectedSeriesId = null;
-            SelectShowWpfForm wpfForm = new SelectShowWpfForm();
-            wpfForm.ShowViews = new List<ShowView>();
+            List<ShowView> shows = new List<ShowView>();
             foreach (var s in series)
             {
                 string desc = string.Empty;
@@ -241,15 +236,15 @@ namespace SimpleRenamer.Framework
                         desc = s.Description;
                     }
                 }
-                wpfForm.ShowViews.Add(new ShowView(s.Id.ToString(), s.Title, s.FirstAired.Value.Year.ToString(), desc));
+                shows.Add(new ShowView(s.Id.ToString(), s.Title, s.FirstAired.Value.Year.ToString(), desc));
             }
-            wpfForm.SetView();
-            wpfForm.SetTitle(string.Format("Simple TV Renamer - Select Show for file {0}", Path.GetFileName(episode.FilePath)));
-            wpfForm.RaiseCustomEvent += new EventHandler<CustomEventArgs>(WindowClosedEvent1);
-            wpfForm.ShowDialog();
-            await taskComplete.Task;
 
+            logger.TraceMessage("SelectShowFromListGetPossibleShowsForEpisode - End");
+            return shows;
+        }
 
+        public async Task<TVEpisode> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, TVEpisode episode)
+        {
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
             //if user selected a match then scrape the details
             if (!string.IsNullOrEmpty(selectedSeriesId))
@@ -279,14 +274,7 @@ namespace SimpleRenamer.Framework
                 episodeScrape.tvep = episode;
             }
 
-            logger.TraceMessage("SelectShowFromList - End");
             return episodeScrape.tvep;
-        }
-
-        private void WindowClosedEvent1(object sender, CustomEventArgs e)
-        {
-            selectedSeriesId = e.ID;
-            taskComplete.SetResult(true);
         }
 
         /// <summary>

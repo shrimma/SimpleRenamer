@@ -1,23 +1,24 @@
-﻿using System;
+﻿using SimpleRenamer.EventArguments;
+using System;
 using System.IO;
 using System.Windows;
 
 namespace SimpleRenamer
 {
     /// <summary>
-    /// Interaction logic for AddExtensions.xaml
+    /// Interaction logic for AddExtensionsWindow.xaml
     /// </summary>
-    public partial class AddExtensions : Window
+    public partial class AddExtensionsWindow : Window
     {
         public event EventHandler<ExtensionEventArgs> RaiseCustomEvent;
 
-        public AddExtensions()
+        public AddExtensionsWindow()
         {
             InitializeComponent();
-            this.Closing += SelectShowWpfForm_Closing;
+            this.Closing += AddExtensionsWindow_Closing;
         }
 
-        void SelectShowWpfForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        void AddExtensionsWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             RaiseCustomEvent(this, new ExtensionEventArgs(null));
             this.Hide();
@@ -62,19 +63,6 @@ namespace SimpleRenamer
                 answer = false;
             }
             return answer;
-        }
-    }
-
-    public class ExtensionEventArgs : EventArgs
-    {
-        public ExtensionEventArgs(string s)
-        {
-            extension = s;
-        }
-        private string extension;
-        public string Extension
-        {
-            get { return extension; }
         }
     }
 }

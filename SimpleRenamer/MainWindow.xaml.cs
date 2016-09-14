@@ -1,8 +1,11 @@
-﻿using SimpleRenamer.Framework;
+﻿using SimpleRenamer.EventArguments;
+using SimpleRenamer.Framework;
 using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -24,6 +27,10 @@ namespace SimpleRenamer
         private IDependencyInjectionContext injectionContext;
         private IScanForShows scanForShows;
         private IPerformActionsOnShows performActionsOnShows;
+        private SelectShowWindow selectShowWindow;
+        private ShowDetailsWindow showDetailsWindow;
+        private SettingsWindow settingsWindow;
+        private EditShowWindow editShowWindow;
         private Settings settings;
 
         public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, ISettingsFactory settingsFactory, IIgnoreListFramework ignore, IDependencyInjectionContext injection, IPerformActionsOnShows performActions, IScanForShows scanShows)
@@ -67,6 +74,12 @@ namespace SimpleRenamer
             {
                 InitializeComponent();
                 logger.TraceMessage("Starting Application");
+                showDetailsWindow = injectionContext.GetService<ShowDetailsWindow>();
+                settingsWindow = injectionContext.GetService<SettingsWindow>();
+                editShowWindow = injectionContext.GetService<EditShowWindow>();
+                editShowWindow.RaiseEditShowEvent += new EventHandler<EditShowEventArgs>(EditShowWindowClosedEvent);
+                selectShowWindow = injectionContext.GetService<SelectShowWindow>();
+                selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
                 settings = settingsFactory.GetSettings();
                 scannedEpisodes = new ObservableCollection<TVEpisode>();
                 ShowsListBox.ItemsSource = scannedEpisodes;
@@ -170,7 +183,6 @@ namespace SimpleRenamer
             try
             {
                 //show the settings window
-                SettingsWindow settingsWindow = injectionContext.GetService<SettingsWindow>();
                 settingsWindow.ShowDialog();
             }
             catch (Exception ex)
@@ -220,11 +232,26 @@ namespace SimpleRenamer
             try
             {
                 TVEpisode temp = (TVEpisode)ShowsListBox.SelectedItem;
-                temp = await tvShowMatcher.SelectShowFromList(temp);
-                ShowsListBox.SelectedItem = temp;
+                List<ShowView> possibleShows = await tvShowMatcher.GetPossibleShowsForEpisode(temp);
+                selectShowWindow.SetView(possibleShows, string.Format("Simple TV Renamer - Select Show for file {0}", Path.GetFileName(temp.FilePath)));
+                selectShowWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                logger.TraceException(ex);
+            }
+        }
+
+        private async void SelectShowWindow_RaiseSelectShowWindowEvent(object sender, SelectShowEventArgs e)
+        {
+            try
+            {
+                TVEpisode temp = (TVEpisode)ShowsListBox.SelectedItem;
+                TVEpisode updatedEpisode = await tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp);
                 //if a selection is made then force a rescan
                 if (!temp.SkippedExactSelection)
                 {
+                    ShowsListBox.SelectedItem = updatedEpisode;
                     scannedEpisodes.Clear();
                     ActionButton.IsEnabled = false;
                 }
@@ -295,9 +322,8 @@ namespace SimpleRenamer
             {
                 logger.TraceMessage("Show Detail button clicked");
                 TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
-                logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
-                ShowDetailsForm sdf = new ShowDetailsForm(tempEp.TVDBShowId);
-                sdf.ShowDialog();
+                showDetailsWindow.GetSeries(tempEp.TVDBShowId);
+                showDetailsWindow.ShowDialog();
             }
             catch (Exception ex)
             {
@@ -338,9 +364,9 @@ namespace SimpleRenamer
         {
             try
             {
-                EditShowWindow esw = new EditShowWindow(settings, tempEp, mapping);
-                esw.RaiseCustomEvent += new EventHandler<EditShowEventArgs>(EditShowWindowClosedEvent);
-                esw.ShowDialog();
+                //set the edit show window to the selected episode and show dialog
+                editShowWindow.SetCurrentShow(tempEp, mapping);
+                editShowWindow.ShowDialog();
             }
             catch (Exception ex)
             {

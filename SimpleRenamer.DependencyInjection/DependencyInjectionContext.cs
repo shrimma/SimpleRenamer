@@ -1,6 +1,8 @@
 ﻿using Ninject;
+using Ninject.Parameters;
 using SimpleRenamer.Framework.Interface;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace SimpleRenamer.DependencyInjection
@@ -32,6 +34,18 @@ namespace SimpleRenamer.DependencyInjection
         public T GetService<T>()
         {
             return _kernel.Get<T>();
+        }
+
+        /// <inheritdoc />
+        public T GetService<T>(List<KeyValuePair<string, object>> constructorArguments)
+        {
+            List<ConstructorArgument> arguments = new List<ConstructorArgument>();
+            foreach (var param in constructorArguments)
+            {
+                arguments.Add(new ConstructorArgument(param.Key, param.Value));
+            }
+
+            return _kernel.Get<T>(arguments.ToArray());
         }
 
         public void BindConstant<T>(T context)

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SimpleRenamer.Framework
+namespace SimpleRenamer.Framework.EventArguments
 {
     public class FilePreProcessedEventArgs : EventArgs
     {

@@ -12,8 +12,6 @@ namespace SimpleRenamer.DependencyInjection.Modules
             Bind<IBackgroundQueue>().To<BackgroundQueue>().InSingletonScope();
             Bind<IConfigurationManager>().To<AppConfigurationManager>().InSingletonScope();
             Bind<ISettingsFactory>().To<SettingsFactory>().InSingletonScope();
-            Bind<IPerformActionsOnShows>().To<PerformActionsOnShows>().InSingletonScope();
-            Bind<IScanForShows>().To<ScanForShows>().InSingletonScope();
         }
     }
 }

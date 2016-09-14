@@ -1,4 +1,5 @@
 ﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.EventArguments;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading;

@@ -1,4 +1,6 @@
-﻿namespace SimpleRenamer.Framework.Interface
+﻿using System.Collections.Generic;
+
+namespace SimpleRenamer.Framework.Interface
 {
     public interface IDependencyInjectionContext
     {
@@ -14,6 +16,13 @@
         /// <returns>The service if it exists</returns>
         T GetService<T>();
 
+        /// <summary>
+        /// Gets the service object of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of service</typeparam>
+        /// <param name="constructorArguments">List of key value pair for any constructor arguments - Key is argument name and value is argument value</param>
+        /// <returns>The service if it exists</returns>
+        T GetService<T>(List<KeyValuePair<string, object>> constructorArguments);
         /// <summary>
         /// Bind a context to a constant
         /// </summary>
