@@ -9,10 +9,13 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SimpleRenamer.Framework</RootNamespace>
     <AssemblyName>SimpleRenamer.Framework</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,15 +34,17 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
@@ -69,26 +74,48 @@
   <ItemGroup>
     <Compile Include="BackgroundQueue.cs" />
     <Compile Include="BannerDownloader.cs" />
+    <Compile Include="AppConfigurationManager.cs" />
+    <Compile Include="DataModel\IgnoreList.cs" />
+    <Compile Include="DataModel\LogType.cs" />
+    <Compile Include="DataModel\Mapping.cs" />
+    <Compile Include="DataModel\RegexExpression.cs" />
+    <Compile Include="DataModel\SeriesWithBanner.cs" />
+    <Compile Include="DataModel\ShowNameMapping.cs" />
+    <Compile Include="DataModel\ShowView.cs" />
+    <Compile Include="DataModel\TVEpisodeScrape.cs" />
+    <Compile Include="EventArguments\FileMovedEventArgs.cs" />
     <Compile Include="FileMover.cs" />
-    <Compile Include="FileMoveResult.cs" />
+    <Compile Include="DataModel\FileMoveResult.cs" />
+    <Compile Include="EventArguments\FilePreProcessedEventArgs.cs" />
     <Compile Include="FileWatcher.cs" />
+    <Compile Include="GetShowDetails.cs" />
+    <Compile Include="Interface\IBackgroundQueue.cs" />
+    <Compile Include="Interface\IBannerDownloader.cs" />
+    <Compile Include="Interface\IConfigurationManager.cs" />
+    <Compile Include="Interface\IDependencyInjectionContext.cs" />
+    <Compile Include="Interface\IFileMatcher.cs" />
+    <Compile Include="Interface\IFileMover.cs" />
+    <Compile Include="Interface\IFileWatcher.cs" />
+    <Compile Include="Interface\IGetShowDetails.cs" />
+    <Compile Include="Interface\IIgnoreListFramework.cs" />
+    <Compile Include="Interface\ILogger.cs" />
+    <Compile Include="Interface\IPerformActionsOnShows.cs" />
+    <Compile Include="Interface\IScanForShows.cs" />
+    <Compile Include="Interface\ISettings.cs" />
+    <Compile Include="Interface\ISettingsFactory.cs" />
+    <Compile Include="Interface\ITVShowMatcher.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="IgnoreList.cs" />
-    <Compile Include="InverseBooleanConverter.cs" />
+    <Compile Include="IgnoreListFramework.cs" />
+    <Compile Include="PerformActionsOnShows.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FileMatcher.cs" />
-    <Compile Include="RegexFile.cs" />
-    <Compile Include="SelectShowWpfForm.xaml.cs">
-      <DependentUpon>SelectShowWpfForm.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Settings.cs" />
-    <Compile Include="ShowDetailsForm.xaml.cs">
-      <DependentUpon>ShowDetailsForm.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ShowNameMapping.cs" />
-    <Compile Include="ShowSeason.cs" />
-    <Compile Include="TaskExtensions.cs" />
-    <Compile Include="TVEpisode.cs" />
+    <Compile Include="DataModel\RegexFile.cs" />
+    <Compile Include="ScanForShows.cs" />
+    <Compile Include="DataModel\Settings.cs" />
+    <Compile Include="SettingsFactory.cs" />
+    <Compile Include="DataModel\ShowSeason.cs" />
+    <Compile Include="Extensions\TaskExtensions.cs" />
+    <Compile Include="DataModel\TVEpisode.cs" />
     <Compile Include="TVShowMatcher.cs" />
     <Compile Include="Win32FileIO.cs" />
   </ItemGroup>
@@ -96,35 +123,22 @@
     <Content Include="RegexExpressions.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Resource Include="tv.ico" />
     <Content Include="TVDB.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Page Include="SelectShowWpfForm.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ShowDetailsForm.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
-  <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
-    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
-    <Error Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
-  </Target>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
   </Target>
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

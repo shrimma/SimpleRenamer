@@ -1,48 +1,41 @@
 ﻿
+using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.Interface;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 namespace SimpleRenamer.Framework
 {
-    public static class FileMover
+    public class FileMover : IFileMover
     {
-        public static bool MoveFile(TVEpisode episode, Settings settings)
+        private bool? OnMonoCached;
+        private IBannerDownloader bannerDownloader;
+        private ILogger logger;
+        private Settings settings;
+
+        public FileMover(IBannerDownloader bannerDl, ILogger log, ISettingsFactory settingsFactory)
         {
-            string ext = Path.GetExtension(episode.FilePath);
-            int season;
-            int.TryParse(episode.Season, out season);
-            //use the destination folder and showname etc to define final destination
-            string destinationDirectory = Path.Combine(settings.DestinationFolder, episode.ShowName, string.Format("Season {0}", season));
-            string destinationFilePath = Path.Combine(destinationDirectory, episode.NewFileName + ext);
-
-            //create our destinaion folder if it doesn't already exist
-            if (!Directory.Exists(destinationDirectory))
+            if (bannerDl == null)
             {
-                Directory.CreateDirectory(destinationDirectory);
+                throw new ArgumentNullException(nameof(bannerDl));
+            }
+            if (settingsFactory == null)
+            {
+                throw new ArgumentNullException(nameof(settingsFactory));
+            }
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
             }
 
-            try
-            {
-                //copy the file if settings want this
-                if (settings.CopyFiles)
-                {
-                    File.Copy(episode.FilePath, destinationFilePath);
-                }
-                else
-                {
-                    File.Move(episode.FilePath, destinationFilePath);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.TraceException(ex);
-                return false;
-            }
-            return true;
+            bannerDownloader = bannerDl;
+            logger = log;
+            settings = settingsFactory.GetSettings();
         }
 
-        public static async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, Settings settings, bool downloadBanner)
+        public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, bool downloadBanner)
         {
+            logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - Start");
             FileMoveResult result = new FileMoveResult(true, episode);
             string ext = Path.GetExtension(episode.FilePath);
             int season;
@@ -74,30 +67,33 @@ namespace SimpleRenamer.Framework
                     if (!string.IsNullOrEmpty(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
                     {
                         //Grab Show banner if required
-                        bannerResult = await BannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
+                        bannerResult = await bannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
                     }
                     if (!string.IsNullOrEmpty(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))
                     {
                         //Grab Season banner if required
-                        bannerResult = await BannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
+                        bannerResult = await bannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Logger.TraceException(ex);
+                logger.TraceException(ex);
                 //we don't really care if image download fails
             }
+
+            logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - End");
             return result;
         }
 
-        public static bool MoveFile(TVEpisode episode, Settings settings, string destinationFilePath)
+        public async Task<bool> MoveFileAsync(TVEpisode episode, string destinationFilePath)
         {
+            logger.TraceMessage("MoveFileAsync - Start");
             try
             {
                 FileInfo fromFile = new FileInfo(episode.FilePath);
                 FileInfo toFile = new FileInfo(destinationFilePath);
-                if (QuickOperation(settings, fromFile, toFile))
+                if (QuickOperation(fromFile, toFile))
                 {
                     OSMoveRename(fromFile, toFile);
                 }
@@ -105,36 +101,40 @@ namespace SimpleRenamer.Framework
                 {
                     CopyItOurself(settings, fromFile, toFile);
                 }
+
+                logger.TraceMessage("MoveFileAsync - End");
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.TraceException(ex);
+                logger.TraceException(ex);
                 return false;
             }
         }
 
-        public static bool QuickOperation(Settings settings, FileInfo fromFile, FileInfo toFile)
+        private bool QuickOperation(FileInfo fromFile, FileInfo toFile)
         {
+            logger.TraceMessage("QuickOperation - Start");
             if ((fromFile == null) || (toFile == null) || (fromFile.Directory == null) || (toFile.Directory == null))
             {
                 return false;
             }
 
+            logger.TraceMessage("QuickOperation - End");
             return (settings.RenameFiles && !settings.CopyFiles && (fromFile.Directory.Root.FullName.ToLower() == toFile.Directory.Root.FullName.ToLower())); // same device ... TODO: UNC paths?
         }
 
-        private static string TempFor(FileInfo f)
+        private string TempFileName(FileInfo f)
         {
             return f.FullName + ".simplerenametemp";
         }
 
-        private static bool Same(FileInfo a, FileInfo b)
+        private bool FileIsSame(FileInfo a, FileInfo b)
         {
             return String.Compare(a.FullName, b.FullName, true) == 0; // true->ignore case
         }
 
-        private static void KeepTimestamps(FileInfo from, FileInfo to)
+        private void KeepTimestamps(FileInfo from, FileInfo to)
         {
             to.CreationTime = from.CreationTime;
             to.CreationTimeUtc = from.CreationTimeUtc;
@@ -144,14 +144,15 @@ namespace SimpleRenamer.Framework
             to.LastWriteTimeUtc = from.LastWriteTimeUtc;
         }
 
-        private static void OSMoveRename(FileInfo fromFile, FileInfo toFile)
+        private void OSMoveRename(FileInfo fromFile, FileInfo toFile)
         {
+            logger.TraceMessage("OSMoveRename - Start");
             try
             {
-                if (Same(fromFile, toFile))
+                if (FileIsSame(fromFile, toFile))
                 {
                     // XP won't actually do a rename if its only a case difference
-                    string tempName = TempFor(toFile);
+                    string tempName = TempFileName(toFile);
                     fromFile.MoveTo(tempName);
                     File.Move(tempName, toFile.FullName);
                 }
@@ -164,13 +165,12 @@ namespace SimpleRenamer.Framework
             }
             catch (Exception ex)
             {
-                Logger.TraceException(ex);
+                logger.TraceException(ex);
             }
+            logger.TraceMessage("OSMoveRename - End");
         }
 
-        private static bool? OnMonoCached;
-
-        public static bool OnMono()
+        private bool OnMono()
         {
             if (!OnMonoCached.HasValue)
             {
@@ -179,13 +179,14 @@ namespace SimpleRenamer.Framework
             return OnMonoCached.Value;
         }
 
-        public static bool OnWindows()
+        private static bool OnWindows()
         {
             return Environment.OSVersion.Platform == PlatformID.Win32NT;
         }
 
-        private static void CopyItOurself(Settings settings, FileInfo fromFile, FileInfo toFile)
+        private void CopyItOurself(Settings settings, FileInfo fromFile, FileInfo toFile)
         {
+            logger.TraceMessage("CopyItOurself - Start");
             const int kArrayLength = 1 * 1024 * 1024;
             Byte[] dataArray = new Byte[kArrayLength];
 
@@ -201,7 +202,7 @@ namespace SimpleRenamer.Framework
                 long thisFileCopied = 0;
                 long thisFileSize = fromFile.Length;
 
-                string tempName = TempFor(toFile);
+                string tempName = TempFileName(toFile);
                 if (File.Exists(tempName))
                 {
                     File.Delete(tempName);
@@ -219,7 +220,7 @@ namespace SimpleRenamer.Framework
                     msw = new BinaryWriter(new FileStream(tempName, FileMode.CreateNew));
                 }
 
-                for (; ; )
+                for (;;)
                 {
                     int n = useWin32 ? copier.ReadBlocks(kArrayLength) : msr.Read(dataArray, 0, kArrayLength);
                     if (n == 0)
@@ -274,7 +275,7 @@ namespace SimpleRenamer.Framework
             } // try
             catch (System.Threading.ThreadAbortException tae)
             {
-                Logger.TraceException(tae);
+                logger.TraceException(tae);
                 if (useWin32)
                 {
                     NicelyStopAndCleanUp_Win32(copier, toFile);
@@ -287,7 +288,7 @@ namespace SimpleRenamer.Framework
             }
             catch (Exception ex)
             {
-                Logger.TraceException(ex);
+                logger.TraceException(ex);
                 if (useWin32)
                 {
                     NicelyStopAndCleanUp_Win32(copier, toFile);
@@ -297,24 +298,26 @@ namespace SimpleRenamer.Framework
                     NicelyStopAndCleanUp_Streams(msr, msw, toFile);
                 }
             }
+
+            logger.TraceMessage("CopyItOurself - Start");
         }
 
-        private static void NicelyStopAndCleanUp_Win32(WinFileIO copier, FileInfo toFile)
+        private void NicelyStopAndCleanUp_Win32(WinFileIO copier, FileInfo toFile)
         {
             copier.Close();
-            string tempName = TempFor(toFile);
+            string tempName = TempFileName(toFile);
             if (File.Exists(tempName))
             {
                 File.Delete(tempName);
             }
         }
 
-        private static void NicelyStopAndCleanUp_Streams(BinaryReader msr, BinaryWriter msw, FileInfo toFile)
+        private void NicelyStopAndCleanUp_Streams(BinaryReader msr, BinaryWriter msw, FileInfo toFile)
         {
             if (msw != null)
             {
                 msw.Close();
-                string tempName = TempFor(toFile);
+                string tempName = TempFileName(toFile);
                 if (File.Exists(tempName))
                 {
                     File.Delete(tempName);

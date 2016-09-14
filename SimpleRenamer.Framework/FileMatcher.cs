@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.Interface;
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -6,24 +8,36 @@ using System.Xml.Serialization;
 
 namespace SimpleRenamer.Framework
 {
-    public static class FileMatcher
+    public class FileMatcher : IFileMatcher
     {
         private static RegexFile regexExpressions = null;
         private static string regexFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "RegexExpressions.xml");
-        public static TVEpisode SearchMe(string fileName)
+        private ILogger logger;
+
+        public FileMatcher(ILogger log)
         {
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+            logger = log;
+        }
+
+        public async Task<TVEpisode> SearchFileNameAsync(string fileName)
+        {
+            logger.TraceMessage("SearchFileNameAsync - Start");
             string showname = null;
             string season = null;
             string episode = null;
 
             try
             {
-                regexExpressions = ReadExpressionFile();
+                regexExpressions = await ReadExpressionFileAsync();
                 foreach (RegexExpression exp in regexExpressions.RegexExpressions)
                 {
                     if (exp.IsEnabled)
                     {
-                        //process the file name                
+                        //process the file name
                         Regex regexStandard = new Regex(exp.Expression, RegexOptions.IgnoreCase);
                         Match tvshow = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
                         showname = GetTrueShowName(tvshow.Groups["series_name"].Value);
@@ -32,6 +46,7 @@ namespace SimpleRenamer.Framework
 
                         if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
                         {
+                            logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
                             return new TVEpisode(fileName, showname, season, episode);
                         }
                     }
@@ -39,53 +54,22 @@ namespace SimpleRenamer.Framework
             }
             catch (Exception ex)
             {
-                Logger.TraceException(ex);
+                logger.TraceException(ex);
                 return null;
             }
+
+            logger.TraceMessage("SearchFileNameAsync - End NULL");
             return null;
         }
 
-        public static async Task<TVEpisode> SearchMeAsync(string fileName)
+        public async Task<RegexFile> ReadExpressionFileAsync()
         {
-            string showname = null;
-            string season = null;
-            string episode = null;
-
-            try
-            {
-                regexExpressions = ReadExpressionFile();
-                foreach (RegexExpression exp in regexExpressions.RegexExpressions)
-                {
-                    if (exp.IsEnabled)
-                    {
-                        //process the file name                
-                        Regex regexStandard = new Regex(exp.Expression, RegexOptions.IgnoreCase);
-                        Match tvshow = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
-                        showname = GetTrueShowName(tvshow.Groups["series_name"].Value);
-                        season = tvshow.Groups["season_num"].Value;
-                        episode = tvshow.Groups["ep_num"].Value;
-
-                        if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
-                        {
-                            return new TVEpisode(fileName, showname, season, episode);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.TraceException(ex);
-                return null;
-            }
-            return null;
-        }
-
-        public static RegexFile ReadExpressionFile()
-        {
+            logger.TraceMessage("ReadExpressionFileAsync - Start");
             RegexFile snm = new RegexFile();
             //if the file doesn't yet exist then set a new version
             if (!File.Exists(regexFilePath))
             {
+                logger.TraceMessage("ReadExpressionFileAsync - File doesn't exist so returning new object");
                 return snm;
             }
             else
@@ -95,12 +79,14 @@ namespace SimpleRenamer.Framework
                     XmlSerializer serializer = new XmlSerializer(typeof(RegexFile));
                     snm = (RegexFile)serializer.Deserialize(fs);
                 }
+                logger.TraceMessage("ReadExpressionFileAsync - File exists returning populated expressions");
                 return snm;
             }
         }
 
-        public static void WriteExpressionFile(RegexFile regexMatchers)
+        public async Task<bool> WriteExpressionFileAsync(RegexFile regexMatchers)
         {
+            logger.TraceMessage("WriteExpressionFileAsync - Start");
             //only write the file if there is data
             if (regexMatchers != null && regexMatchers.RegexExpressions.Count > 0)
             {
@@ -110,10 +96,14 @@ namespace SimpleRenamer.Framework
                     serializer.Serialize(writer, regexMatchers);
                 }
             }
+
+            logger.TraceMessage("WriteExpressionFileAsync - End");
+            return true;
         }
 
-        private static string GetTrueShowName(string input)
+        private string GetTrueShowName(string input)
         {
+            logger.TraceMessage("GetTrueShowName - Start");
             string output = null;
             string[] words = input.Split('.');
             int i = 1;
@@ -130,25 +120,30 @@ namespace SimpleRenamer.Framework
                 }
                 i++;
             }
+
+            logger.TraceMessage("GetTrueShowName - End");
             return output.Trim();
         }
 
-        private static bool IsJoiningWord(string input)
+        private bool IsJoiningWord(string input)
         {
+            logger.TraceMessage("IsJoiningWord - Start");
             foreach (string word in JoiningWords)
             {
                 if (input.Equals(word.ToLowerInvariant()))
                 {
+                    logger.TraceMessage("IsJoiningWord - True");
                     return true;
                 }
             }
+            logger.TraceMessage("IsJoiningWord - False");
             return false;
         }
-        private static string[] JoiningWords
+        private string[] JoiningWords
         {
             get { return joiningWords.Split(','); }
         }
 
-        private static string joiningWords = "the,of,and";
+        private string joiningWords = "the,of,and";
     }
 }

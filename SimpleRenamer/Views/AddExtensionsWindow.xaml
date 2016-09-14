@@ -1,0 +1,16 @@
+﻿<Window x:Class="SimpleRenamer.AddExtensionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Add Extension" Height="100" Width="300" MinHeight="100" MinWidth="300" MaxHeight="100" MaxWidth="300" Icon="tv.ico">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="30" />
+        </Grid.RowDefinitions>
+        <TextBox Grid.Row="0" Name="ExtensionTextBox" Margin="5" Text=""/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <Button Name="OKButton" Content="OK" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="50" Click="OKButton_Click"/>
+            <Button Name="CancelButton" Content="Cancel" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="50" Click="CancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
