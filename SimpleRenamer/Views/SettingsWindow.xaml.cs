@@ -8,7 +8,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Forms;
 
-namespace SimpleRenamer
+namespace SimpleRenamer.Views
 {
     /// <summary>
     /// Interaction logic for SettingsWindow.xaml

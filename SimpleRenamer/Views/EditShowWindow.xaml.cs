@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Windows;
 
-namespace SimpleRenamer
+namespace SimpleRenamer.Views
 {
     /// <summary>
     /// Interaction logic for EditShowWindow.xaml

@@ -2,6 +2,7 @@
 using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
+using SimpleRenamer.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
