@@ -52,7 +52,7 @@ namespace SimpleRenamer.Framework
         public async Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode, ShowNameMapping showNameMapping)
         {
             logger.TraceMessage("ScrapeDetailsAsync - Start");
-            //read the mapping file and try and find any already selected matches            
+            //read the mapping file and try and find any already selected matches
             episode = FixMismatchTitles(episode, showNameMapping);
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
             //scrape the episode name - if we haven't already got the show ID then search for it
@@ -65,7 +65,7 @@ namespace SimpleRenamer.Framework
                 episodeScrape = await ScrapeSpecificShow(episode, episode.TVDBShowId, false);
             }
 
-            //generate the new file name            
+            //generate the new file name
             episodeScrape.tvep = GenerateFileName(episodeScrape.tvep);
 
             logger.TraceMessage("ScrapeDetailsAsync - End");

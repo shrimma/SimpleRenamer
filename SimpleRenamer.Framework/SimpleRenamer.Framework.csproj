@@ -80,8 +80,10 @@
     <Compile Include="DataModel\RegexExpression.cs" />
     <Compile Include="DataModel\ShowNameMapping.cs" />
     <Compile Include="DataModel\TVEpisodeScrape.cs" />
+    <Compile Include="FileMovedEventArgs.cs" />
     <Compile Include="FileMover.cs" />
     <Compile Include="DataModel\FileMoveResult.cs" />
+    <Compile Include="FilePreProcessedEventArgs.cs" />
     <Compile Include="FileWatcher.cs" />
     <Compile Include="Interface\IBackgroundQueue.cs" />
     <Compile Include="Interface\IBannerDownloader.cs" />
@@ -92,6 +94,7 @@
     <Compile Include="Interface\IFileWatcher.cs" />
     <Compile Include="Interface\IIgnoreListFramework.cs" />
     <Compile Include="Interface\ILogger.cs" />
+    <Compile Include="Interface\IPerformActionsOnShows.cs" />
     <Compile Include="Interface\IScanForShows.cs" />
     <Compile Include="Interface\ISettings.cs" />
     <Compile Include="Interface\ISettingsFactory.cs" />

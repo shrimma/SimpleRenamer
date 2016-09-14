@@ -1,14 +1,10 @@
 ﻿using SimpleRenamer.Framework;
 using SimpleRenamer.Framework.DataModel;
-using SimpleRenamer.Framework.Extensions;
 using SimpleRenamer.Framework.Interface;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace SimpleRenamer
@@ -23,32 +19,22 @@ namespace SimpleRenamer
 
         //here are all our interfaces
         private ILogger logger;
-        private IFileWatcher fileWatcher;
         private ITVShowMatcher tvShowMatcher;
-        private IFileMatcher fileMatcher;
         private IIgnoreListFramework ignoreListFramework;
-        private IBackgroundQueue backgroundQueue;
-        private IFileMover fileMover;
         private IDependencyInjectionContext injectionContext;
+        private IScanForShows scanForShows;
+        private IPerformActionsOnShows performActionsOnShows;
         private Settings settings;
 
-        public MainWindow(ILogger log, IFileWatcher fileWatch, ITVShowMatcher tvShowMatch, IFileMatcher fileMatch, ISettingsFactory settingsFactory, IIgnoreListFramework ignore, IBackgroundQueue backgroundQ, IFileMover fileMove, IDependencyInjectionContext injection)
+        public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, ISettingsFactory settingsFactory, IIgnoreListFramework ignore, IDependencyInjectionContext injection, IPerformActionsOnShows performActions, IScanForShows scanShows)
         {
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
             }
-            if (fileWatch == null)
-            {
-                throw new ArgumentNullException(nameof(fileWatch));
-            }
             if (tvShowMatch == null)
             {
                 throw new ArgumentNullException(nameof(tvShowMatch));
-            }
-            if (fileMatch == null)
-            {
-                throw new ArgumentNullException(nameof(fileMatch));
             }
             if (settingsFactory == null)
             {
@@ -58,26 +44,24 @@ namespace SimpleRenamer
             {
                 throw new ArgumentNullException(nameof(ignore));
             }
-            if (backgroundQ == null)
-            {
-                throw new ArgumentNullException(nameof(backgroundQ));
-            }
-            if (fileMove == null)
-            {
-                throw new ArgumentNullException(nameof(fileMove));
-            }
             if (injection == null)
             {
                 throw new ArgumentNullException(nameof(injection));
             }
+            if (scanShows == null)
+            {
+                throw new ArgumentNullException(nameof(scanShows));
+            }
+            if (performActions == null)
+            {
+                throw new ArgumentNullException(nameof(performActions));
+            }
             logger = log;
-            fileWatcher = fileWatch;
             tvShowMatcher = tvShowMatch;
-            fileMatcher = fileMatch;
             ignoreListFramework = ignore;
-            backgroundQueue = backgroundQ;
-            fileMover = fileMove;
             injectionContext = injection;
+            scanForShows = scanShows;
+            performActionsOnShows = performActions;
 
             try
             {
@@ -86,12 +70,28 @@ namespace SimpleRenamer
                 settings = settingsFactory.GetSettings();
                 scannedEpisodes = new ObservableCollection<TVEpisode>();
                 ShowsListBox.ItemsSource = scannedEpisodes;
+
+                //setup the perform actions event handlers
+                performActionsOnShows.RaiseFileMovedEvent += PerformActionsOnShows_RaiseFileMovedEvent;
+                performActionsOnShows.RaiseFilePreProcessedEvent += PerformActionsOnShows_RaiseFilePreProcessedEvent;
+
                 this.Closing += MainWindow_Closing;
             }
             catch (Exception ex)
             {
                 logger.TraceException(ex);
             }
+        }
+
+        private void PerformActionsOnShows_RaiseFilePreProcessedEvent(object sender, FilePreProcessedEventArgs e)
+        {
+            //TODO modify the progress bar here
+        }
+
+        private void PerformActionsOnShows_RaiseFileMovedEvent(object sender, FileMovedEventArgs e)
+        {
+            //TODO modify the progress bar here!
+            scannedEpisodes.Remove(e.Episode);
         }
 
         void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -126,10 +126,7 @@ namespace SimpleRenamer
             try
             {
                 logger.TraceMessage(string.Format("Starting"));
-                List<string> videoFiles = await fileWatcher.SearchTheseFoldersAsync(cts.Token);
-                logger.TraceMessage(string.Format("Found {0} files within the watch folders", videoFiles.Count));
-                await MatchTVShows(videoFiles, cts.Token);
-                logger.TraceMessage(string.Format("Matched {0} files", scannedEpisodes.Count));
+                scannedEpisodes = new ObservableCollection<TVEpisode>(await scanForShows.Scan(cts.Token));
             }
             catch (OperationCanceledException)
             {
@@ -168,160 +165,6 @@ namespace SimpleRenamer
             }
         }
 
-        public async Task MatchTVShows(List<string> videoFiles, CancellationToken ct)
-        {
-            try
-            {
-                scannedEpisodes.Clear();
-                ShowNameMapping showNameMapping = await tvShowMatcher.ReadMappingFileAsync();
-                ShowNameMapping originalMapping = await tvShowMatcher.ReadMappingFileAsync();
-                List<Task<TVEpisode>> tasks = new List<Task<TVEpisode>>();
-                //spin up a task for each file
-                foreach (string fileName in videoFiles)
-                {
-                    logger.TraceMessage(string.Format("Trying to match {0}", fileName));
-                    tasks.Add(fileMatcher.SearchFileNameAsync(fileName));
-                }
-                //as each task completes
-                foreach (var t in tasks.InCompletionOrder())
-                {
-                    ct.ThrowIfCancellationRequested();
-                    TVEpisode tempEp = await t;
-                    TVEpisodeScrape scrapeResult = null;
-                    if (tempEp != null)
-                    {
-                        logger.TraceMessage(string.Format("Matched {0}", tempEp.EpisodeName));
-                        //scrape the episode name and incorporate this in the filename (if setting allows)
-                        if (settings.RenameFiles)
-                        {
-                            scrapeResult = await tvShowMatcher.ScrapeDetailsAsync(tempEp, showNameMapping);
-                            tempEp = scrapeResult.tvep;
-                            if (scrapeResult.series != null)
-                            {
-                                Mapping map = new Mapping(scrapeResult.tvep.ShowName, scrapeResult.series.Title, scrapeResult.series.Id.ToString());
-                                if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
-                                {
-                                    showNameMapping.Mappings.Add(map);
-                                }
-                            }
-                            ct.ThrowIfCancellationRequested();
-                        }
-                        else
-                        {
-                            tempEp.NewFileName = Path.GetFileNameWithoutExtension(tempEp.FilePath);
-                        }
-                        logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3} - TVDBShowId: {4}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName, tempEp.TVDBShowId));
-                        //only add the file if it needs renaming/moving
-                        int season;
-                        int.TryParse(tempEp.Season, out season);
-                        string destinationDirectory = Path.Combine(settings.DestinationFolder, tempEp.ShowName, string.Format("Season {0}", season));
-                        string destinationFilePath = Path.Combine(destinationDirectory, tempEp.NewFileName + Path.GetExtension(tempEp.FilePath));
-                        if (!tempEp.FilePath.Equals(destinationFilePath))
-                        {
-                            logger.TraceMessage(string.Format("Will move with name {0}", tempEp.NewFileName));
-                            scannedEpisodes.Add(tempEp);
-                        }
-                        else
-                        {
-                            logger.TraceMessage(string.Format("File is already in good location {0}", tempEp.FilePath));
-                        }
-                    }
-                    else
-                    {
-                        logger.TraceMessage(string.Format("Couldn't find a match!"));
-                    }
-                }
-                if (showNameMapping.Mappings != originalMapping.Mappings || showNameMapping.Mappings.Count != originalMapping.Mappings.Count)
-                {
-                    await tvShowMatcher.WriteMappingFileAsync(showNameMapping);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.TraceException(ex);
-            }
-        }
-
-        public async Task<List<FileMoveResult>> ProcessTVShows(CancellationToken ct)
-        {
-            List<Task<FileMoveResult>> tasks = new List<Task<FileMoveResult>>();
-            List<ShowSeason> uniqueShowSeasons = new List<ShowSeason>();
-            List<FileMoveResult> ProcessFiles = new List<FileMoveResult>();
-            ShowNameMapping snm = await tvShowMatcher.ReadMappingFileAsync();
-            FileMoveProgressBar.Value = 0;
-            FileMoveProgressBar.Maximum = scannedEpisodes.Count;
-            try
-            {
-                foreach (TVEpisode ep in scannedEpisodes)
-                {
-                    if (!ep.ActionThis)
-                    {
-                        logger.TraceMessage(string.Format("Skipped {0} as user chose not to action.", ep.FilePath));
-                        FileMoveProgressBar.Value++;
-                    }
-                    else
-                    {
-                        if (settings.RenameFiles)
-                        {
-                            Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(ep.TVDBShowId)).FirstOrDefault();
-                            //check if this show season combo is already going to be processed
-                            ShowSeason showSeason = new ShowSeason(ep.ShowName, ep.Season);
-                            bool alreadyGrabbedBanners = false;
-                            foreach (ShowSeason unique in uniqueShowSeasons)
-                            {
-                                if (unique.Season.Equals(showSeason.Season) && unique.Show.Equals(showSeason.Show))
-                                {
-                                    alreadyGrabbedBanners = true;
-                                    break;
-                                }
-                            }
-                            if (alreadyGrabbedBanners)
-                            {
-                                //if we have already processed this show season combo then dont download the banners again
-                                FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, false));
-                                if (result.Success)
-                                {
-                                    ProcessFiles.Add(result);
-                                    logger.TraceMessage(string.Format("Successfully processed file without banners: {0}", result.Episode.FilePath));
-                                }
-                                FileMoveProgressBar.Value++;
-                            }
-                            else
-                            {
-                                ct.ThrowIfCancellationRequested();
-                                FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, true));
-                                if (result.Success)
-                                {
-                                    ProcessFiles.Add(result);
-                                    uniqueShowSeasons.Add(showSeason);
-                                    logger.TraceMessage(string.Format("Successfully processed file and downloaded banners: {0}", result.Episode.FilePath));
-                                }
-                                else
-                                {
-                                    logger.TraceMessage(string.Format("Failed to process {0}", result.Episode.FilePath));
-                                }
-                                FileMoveProgressBar.Value++;
-                            }
-                        }
-                        else
-                        {
-                            FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false));
-                            if (result.Success)
-                            {
-                                ProcessFiles.Add(result);
-                                logger.TraceMessage(string.Format("Successfully processed file without renaming: {0}", result.Episode.FilePath));
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.TraceException(ex);
-            }
-            return ProcessFiles;
-        }
-
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -349,12 +192,9 @@ namespace SimpleRenamer
             {
                 //process the folders and jpg downloads async
                 logger.TraceMessage(string.Format("Starting"));
-                List<FileMoveResult> filesToMove = await ProcessTVShows(cts.Token);
-
-                if (filesToMove != null && filesToMove.Count > 0)
-                {
-                    await MoveTVShows(filesToMove, cts.Token);
-                }
+                FileMoveProgressBar.Value = 0;
+                FileMoveProgressBar.Maximum = (scannedEpisodes.Where(x => x.ActionThis == true).Count()) * 2;
+                await performActionsOnShows.Action(scannedEpisodes, cts.Token);
             }
             catch (OperationCanceledException)
             {
@@ -372,37 +212,6 @@ namespace SimpleRenamer
                 CancelButton.IsEnabled = false;
                 ButtonsStackPanel.Visibility = System.Windows.Visibility.Visible;
                 ProgressStackPanel.Visibility = System.Windows.Visibility.Collapsed;
-            }
-        }
-
-        public async Task MoveTVShows(List<FileMoveResult> filesToMove, CancellationToken ct)
-        {
-            try
-            {
-                FileMoveProgressBar.Value = 0;
-                FileMoveProgressBar.Maximum = filesToMove.Count;
-                //actually move/copy the files one at a time
-                foreach (FileMoveResult fmr in filesToMove)
-                {
-                    ct.ThrowIfCancellationRequested();
-                    bool result = await await backgroundQueue.QueueTask(() => fileMover.MoveFileAsync(fmr.Episode, fmr.DestinationFilePath));
-                    FileMoveProgressBar.Value++;
-                    if (result)
-                    {
-                        scannedEpisodes.Remove(fmr.Episode);
-                        logger.TraceMessage(string.Format("Successfully {2} {0} to {1}", fmr.Episode.FilePath, fmr.DestinationFilePath, settings.CopyFiles ? "copied" : "moved"));
-                    }
-                    else
-                    {
-                        logger.TraceMessage(string.Format("Failed to {2} {0} to {1}", fmr.Episode.FilePath, fmr.DestinationFilePath, settings.CopyFiles ? "copy" : "move"));
-                    }
-                }
-                //add a bit of delay before the progress bar disappears
-                await backgroundQueue.QueueTask(() => Thread.Sleep(1000));
-            }
-            catch (Exception ex)
-            {
-                logger.TraceException(ex);
             }
         }
 
