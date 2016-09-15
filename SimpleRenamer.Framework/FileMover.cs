@@ -13,15 +13,15 @@ namespace SimpleRenamer.Framework
         private ILogger logger;
         private Settings settings;
 
-        public FileMover(IBannerDownloader bannerDl, ILogger log, ISettingsFactory settingsFactory)
+        public FileMover(IBannerDownloader bannerDl, ILogger log, IConfigurationManager configManager)
         {
             if (bannerDl == null)
             {
                 throw new ArgumentNullException(nameof(bannerDl));
             }
-            if (settingsFactory == null)
+            if (configManager == null)
             {
-                throw new ArgumentNullException(nameof(settingsFactory));
+                throw new ArgumentNullException(nameof(configManager));
             }
             if (log == null)
             {
@@ -30,7 +30,7 @@ namespace SimpleRenamer.Framework
 
             bannerDownloader = bannerDl;
             logger = log;
-            settings = settingsFactory.GetSettings();
+            settings = configManager.Settings;
         }
 
         public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, bool downloadBanner)
@@ -66,7 +66,7 @@ namespace SimpleRenamer.Framework
                     bool bannerResult;
                     if (!string.IsNullOrEmpty(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
                     {
-                        //Grab Show banner if required                        
+                        //Grab Show banner if required
                         bannerResult = await bannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
                     }
                     if (!string.IsNullOrEmpty(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))

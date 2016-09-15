@@ -24,17 +24,17 @@ namespace SimpleRenamer
         //here are all our interfaces
         private ILogger logger;
         private ITVShowMatcher tvShowMatcher;
-        private IIgnoreListFramework ignoreListFramework;
         private IDependencyInjectionContext injectionContext;
         private IScanForShows scanForShows;
         private IPerformActionsOnShows performActionsOnShows;
+        private IConfigurationManager configurationManager;
         private SelectShowWindow selectShowWindow;
         private ShowDetailsWindow showDetailsWindow;
         private SettingsWindow settingsWindow;
         private EditShowWindow editShowWindow;
         private Settings settings;
 
-        public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, ISettingsFactory settingsFactory, IIgnoreListFramework ignore, IDependencyInjectionContext injection, IPerformActionsOnShows performActions, IScanForShows scanShows)
+        public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, IDependencyInjectionContext injection, IPerformActionsOnShows performActions, IScanForShows scanShows, IConfigurationManager configManager)
         {
             if (log == null)
             {
@@ -43,14 +43,6 @@ namespace SimpleRenamer
             if (tvShowMatch == null)
             {
                 throw new ArgumentNullException(nameof(tvShowMatch));
-            }
-            if (settingsFactory == null)
-            {
-                throw new ArgumentNullException(nameof(settingsFactory));
-            }
-            if (ignore == null)
-            {
-                throw new ArgumentNullException(nameof(ignore));
             }
             if (injection == null)
             {
@@ -64,12 +56,16 @@ namespace SimpleRenamer
             {
                 throw new ArgumentNullException(nameof(performActions));
             }
+            if (configManager == null)
+            {
+                throw new ArgumentNullException(nameof(configManager));
+            }
             logger = log;
             tvShowMatcher = tvShowMatch;
-            ignoreListFramework = ignore;
             injectionContext = injection;
             scanForShows = scanShows;
             performActionsOnShows = performActions;
+            configurationManager = configManager;
 
             try
             {
@@ -81,7 +77,7 @@ namespace SimpleRenamer
                 editShowWindow.RaiseEditShowEvent += new EventHandler<EditShowEventArgs>(EditShowWindowClosedEvent);
                 selectShowWindow = injectionContext.GetService<SelectShowWindow>();
                 selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
-                settings = settingsFactory.GetSettings();
+                settings = configurationManager.Settings;
                 scannedEpisodes = new ObservableCollection<TVEpisode>();
                 ShowsListBox.ItemsSource = scannedEpisodes;
 
@@ -113,6 +109,7 @@ namespace SimpleRenamer
             try
             {
                 logger.TraceMessage("Closing");
+                configurationManager.SaveConfiguration();
                 if (!RunButton.IsEnabled)
                 {
                     e.Cancel = true;
@@ -274,12 +271,12 @@ namespace SimpleRenamer
                 if (mbr == MessageBoxResult.OK)
                 {
                     TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
-                    IgnoreList ignoreList = await ignoreListFramework.ReadIgnoreListAsync();
+                    IgnoreList ignoreList = configurationManager.IgnoredFiles;
                     if (!ignoreList.IgnoreFiles.Contains(tempEp.FilePath))
                     {
                         ignoreList.IgnoreFiles.Add(tempEp.FilePath);
                         scannedEpisodes.Remove(tempEp);
-                        await ignoreListFramework.WriteIgnoreListAsync(ignoreList);
+                        configurationManager.IgnoredFiles = ignoreList;
                     }
                 }
             }
@@ -342,7 +339,7 @@ namespace SimpleRenamer
                 logger.TraceMessage("Edit button clicked");
                 TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
                 logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
-                ShowNameMapping snm = await tvShowMatcher.ReadMappingFileAsync();
+                ShowNameMapping snm = configurationManager.ShowNameMappings;
                 if (snm != null && snm.Mappings.Count > 0)
                 {
                     logger.TraceMessage(string.Format("Mappings available"));
@@ -384,14 +381,14 @@ namespace SimpleRenamer
             {
                 if (e.Mapping != null)
                 {
-                    ShowNameMapping snm = await tvShowMatcher.ReadMappingFileAsync();
+                    ShowNameMapping snm = configurationManager.ShowNameMappings;
                     if (snm != null && snm.Mappings.Count > 0)
                     {
                         Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(e.Mapping.TVDBShowID)).FirstOrDefault();
                         if (mapping != null)
                         {
                             mapping.CustomFolderName = e.NewFolder;
-                            await tvShowMatcher.WriteMappingFileAsync(snm);
+                            configurationManager.ShowNameMappings = snm;
                         }
                     }
                 }

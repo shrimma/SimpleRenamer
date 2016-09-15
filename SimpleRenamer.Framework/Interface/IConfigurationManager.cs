@@ -1,4 +1,6 @@
-﻿namespace SimpleRenamer.Framework.Interface
+﻿using SimpleRenamer.Framework.DataModel;
+
+namespace SimpleRenamer.Framework.Interface
 {
     public interface IConfigurationManager
     {
@@ -6,5 +8,21 @@
         /// The API key for TVDB
         /// </summary>
         string TvDbApiKey { get; }
+
+        string RegexFilePath { get; }
+
+        string IgnoreListFilePath { get; }
+
+        string ShowNameMappingFilePath { get; }
+
+        Settings Settings { get; set; }
+
+        RegexFile RegexExpressions { get; set; }
+
+        IgnoreList IgnoredFiles { get; set; }
+
+        ShowNameMapping ShowNameMappings { get; set; }
+
+        void SaveConfiguration();
     }
 }

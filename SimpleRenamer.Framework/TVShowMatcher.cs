@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using TheTVDBSharp;
 using TheTVDBSharp.Models;
 
@@ -15,30 +14,27 @@ namespace SimpleRenamer.Framework
     public class TVShowMatcher : ITVShowMatcher
     {
         private string apiKey;
-        private string mappingFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "SelectedShowMapping.xml");
         private ILogger logger;
         private Settings settings;
         private TheTvdbManager tvdbManager;
+        private IConfigurationManager configurationManager;
 
-        public TVShowMatcher(IConfigurationManager configurationManager, ILogger log, ISettingsFactory settingsFactory)
+        public TVShowMatcher(IConfigurationManager configManager, ILogger log)
         {
-            if (configurationManager == null)
+            if (configManager == null)
             {
-                throw new ArgumentNullException(nameof(configurationManager));
+                throw new ArgumentNullException(nameof(configManager));
             }
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
             }
-            if (settingsFactory == null)
-            {
-                throw new ArgumentNullException(nameof(settingsFactory));
-            }
 
+            configurationManager = configManager;
             apiKey = configurationManager.TvDbApiKey;
             tvdbManager = new TheTvdbManager(apiKey);
             logger = log;
-            settings = settingsFactory.GetSettings();
+            settings = configurationManager.Settings;
         }
 
         /// <summary>
@@ -47,11 +43,11 @@ namespace SimpleRenamer.Framework
         /// <param name="episode"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public async Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode, ShowNameMapping showNameMapping)
+        public async Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode)
         {
             logger.TraceMessage("ScrapeDetailsAsync - Start");
             //read the mapping file and try and find any already selected matches
-            episode = FixMismatchTitles(episode, showNameMapping);
+            episode = FixMismatchTitles(episode);
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
             //scrape the episode name - if we haven't already got the show ID then search for it
             if (string.IsNullOrEmpty(episode.TVDBShowId))
@@ -76,8 +72,9 @@ namespace SimpleRenamer.Framework
         /// <param name="episode"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        private TVEpisode FixMismatchTitles(TVEpisode episode, ShowNameMapping showNameMapping)
+        private TVEpisode FixMismatchTitles(TVEpisode episode)
         {
+            ShowNameMapping showNameMapping = configurationManager.ShowNameMappings;
             logger.TraceMessage("FixMismatchTitles - Start");
             if (showNameMapping != null && showNameMapping.Mappings != null && showNameMapping.Mappings.Count > 0)
             {
@@ -100,45 +97,6 @@ namespace SimpleRenamer.Framework
 
             logger.TraceMessage("FixMismatchTitles - End");
             return episode;
-        }
-
-        public async Task<ShowNameMapping> ReadMappingFileAsync()
-        {
-            logger.TraceMessage("ReadMappingFileAsync - Start");
-            ShowNameMapping snm = new ShowNameMapping();
-            //if the file doesn't yet exist then set a new version
-            if (!File.Exists(mappingFilePath))
-            {
-                logger.TraceMessage("ReadMappingFileAsync - File doesn't yet exist so returning new object");
-                return snm;
-            }
-            else
-            {
-                using (FileStream fs = new FileStream(mappingFilePath, FileMode.Open))
-                {
-                    XmlSerializer serializer = new XmlSerializer(typeof(ShowNameMapping));
-                    snm = (ShowNameMapping)serializer.Deserialize(fs);
-                }
-                logger.TraceMessage("ReadMappingFileAsync - File exists so returning populated object");
-                return snm;
-            }
-        }
-
-        public async Task<bool> WriteMappingFileAsync(ShowNameMapping showNameMapping)
-        {
-            logger.TraceMessage("WriteMappingFileAsync - Start");
-            //only write the file if there is data
-            if (showNameMapping != null && showNameMapping.Mappings.Count > 0)
-            {
-                using (TextWriter writer = new StreamWriter(mappingFilePath))
-                {
-                    XmlSerializer serializer = new XmlSerializer(typeof(ShowNameMapping));
-                    serializer.Serialize(writer, showNameMapping);
-                }
-            }
-
-            logger.TraceMessage("WriteMappingFileAsync - End");
-            return true;
         }
 
         /// <summary>
@@ -258,13 +216,13 @@ namespace SimpleRenamer.Framework
 
                 if (episodeScrape.series != null)
                 {
-                    ShowNameMapping showNameMapping = await ReadMappingFileAsync();
+                    ShowNameMapping showNameMapping = configurationManager.ShowNameMappings;
                     Mapping map = new Mapping(episodeScrape.tvep.ShowName, episodeScrape.series.Title, episodeScrape.series.Id.ToString());
                     if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                     {
                         showNameMapping.Mappings.Add(map);
                     }
-                    await WriteMappingFileAsync(showNameMapping);
+                    configurationManager.ShowNameMappings = showNameMapping;
                 }
             }
             else

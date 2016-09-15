@@ -18,16 +18,16 @@ namespace SimpleRenamer.Views
         private Settings currentSettings;
         private ObservableCollection<string> watchFolders;
         private ObservableCollection<string> validExtensions;
-        private ISettingsFactory settingsFactory;
+        private IConfigurationManager configurationManager;
         private IHelper helper;
         private AddExtensionsWindow addExtensionsWindow;
         private RegexExpressionsWindow regexExpressionsWindow;
 
-        public SettingsWindow(ISettingsFactory settingsFact, IHelper help, AddExtensionsWindow extWindow, RegexExpressionsWindow expWindow)
+        public SettingsWindow(IConfigurationManager configManager, IHelper help, AddExtensionsWindow extWindow, RegexExpressionsWindow expWindow)
         {
-            if (settingsFact == null)
+            if (configManager == null)
             {
-                throw new ArgumentNullException(nameof(settingsFact));
+                throw new ArgumentNullException(nameof(configManager));
             }
             if (help == null)
             {
@@ -47,14 +47,14 @@ namespace SimpleRenamer.Views
             //init our interfaces
             addExtensionsWindow = extWindow;
             regexExpressionsWindow = expWindow;
-            settingsFactory = settingsFact;
+            configurationManager = configManager;
             helper = help;
 
             //create new event handler for extensions window
             addExtensionsWindow.RaiseCustomEvent += new EventHandler<ExtensionEventArgs>(ExtensionWindowClosedEvent);
 
             //grab the current settings from the factory and populate our UI
-            currentSettings = settingsFactory.GetSettings();
+            currentSettings = configurationManager.Settings;
             this.DataContext = currentSettings;
             watchFolders = new ObservableCollection<string>(currentSettings.WatchFolders);
             WatchListBox.ItemsSource = watchFolders;
@@ -66,7 +66,7 @@ namespace SimpleRenamer.Views
         {
             currentSettings.ValidExtensions = new List<string>(validExtensions);
             currentSettings.WatchFolders = new List<string>(watchFolders);
-            settingsFactory.SaveSettings(currentSettings);
+            configurationManager.Settings = currentSettings;
             this.Hide();
         }
 

@@ -12,20 +12,7 @@ namespace SimpleRenamer.Framework.Interface
         /// <param name="episode">Episode to scrape</param>
         /// <param name="showNameMapping">Show to scrape</param>
         /// <returns></returns>
-        Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode, ShowNameMapping showNameMapping);
-
-        /// <summary>
-        /// Reads the ShowNameMapping File from the file system
-        /// </summary>
-        /// <returns>Populated ShowNameMapping object</returns>
-        Task<ShowNameMapping> ReadMappingFileAsync();
-
-        /// <summary>
-        /// Writes the ShowNameMapping File to the file system
-        /// </summary>
-        /// <param name="showNameMapping">ShowNameMapping object to write</param>
-        /// <returns>True if successfully written</returns>
-        Task<bool> WriteMappingFileAsync(ShowNameMapping showNameMapping);
+        Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode);
 
         /// <summary>
         /// Gets a list of possible series that a TVEpisode name could relate to

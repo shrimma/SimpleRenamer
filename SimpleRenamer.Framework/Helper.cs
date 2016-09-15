@@ -1,9 +1,10 @@
-﻿using System;
+﻿using SimpleRenamer.Framework.Interface;
+using System;
 using System.IO;
 
 namespace SimpleRenamer.Framework
 {
-    public class Helper
+    public class Helper : IHelper
     {
         public bool IsFileExtensionValid(string fExt)
         {

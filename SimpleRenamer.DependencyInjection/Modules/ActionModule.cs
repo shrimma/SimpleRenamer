@@ -10,7 +10,6 @@ namespace SimpleRenamer.DependencyInjection.Modules
         {
             Bind<IFileMover>().To<FileMover>().InSingletonScope();
             Bind<IBannerDownloader>().To<BannerDownloader>().InSingletonScope();
-            Bind<IIgnoreListFramework>().To<IgnoreListFramework>().InSingletonScope();
             Bind<IPerformActionsOnShows>().To<PerformActionsOnShows>().InSingletonScope();
             Bind<IGetShowDetails>().To<GetShowDetails>().InSingletonScope();
         }

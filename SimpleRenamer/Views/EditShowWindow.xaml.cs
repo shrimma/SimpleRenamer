@@ -17,15 +17,15 @@ namespace SimpleRenamer.Views
         private Mapping currentMapping;
         public event EventHandler<EditShowEventArgs> RaiseEditShowEvent;
 
-        public EditShowWindow(ISettingsFactory settingsFactory)
+        public EditShowWindow(IConfigurationManager configManager)
         {
-            if (settingsFactory == null)
+            if (configManager == null)
             {
-                throw new ArgumentNullException(nameof(settingsFactory));
+                throw new ArgumentNullException(nameof(configManager));
             }
 
             InitializeComponent();
-            currentSettings = settingsFactory.GetSettings();
+            currentSettings = configManager.Settings;
             this.Closing += EditShowWindow_Closing;
         }
 
