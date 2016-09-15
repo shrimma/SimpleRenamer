@@ -93,6 +93,12 @@ namespace SimpleRenamer
             }
         }
 
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            Application.Current.Shutdown();
+        }
+
         private void PerformActionsOnShows_RaiseFilePreProcessedEvent(object sender, FilePreProcessedEventArgs e)
         {
             FileMoveProgressBar.Value++;
@@ -113,10 +119,6 @@ namespace SimpleRenamer
                 if (!RunButton.IsEnabled)
                 {
                     e.Cancel = true;
-                }
-                else
-                {
-                    this.Hide();
                 }
             }
             catch (Exception ex)
