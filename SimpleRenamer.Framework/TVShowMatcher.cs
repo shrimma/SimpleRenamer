@@ -18,11 +18,15 @@ namespace SimpleRenamer.Framework
         private ITheTvdbManager tvdbManager;
         private IConfigurationManager configurationManager;
 
-        public TVShowMatcher(IConfigurationManager configManager, ILogger log)
+        public TVShowMatcher(IConfigurationManager configManager, ITheTvdbManager tvdb, ILogger log)
         {
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
+            }
+            if (tvdb == null)
+            {
+                throw new ArgumentNullException(nameof(tvdb));
             }
             if (log == null)
             {
@@ -30,7 +34,7 @@ namespace SimpleRenamer.Framework
             }
 
             configurationManager = configManager;
-            tvdbManager = new TheTvdbManager(configurationManager.TvDbApiKey);
+            tvdbManager = tvdb;
             logger = log;
             settings = configurationManager.Settings;
         }

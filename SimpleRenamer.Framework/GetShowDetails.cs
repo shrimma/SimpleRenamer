@@ -16,19 +16,19 @@ namespace SimpleRenamer.Framework
         private ILogger logger;
         private ITheTvdbManager tvdbManager;
 
-        public GetShowDetails(ILogger log, IConfigurationManager configurationManager)
+        public GetShowDetails(ILogger log, ITheTvdbManager tvdb)
         {
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
             }
-            if (configurationManager == null)
+            if (tvdb == null)
             {
-                throw new ArgumentNullException(nameof(configurationManager));
+                throw new ArgumentNullException(nameof(tvdb));
             }
 
             logger = log;
-            tvdbManager = new TheTvdbManager(configurationManager.TvDbApiKey);
+            tvdbManager = tvdb;
         }
 
 

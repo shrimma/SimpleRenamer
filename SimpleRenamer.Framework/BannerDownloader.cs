@@ -11,21 +11,19 @@ namespace SimpleRenamer.Framework
         private ILogger logger;
         private ITheTvdbManager tvdbManager;
 
-        public BannerDownloader(IConfigurationManager configurationManager, ILogger log)
+        public BannerDownloader(ITheTvdbManager tvdb, ILogger log)
         {
-            if (configurationManager == null)
-            {
-                throw new ArgumentNullException(nameof(configurationManager));
-            }
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
             }
-            //grab our API key and init a new tvdb manager
-            tvdbManager = new TheTvdbManager(configurationManager.TvDbApiKey);
+            if (tvdb == null)
+            {
+                throw new ArgumentNullException(nameof(tvdb));
+            }
 
-            //init our logger
             logger = log;
+            tvdbManager = tvdb;
         }
 
         /// <inheritdoc/>

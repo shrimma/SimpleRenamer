@@ -4,6 +4,7 @@ using SimpleRenamer.Framework.Interface;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using TheTVDBSharp;
 
 namespace SimpleRenamer.DependencyInjection
 {
@@ -28,6 +29,7 @@ namespace SimpleRenamer.DependencyInjection
             _kernel = new StandardKernel();
             _kernel.Load(Assembly.GetExecutingAssembly());
             _kernel.Bind<IDependencyInjectionContext>().ToConstant<DependencyInjectionContext>(this);
+            _kernel.Bind<ITheTvdbManager>().To<TheTvdbManager>().WithConstructorArgument("apiKey", context => context.Kernel.Get<IConfigurationManager>().TvDbApiKey);
         }
 
         /// <inheritdoc />
