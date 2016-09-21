@@ -14,7 +14,7 @@ namespace SimpleRenamer.Framework
     public class GetShowDetails : IGetShowDetails
     {
         private ILogger logger;
-        private string apiKey;
+        private ITheTvdbManager tvdbManager;
 
         public GetShowDetails(ILogger log, IConfigurationManager configurationManager)
         {
@@ -28,7 +28,7 @@ namespace SimpleRenamer.Framework
             }
 
             logger = log;
-            apiKey = configurationManager.TvDbApiKey;
+            tvdbManager = new TheTvdbManager(configurationManager.TvDbApiKey);
         }
 
 
@@ -37,7 +37,6 @@ namespace SimpleRenamer.Framework
             logger.TraceMessage("GetSeriesInfo - Start");
             uint sId = 0;
             uint.TryParse(showId, out sId);
-            TheTvdbManager tvdbManager = new TheTvdbManager(apiKey);
             Series matchedSeries = await tvdbManager.GetSeries(sId, Language.English);
             BitmapImage bannerImage = null;
 

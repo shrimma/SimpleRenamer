@@ -8,9 +8,8 @@ namespace SimpleRenamer.Framework
 {
     public class BannerDownloader : IBannerDownloader
     {
-        private string apiKey;
         private ILogger logger;
-        private TheTvdbManager tvdbManager;
+        private ITheTvdbManager tvdbManager;
 
         public BannerDownloader(IConfigurationManager configurationManager, ILogger log)
         {
@@ -23,14 +22,13 @@ namespace SimpleRenamer.Framework
                 throw new ArgumentNullException(nameof(log));
             }
             //grab our API key and init a new tvdb manager
-            apiKey = configurationManager.TvDbApiKey;
-            tvdbManager = new TheTvdbManager(apiKey);
+            tvdbManager = new TheTvdbManager(configurationManager.TvDbApiKey);
 
             //init our logger
             logger = log;
         }
 
-        /// <inheritdoc/>        
+        /// <inheritdoc/>
         public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder)
         {
             logger.TraceMessage("SaveBannerAsync - Start");

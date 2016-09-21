@@ -13,10 +13,9 @@ namespace SimpleRenamer.Framework
 {
     public class TVShowMatcher : ITVShowMatcher
     {
-        private string apiKey;
         private ILogger logger;
         private Settings settings;
-        private TheTvdbManager tvdbManager;
+        private ITheTvdbManager tvdbManager;
         private IConfigurationManager configurationManager;
 
         public TVShowMatcher(IConfigurationManager configManager, ILogger log)
@@ -31,8 +30,7 @@ namespace SimpleRenamer.Framework
             }
 
             configurationManager = configManager;
-            apiKey = configurationManager.TvDbApiKey;
-            tvdbManager = new TheTvdbManager(apiKey);
+            tvdbManager = new TheTvdbManager(configurationManager.TvDbApiKey);
             logger = log;
             settings = configurationManager.Settings;
         }
