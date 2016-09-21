@@ -9,8 +9,22 @@ namespace SimpleRenamer.Framework.Interface
 {
     public interface IPerformActionsOnShows
     {
+        /// <summary>
+        /// Fired whenever a preprocessor action is completed on a file
+        /// </summary>
         event EventHandler<FilePreProcessedEventArgs> RaiseFilePreProcessedEvent;
+
+        /// <summary>
+        /// Fired whenever a file is moved
+        /// </summary>
         event EventHandler<FileMovedEventArgs> RaiseFileMovedEvent;
+
+        /// <summary>
+        /// Performs preprocessor actions and then moves a list of scanned and matched episodes
+        /// </summary>
+        /// <param name="scannedEpisodes">The episodes to action</param>
+        /// <param name="ct">CancellationToken</param>
+        /// <returns></returns>
         Task Action(ObservableCollection<TVEpisode> scannedEpisodes, CancellationToken ct);
     }
 }

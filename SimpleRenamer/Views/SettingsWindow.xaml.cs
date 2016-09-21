@@ -8,7 +8,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Forms;
 
-namespace SimpleRenamer
+namespace SimpleRenamer.Views
 {
     /// <summary>
     /// Interaction logic for SettingsWindow.xaml
@@ -18,15 +18,20 @@ namespace SimpleRenamer
         private Settings currentSettings;
         private ObservableCollection<string> watchFolders;
         private ObservableCollection<string> validExtensions;
-        private ISettingsFactory settingsFactory;
+        private IConfigurationManager configurationManager;
+        private IHelper helper;
         private AddExtensionsWindow addExtensionsWindow;
         private RegexExpressionsWindow regexExpressionsWindow;
 
-        public SettingsWindow(ISettingsFactory settingsFact, AddExtensionsWindow extWindow, RegexExpressionsWindow expWindow)
+        public SettingsWindow(IConfigurationManager configManager, IHelper help, AddExtensionsWindow extWindow, RegexExpressionsWindow expWindow)
         {
-            if (settingsFact == null)
+            if (configManager == null)
             {
-                throw new ArgumentNullException(nameof(settingsFact));
+                throw new ArgumentNullException(nameof(configManager));
+            }
+            if (help == null)
+            {
+                throw new ArgumentNullException(nameof(help));
             }
             if (extWindow == null)
             {
@@ -42,13 +47,14 @@ namespace SimpleRenamer
             //init our interfaces
             addExtensionsWindow = extWindow;
             regexExpressionsWindow = expWindow;
-            settingsFactory = settingsFact;
+            configurationManager = configManager;
+            helper = help;
 
             //create new event handler for extensions window
             addExtensionsWindow.RaiseCustomEvent += new EventHandler<ExtensionEventArgs>(ExtensionWindowClosedEvent);
 
             //grab the current settings from the factory and populate our UI
-            currentSettings = settingsFactory.GetSettings();
+            currentSettings = configurationManager.Settings;
             this.DataContext = currentSettings;
             watchFolders = new ObservableCollection<string>(currentSettings.WatchFolders);
             WatchListBox.ItemsSource = watchFolders;
@@ -60,7 +66,7 @@ namespace SimpleRenamer
         {
             currentSettings.ValidExtensions = new List<string>(validExtensions);
             currentSettings.WatchFolders = new List<string>(watchFolders);
-            settingsFactory.SaveSettings(currentSettings);
+            configurationManager.Settings = currentSettings;
             this.Hide();
         }
 
@@ -90,35 +96,13 @@ namespace SimpleRenamer
 
         private void ExtensionWindowClosedEvent(object sender, ExtensionEventArgs e)
         {
-            if (IsFileExtensionValid(e.Extension))
+            if (helper.IsFileExtensionValid(e.Extension))
             {
                 if (!watchFolders.Contains(e.Extension))
                 {
                     validExtensions.Add(e.Extension);
                 }
             }
-        }
-
-        private bool IsFileExtensionValid(string fExt)
-        {
-            bool answer = true;
-            if (!String.IsNullOrWhiteSpace(fExt) && fExt.Length > 1 && fExt[0] == '.')
-            {
-                char[] invalidFileChars = Path.GetInvalidFileNameChars();
-                foreach (char c in invalidFileChars)
-                {
-                    if (fExt.Contains(c.ToString()))
-                    {
-                        answer = false;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                answer = false;
-            }
-            return answer;
         }
 
         private void BrowseDestinationButton_Click(object sender, RoutedEventArgs e)

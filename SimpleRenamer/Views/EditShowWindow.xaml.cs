@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Windows;
 
-namespace SimpleRenamer
+namespace SimpleRenamer.Views
 {
     /// <summary>
     /// Interaction logic for EditShowWindow.xaml
@@ -17,15 +17,15 @@ namespace SimpleRenamer
         private Mapping currentMapping;
         public event EventHandler<EditShowEventArgs> RaiseEditShowEvent;
 
-        public EditShowWindow(ISettingsFactory settingsFactory)
+        public EditShowWindow(IConfigurationManager configManager)
         {
-            if (settingsFactory == null)
+            if (configManager == null)
             {
-                throw new ArgumentNullException(nameof(settingsFactory));
+                throw new ArgumentNullException(nameof(configManager));
             }
 
             InitializeComponent();
-            currentSettings = settingsFactory.GetSettings();
+            currentSettings = configManager.Settings;
             this.Closing += EditShowWindow_Closing;
         }
 

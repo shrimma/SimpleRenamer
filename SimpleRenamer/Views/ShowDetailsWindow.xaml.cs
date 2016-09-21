@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace SimpleRenamer
+namespace SimpleRenamer.Views
 {
     /// <summary>
     /// Interaction logic for ShowDetailsForm.xaml

@@ -5,27 +5,25 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 
-namespace SimpleRenamer
+namespace SimpleRenamer.Views
 {
     /// <summary>
     /// Interaction logic for RegexExpressions.xaml
     /// </summary>
     public partial class RegexExpressionsWindow : Window
     {
-        private RegexFile currentRegex;
         public ObservableCollection<RegexExpression> regExp;
-        private IFileMatcher fileMatcher;
-        public RegexExpressionsWindow(IFileMatcher fileMatch)
+        private IConfigurationManager configurationManager;
+        public RegexExpressionsWindow(IConfigurationManager configManager)
         {
-            if (fileMatch == null)
+            if (configManager == null)
             {
-                throw new ArgumentNullException(nameof(fileMatch));
+                throw new ArgumentNullException(nameof(configManager));
             }
-            fileMatcher = fileMatch;
+            configurationManager = configManager;
 
             InitializeComponent();
-            currentRegex = fileMatcher.ReadExpressionFileAsync().GetAwaiter().GetResult();
-            regExp = new ObservableCollection<RegexExpression>(currentRegex.RegexExpressions);
+            regExp = new ObservableCollection<RegexExpression>(configurationManager.RegexExpressions.RegexExpressions);
             ExpressionsListBox.ItemsSource = regExp;
         }
 
@@ -41,14 +39,13 @@ namespace SimpleRenamer
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            currentRegex.RegexExpressions = new List<RegexExpression>(regExp);
-            await fileMatcher.WriteExpressionFileAsync(currentRegex);
-            this.Close();
+            configurationManager.RegexExpressions.RegexExpressions = new List<RegexExpression>(regExp);
+            this.Hide();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            this.Hide();
         }
     }
 }

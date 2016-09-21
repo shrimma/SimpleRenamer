@@ -16,9 +16,10 @@ namespace SimpleRenamer.Framework
         private IFileWatcher fileWatcher;
         private ITVShowMatcher tvShowMatcher;
         private IFileMatcher fileMatcher;
-
+        private IConfigurationManager configurationManager;
         private Settings settings;
-        public ScanForShows(ILogger log, IFileWatcher fileWatch, ITVShowMatcher showMatch, IFileMatcher fileMatch, ISettingsFactory settingsFactory)
+
+        public ScanForShows(ILogger log, IFileWatcher fileWatch, ITVShowMatcher showMatch, IFileMatcher fileMatch, IConfigurationManager configManager)
         {
             if (log == null)
             {
@@ -36,15 +37,16 @@ namespace SimpleRenamer.Framework
             {
                 throw new ArgumentNullException(nameof(fileMatch));
             }
-            if (settingsFactory == null)
+            if (configManager == null)
             {
-                throw new ArgumentNullException(nameof(settingsFactory));
+                throw new ArgumentNullException(nameof(configManager));
             }
             logger = log;
             fileWatcher = fileWatch;
             tvShowMatcher = showMatch;
             fileMatcher = fileMatch;
-            settings = settingsFactory.GetSettings();
+            configurationManager = configManager;
+            settings = configurationManager.Settings;
         }
 
         public async Task<List<TVEpisode>> Scan(CancellationToken ct)
@@ -60,8 +62,8 @@ namespace SimpleRenamer.Framework
             List<TVEpisode> scannedEpisodes = new List<TVEpisode>();
             try
             {
-                ShowNameMapping showNameMapping = await tvShowMatcher.ReadMappingFileAsync();
-                ShowNameMapping originalMapping = await tvShowMatcher.ReadMappingFileAsync();
+                ShowNameMapping showNameMapping = configurationManager.ShowNameMappings;
+                ShowNameMapping originalMapping = configurationManager.ShowNameMappings;
                 List<Task<TVEpisode>> tasks = new List<Task<TVEpisode>>();
                 //spin up a task for each file
                 foreach (string fileName in videoFiles)
@@ -81,7 +83,7 @@ namespace SimpleRenamer.Framework
                         //scrape the episode name and incorporate this in the filename (if setting allows)
                         if (settings.RenameFiles)
                         {
-                            scrapeResult = await tvShowMatcher.ScrapeDetailsAsync(tempEp, showNameMapping);
+                            scrapeResult = await tvShowMatcher.ScrapeDetailsAsync(tempEp);
                             tempEp = scrapeResult.tvep;
                             if (scrapeResult.series != null)
                             {
@@ -120,7 +122,7 @@ namespace SimpleRenamer.Framework
                 }
                 if (showNameMapping.Mappings != originalMapping.Mappings || showNameMapping.Mappings.Count != originalMapping.Mappings.Count)
                 {
-                    await tvShowMatcher.WriteMappingFileAsync(showNameMapping);
+                    configurationManager.ShowNameMappings = showNameMapping;
                 }
             }
             catch (Exception ex)

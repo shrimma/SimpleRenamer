@@ -1,9 +1,9 @@
 ﻿using SimpleRenamer.EventArguments;
+using SimpleRenamer.Framework.Interface;
 using System;
-using System.IO;
 using System.Windows;
 
-namespace SimpleRenamer
+namespace SimpleRenamer.Views
 {
     /// <summary>
     /// Interaction logic for AddExtensionsWindow.xaml
@@ -11,9 +11,16 @@ namespace SimpleRenamer
     public partial class AddExtensionsWindow : Window
     {
         public event EventHandler<ExtensionEventArgs> RaiseCustomEvent;
+        private IHelper helper;
 
-        public AddExtensionsWindow()
+        public AddExtensionsWindow(IHelper help)
         {
+            if (help == null)
+            {
+                throw new ArgumentNullException(nameof(help));
+            }
+
+            helper = help;
             InitializeComponent();
             this.Closing += AddExtensionsWindow_Closing;
         }
@@ -26,7 +33,7 @@ namespace SimpleRenamer
 
         private void OKButton_Click(object sender, RoutedEventArgs e)
         {
-            if (IsFileExtensionValid(ExtensionTextBox.Text))
+            if (helper.IsFileExtensionValid(ExtensionTextBox.Text))
             {
                 RaiseCustomEvent(this, new ExtensionEventArgs(ExtensionTextBox.Text));
                 this.Hide();
@@ -41,28 +48,6 @@ namespace SimpleRenamer
         {
             RaiseCustomEvent(this, new ExtensionEventArgs(null));
             this.Hide();
-        }
-
-        private bool IsFileExtensionValid(string fExt)
-        {
-            bool answer = true;
-            if (!String.IsNullOrWhiteSpace(fExt) && fExt.Length > 1 && fExt[0] == '.')
-            {
-                char[] invalidFileChars = Path.GetInvalidFileNameChars();
-                foreach (char c in invalidFileChars)
-                {
-                    if (fExt.Contains(c.ToString()))
-                    {
-                        answer = false;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                answer = false;
-            }
-            return answer;
         }
     }
 }

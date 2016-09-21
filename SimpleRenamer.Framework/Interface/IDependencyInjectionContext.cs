@@ -23,6 +23,7 @@ namespace SimpleRenamer.Framework.Interface
         /// <param name="constructorArguments">List of key value pair for any constructor arguments - Key is argument name and value is argument value</param>
         /// <returns>The service if it exists</returns>
         T GetService<T>(List<KeyValuePair<string, object>> constructorArguments);
+
         /// <summary>
         /// Bind a context to a constant
         /// </summary>

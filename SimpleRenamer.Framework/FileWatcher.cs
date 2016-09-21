@@ -11,32 +11,28 @@ namespace SimpleRenamer.Framework
     public class FileWatcher : IFileWatcher
     {
         private ILogger logger;
-        private IIgnoreListFramework ignoreListFramework;
+        private IConfigurationManager configurationManager;
         private Settings settings;
 
-        public FileWatcher(ILogger log, IIgnoreListFramework ignoreFramework, ISettingsFactory settingFactory)
+        public FileWatcher(ILogger log, IConfigurationManager configManager)
         {
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
             }
-            if (ignoreFramework == null)
+            if (configManager == null)
             {
-                throw new ArgumentNullException(nameof(ignoreFramework));
-            }
-            if (settingFactory == null)
-            {
-                throw new ArgumentNullException(nameof(settingFactory));
+                throw new ArgumentNullException(nameof(configManager));
             }
             logger = log;
-            ignoreListFramework = ignoreFramework;
-            settings = settingFactory.GetSettings();
+            configurationManager = configManager;
+            settings = configurationManager.Settings;
         }
         public async Task<List<string>> SearchTheseFoldersAsync(CancellationToken ct)
         {
             logger.TraceMessage("SearchTheseFoldersAsync - Start");
             List<string> foundFiles = new List<string>();
-            IgnoreList ignoreList = await ignoreListFramework.ReadIgnoreListAsync();
+            IgnoreList ignoreList = configurationManager.IgnoredFiles;
 
             //FOR EACH WATCH FOLDER
             foreach (string folder in settings.WatchFolders)

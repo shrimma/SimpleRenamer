@@ -4,23 +4,22 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace SimpleRenamer.Framework
 {
     public class FileMatcher : IFileMatcher
     {
-        private static RegexFile regexExpressions = null;
-        private static string regexFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "RegexExpressions.xml");
+        private RegexFile regexExpressions;
         private ILogger logger;
 
-        public FileMatcher(ILogger log)
+        public FileMatcher(ILogger log, IConfigurationManager configManager)
         {
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
             }
             logger = log;
+            regexExpressions = configManager.RegexExpressions;
         }
 
         public async Task<TVEpisode> SearchFileNameAsync(string fileName)
@@ -32,7 +31,6 @@ namespace SimpleRenamer.Framework
 
             try
             {
-                regexExpressions = await ReadExpressionFileAsync();
                 foreach (RegexExpression exp in regexExpressions.RegexExpressions)
                 {
                     if (exp.IsEnabled)
@@ -60,45 +58,6 @@ namespace SimpleRenamer.Framework
 
             logger.TraceMessage("SearchFileNameAsync - End NULL");
             return null;
-        }
-
-        public async Task<RegexFile> ReadExpressionFileAsync()
-        {
-            logger.TraceMessage("ReadExpressionFileAsync - Start");
-            RegexFile snm = new RegexFile();
-            //if the file doesn't yet exist then set a new version
-            if (!File.Exists(regexFilePath))
-            {
-                logger.TraceMessage("ReadExpressionFileAsync - File doesn't exist so returning new object");
-                return snm;
-            }
-            else
-            {
-                using (FileStream fs = new FileStream(regexFilePath, FileMode.Open))
-                {
-                    XmlSerializer serializer = new XmlSerializer(typeof(RegexFile));
-                    snm = (RegexFile)serializer.Deserialize(fs);
-                }
-                logger.TraceMessage("ReadExpressionFileAsync - File exists returning populated expressions");
-                return snm;
-            }
-        }
-
-        public async Task<bool> WriteExpressionFileAsync(RegexFile regexMatchers)
-        {
-            logger.TraceMessage("WriteExpressionFileAsync - Start");
-            //only write the file if there is data
-            if (regexMatchers != null && regexMatchers.RegexExpressions.Count > 0)
-            {
-                using (TextWriter writer = new StreamWriter(regexFilePath))
-                {
-                    XmlSerializer serializer = new XmlSerializer(typeof(RegexFile));
-                    serializer.Serialize(writer, regexMatchers);
-                }
-            }
-
-            logger.TraceMessage("WriteExpressionFileAsync - End");
-            return true;
         }
 
         private string GetTrueShowName(string input)

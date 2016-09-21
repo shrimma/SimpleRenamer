@@ -16,22 +16,40 @@ namespace SimpleRenamer.Framework
         private ITVShowMatcher tvShowMatcher;
         private IBackgroundQueue backgroundQueue;
         private IFileMover fileMover;
+        private IConfigurationManager configurationManager;
         private Settings settings;
         public event EventHandler<FilePreProcessedEventArgs> RaiseFilePreProcessedEvent;
         public event EventHandler<FileMovedEventArgs> RaiseFileMovedEvent;
 
-        public PerformActionsOnShows(ILogger log, ITVShowMatcher showMatch, IBackgroundQueue backgroundQ, IFileMover fileMove, ISettingsFactory settingsFactory)
+        public PerformActionsOnShows(ILogger log, ITVShowMatcher showMatch, IBackgroundQueue backgroundQ, IFileMover fileMove, IConfigurationManager configManager)
         {
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
+            }
+            if (showMatch == null)
+            {
+                throw new ArgumentNullException(nameof(showMatch));
+            }
+            if (backgroundQ == null)
+            {
+                throw new ArgumentNullException(nameof(backgroundQ));
+            }
+            if (fileMove == null)
+            {
+                throw new ArgumentNullException(nameof(fileMove));
+            }
+            if (configManager == null)
+            {
+                throw new ArgumentNullException(nameof(configManager));
             }
 
             logger = log;
             tvShowMatcher = showMatch;
             backgroundQueue = backgroundQ;
             fileMover = fileMove;
-            settings = settingsFactory.GetSettings();
+            configurationManager = configManager;
+            settings = configurationManager.Settings;
         }
 
         public async Task Action(ObservableCollection<TVEpisode> scannedEpisodes, CancellationToken ct)
@@ -49,7 +67,7 @@ namespace SimpleRenamer.Framework
             List<Task<FileMoveResult>> tasks = new List<Task<FileMoveResult>>();
             List<ShowSeason> uniqueShowSeasons = new List<ShowSeason>();
             List<FileMoveResult> ProcessFiles = new List<FileMoveResult>();
-            ShowNameMapping snm = await tvShowMatcher.ReadMappingFileAsync();
+            ShowNameMapping snm = configurationManager.ShowNameMappings;
             try
             {
                 foreach (TVEpisode ep in scannedEpisodes)
