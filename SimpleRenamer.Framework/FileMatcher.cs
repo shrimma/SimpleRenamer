@@ -25,14 +25,14 @@ namespace SimpleRenamer.Framework
             regexExpressions = configManager.RegexExpressions;
         }
 
-        public async Task<List<TVEpisode>> SearchFilesAsync(List<string> files)
+        public async Task<List<MatchedFile>> SearchFilesAsync(List<string> files)
         {
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Parsing file names for show or movie details"));
             object lockList = new object();
-            List<TVEpisode> episodes = new List<TVEpisode>();
+            List<MatchedFile> episodes = new List<MatchedFile>();
             Parallel.ForEach(files, (file) =>
             {
-                TVEpisode episode = SearchFileNameAsync(file).GetAwaiter().GetResult();
+                MatchedFile episode = SearchFileNameAsync(file).GetAwaiter().GetResult();
                 if (episode != null)
                 {
                     logger.TraceMessage(string.Format("Matched {0}", episode.EpisodeName));
@@ -44,7 +44,7 @@ namespace SimpleRenamer.Framework
                 else
                 {
                     logger.TraceMessage(string.Format("Couldn't find a match!"));
-                    episode = new TVEpisode(file, string.Empty, string.Empty, string.Empty);
+                    episode = new MatchedFile(file, string.Empty, string.Empty, string.Empty);
                     lock (lockList)
                     {
                         episodes.Add(episode);
@@ -56,12 +56,14 @@ namespace SimpleRenamer.Framework
             return episodes;
         }
 
-        private async Task<TVEpisode> SearchFileNameAsync(string fileName)
+        private async Task<MatchedFile> SearchFileNameAsync(string fileName)
         {
             logger.TraceMessage("SearchFileNameAsync - Start");
             string showname = null;
             string season = null;
             string episode = null;
+            string movieTitle = null;
+            int year = 0;
 
             try
             {
@@ -72,14 +74,28 @@ namespace SimpleRenamer.Framework
                         //process the file name
                         Regex regexStandard = new Regex(exp.Expression, RegexOptions.IgnoreCase);
                         Match tvshow = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
-                        showname = GetTrueShowName(tvshow.Groups["series_name"].Value);
-                        season = tvshow.Groups["season_num"].Value;
-                        episode = tvshow.Groups["ep_num"].Value;
 
-                        if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
+                        //match for tv show regexp
+                        if (exp.IsForTvShow)
                         {
-                            logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
-                            return new TVEpisode(fileName, showname, season, episode);
+                            showname = GetTrueShowName(tvshow.Groups["series_name"].Value);
+                            season = tvshow.Groups["season_num"].Value;
+                            episode = tvshow.Groups["ep_num"].Value;
+
+                            if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
+                            {
+                                logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
+                                return new MatchedFile(fileName, showname, season, episode);
+                            }
+                        }
+                        //else match for movie regexp
+                        else
+                        {
+                            if (!string.IsNullOrEmpty(movieTitle))
+                            {
+                                logger.TraceMessage("SearchFileNameAsync - Found movietitle, and year in file name");
+                                return new MatchedFile(fileName, movieTitle, year);
+                            }
                         }
                     }
                 }

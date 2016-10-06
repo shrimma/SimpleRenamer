@@ -29,7 +29,7 @@ namespace SimpleRenamer.Views
 
         private void AddExpressionButton_Click(object sender, RoutedEventArgs e)
         {
-            regExp.Add(new RegexExpression("", false));
+            regExp.Add(new RegexExpression("", false, true));
         }
 
         private void DeleteExpressionButton_Click(object sender, RoutedEventArgs e)

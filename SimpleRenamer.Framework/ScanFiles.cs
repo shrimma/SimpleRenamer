@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework
 {
-    public class ScanForShows : IScanForShows
+    public class ScanFiles : IScanForShows
     {
         private ILogger logger;
         private IFileWatcher fileWatcher;
@@ -20,7 +20,7 @@ namespace SimpleRenamer.Framework
         private Settings settings;
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public ScanForShows(ILogger log, IFileWatcher fileWatch, ITVShowMatcher showMatch, IFileMatcher fileMatch, IConfigurationManager configManager)
+        public ScanFiles(ILogger log, IFileWatcher fileWatch, ITVShowMatcher showMatch, IFileMatcher fileMatch, IConfigurationManager configManager)
         {
             if (log == null)
             {
@@ -58,23 +58,45 @@ namespace SimpleRenamer.Framework
             RaiseProgressEvent(this, e);
         }
 
-        public async Task<List<TVEpisode>> Scan(CancellationToken ct)
+        public async Task<List<MatchedFile>> Scan(CancellationToken ct)
         {
+            //search folders for a list of video file paths
             List<string> videoFiles = await fileWatcher.SearchTheseFoldersAsync(ct);
-            List<TVEpisode> scannedEpisodes = await MatchTVShows(videoFiles, ct);
+            //use regex to attempt to figure out some details about the files ie showname, episode number, etc
+            List<MatchedFile> matchedFiles = await SearchFileNames(videoFiles, ct);
 
-            return scannedEpisodes;
+            //now try and match the tv shows with TVDB
+            List<MatchedFile> scannedEpisodes = await MatchTVShows(matchedFiles.Where(x => x.IsTVShow == true).ToList(), ct);
+            List<MatchedFile> scannedMovies = await MatchMovies(matchedFiles.Where(x => x.IsMovie == true).ToList(), ct);
+
+            //add the tv shows and movies to the same list and return this
+            List<MatchedFile> scannedFiles = new List<MatchedFile>();
+            if (scannedEpisodes != null && scannedEpisodes.Count > 0)
+            {
+                scannedFiles.AddRange(scannedEpisodes);
+            }
+            if (scannedMovies != null && scannedMovies.Count > 0)
+            {
+                scannedFiles.AddRange(scannedMovies);
+            }
+
+            return scannedFiles;
         }
 
-        private async Task<List<TVEpisode>> MatchTVShows(List<string> videoFiles, CancellationToken ct)
+        private async Task<List<MatchedFile>> SearchFileNames(List<string> videoFiles, CancellationToken ct)
+        {
+            List<MatchedFile> matchedFiles = await fileMatcher.SearchFilesAsync(videoFiles);
+            return matchedFiles;
+        }
+
+        private async Task<List<MatchedFile>> MatchTVShows(List<MatchedFile> matchedFiles, CancellationToken ct)
         {
             object lockList = new object();
-            List<TVEpisode> scannedEpisodes = new List<TVEpisode>();
+            List<MatchedFile> scannedEpisodes = new List<MatchedFile>();
             try
             {
                 ShowNameMapping showNameMapping = configurationManager.ShowNameMappings;
                 ShowNameMapping originalMapping = configurationManager.ShowNameMappings;
-                List<TVEpisode> matchedFiles = await fileMatcher.SearchFilesAsync(videoFiles);
 
                 //for each file
                 Parallel.ForEach(matchedFiles, (tempEp) =>
@@ -132,6 +154,14 @@ namespace SimpleRenamer.Framework
             }
 
             return scannedEpisodes;
+        }
+
+        private async Task<List<MatchedFile>> MatchMovies(List<MatchedFile> matchedFiles, CancellationToken ct)
+        {
+            object lockList = new object();
+            List<MatchedFile> scannedMovies = new List<MatchedFile>();
+
+            return scannedMovies;
         }
     }
 }

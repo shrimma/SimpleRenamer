@@ -20,7 +20,7 @@ namespace SimpleRenamer
     public partial class MainWindow : Window
     {
         public CancellationTokenSource cts;
-        private ObservableCollection<TVEpisode> scannedEpisodes;
+        private ObservableCollection<MatchedFile> scannedEpisodes;
 
         //here are all our interfaces
         private ILogger logger;
@@ -79,7 +79,7 @@ namespace SimpleRenamer
                 selectShowWindow = injectionContext.GetService<SelectShowWindow>();
                 selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
                 settings = configurationManager.Settings;
-                scannedEpisodes = new ObservableCollection<TVEpisode>();
+                scannedEpisodes = new ObservableCollection<MatchedFile>();
                 ShowsListBox.ItemsSource = scannedEpisodes;
 
                 //setup the perform actions event handlers
@@ -172,7 +172,7 @@ namespace SimpleRenamer
                 FileMoveProgressBar.IsIndeterminate = true;
 
                 logger.TraceMessage(string.Format("Starting"));
-                scannedEpisodes = new ObservableCollection<TVEpisode>(await scanForShows.Scan(cts.Token));
+                scannedEpisodes = new ObservableCollection<MatchedFile>(await scanForShows.Scan(cts.Token));
                 logger.TraceMessage($"Grabbed {scannedEpisodes.Count} episodes");
                 ShowsListBox.ItemsSource = scannedEpisodes;
                 logger.TraceMessage($"Populated listbox with the scanned episodes");
@@ -258,10 +258,17 @@ namespace SimpleRenamer
         {
             try
             {
-                TVEpisode temp = (TVEpisode)ShowsListBox.SelectedItem;
-                List<ShowView> possibleShows = await tvShowMatcher.GetPossibleShowsForEpisode(temp);
-                selectShowWindow.SetView(possibleShows, string.Format("Simple TV Renamer - Select Show for file {0}", Path.GetFileName(temp.FilePath)));
-                selectShowWindow.ShowDialog();
+                MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
+                if (temp.IsTVShow)
+                {
+                    List<ShowView> possibleShows = await tvShowMatcher.GetPossibleShowsForEpisode(temp);
+                    selectShowWindow.SetView(possibleShows, string.Format("Simple Renamer - TV - Select Show for file {0}", Path.GetFileName(temp.FilePath)));
+                    selectShowWindow.ShowDialog();
+                }
+                else if (temp.IsMovie)
+                {
+                    //TODO
+                }
             }
             catch (Exception ex)
             {
@@ -273,8 +280,8 @@ namespace SimpleRenamer
         {
             try
             {
-                TVEpisode temp = (TVEpisode)ShowsListBox.SelectedItem;
-                TVEpisode updatedEpisode = await tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp);
+                MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
+                MatchedFile updatedEpisode = await tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp);
                 //if a selection is made then force a rescan
                 if (!temp.SkippedExactSelection)
                 {
@@ -296,7 +303,7 @@ namespace SimpleRenamer
                 MessageBoxResult mbr = MessageBox.Show("Are you sure?", "Ignore this?", MessageBoxButton.OKCancel);
                 if (mbr == MessageBoxResult.OK)
                 {
-                    TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
+                    MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                     IgnoreList ignoreList = configurationManager.IgnoredFiles;
                     if (!ignoreList.IgnoreFiles.Contains(tempEp.FilePath))
                     {
@@ -314,7 +321,7 @@ namespace SimpleRenamer
 
         private void ShowsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            TVEpisode temp = (TVEpisode)ShowsListBox.SelectedItem;
+            MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
             if (temp != null)
             {
                 IgnoreShowButton.IsEnabled = true;
@@ -333,24 +340,31 @@ namespace SimpleRenamer
             }
             if (temp != null && !temp.SkippedExactSelection && settings.RenameFiles)
             {
-                ShowDetailButton.IsEnabled = true;
+                DetailButton.IsEnabled = true;
                 EditButton.IsEnabled = true;
             }
             else
             {
-                ShowDetailButton.IsEnabled = false;
+                DetailButton.IsEnabled = false;
                 EditButton.IsEnabled = false;
             }
         }
 
-        private void ShowDetailButton_Click(object sender, RoutedEventArgs e)
+        private void DetailButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 logger.TraceMessage("Show Detail button clicked");
-                TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
-                showDetailsWindow.GetSeries(tempEp.TVDBShowId);
-                showDetailsWindow.ShowDialog();
+                MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
+                if (tempEp.IsTVShow)
+                {
+                    showDetailsWindow.GetSeries(tempEp.TVDBShowId);
+                    showDetailsWindow.ShowDialog();
+                }
+                else if (tempEp.IsMovie)
+                {
+                    //TODO
+                }
             }
             catch (Exception ex)
             {
@@ -363,22 +377,29 @@ namespace SimpleRenamer
             try
             {
                 logger.TraceMessage("Edit button clicked");
-                TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
-                logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
-                ShowNameMapping snm = configurationManager.ShowNameMappings;
-                if (snm != null && snm.Mappings.Count > 0)
+                MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
+                if (tempEp.IsTVShow)
                 {
-                    logger.TraceMessage(string.Format("Mappings available"));
-                    Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(tempEp.TVDBShowId)).FirstOrDefault();
-                    if (mapping != null)
+                    logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
+                    ShowNameMapping snm = configurationManager.ShowNameMappings;
+                    if (snm != null && snm.Mappings.Count > 0)
                     {
-                        logger.TraceMessage(string.Format("Mapping found {0}", mapping.FileShowName));
-                        ShowEditShowWindow(tempEp, mapping);
+                        logger.TraceMessage(string.Format("Mappings available"));
+                        Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(tempEp.TVDBShowId)).FirstOrDefault();
+                        if (mapping != null)
+                        {
+                            logger.TraceMessage(string.Format("Mapping found {0}", mapping.FileShowName));
+                            ShowEditShowWindow(tempEp, mapping);
+                        }
+                        else
+                        {
+                            logger.TraceMessage(string.Format("Mapping could not be found!"));
+                        }
                     }
-                    else
-                    {
-                        logger.TraceMessage(string.Format("Mapping could not be found!"));
-                    }
+                }
+                else if (tempEp.IsMovie)
+                {
+
                 }
             }
             catch (Exception ex)
@@ -387,7 +408,7 @@ namespace SimpleRenamer
             }
         }
 
-        private void ShowEditShowWindow(TVEpisode tempEp, Mapping mapping)
+        private void ShowEditShowWindow(MatchedFile tempEp, Mapping mapping)
         {
             try
             {
@@ -429,7 +450,7 @@ namespace SimpleRenamer
         {
             try
             {
-                TVEpisode tempEp = (TVEpisode)ShowsListBox.SelectedItem;
+                MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 string oldTitle = tempEp.ShowName;
                 string newTitle = ShowNameTextBox.Text;
 
@@ -438,7 +459,7 @@ namespace SimpleRenamer
                     MessageBoxResult mbr = MessageBox.Show("Are you sure you want to change this shows name?", "Confirmation", MessageBoxButton.OKCancel);
                     if (mbr == MessageBoxResult.OK)
                     {
-                        foreach (TVEpisode tve in scannedEpisodes)
+                        foreach (MatchedFile tve in scannedEpisodes)
                         {
                             if (tve.ShowName.Equals(oldTitle))
                             {
@@ -451,7 +472,7 @@ namespace SimpleRenamer
                 ShowsListBox.IsEnabled = true;
                 IgnoreShowButton.IsEnabled = true;
                 MatchShowButton.IsEnabled = true;
-                ShowDetailButton.IsEnabled = true;
+                DetailButton.IsEnabled = true;
                 EditButton.IsEnabled = true;
                 ShowNameTextBox.Text = "";
                 ShowNameTextBox.Visibility = System.Windows.Visibility.Hidden;

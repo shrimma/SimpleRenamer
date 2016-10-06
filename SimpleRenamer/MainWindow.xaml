@@ -32,16 +32,18 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="50" />
+                            <ColumnDefinition Width="50" />
                             <ColumnDefinition Width="150" />
                             <ColumnDefinition Width="50" />
                             <ColumnDefinition Width="50" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <CheckBox Grid.Column="0" IsEnabled="{Binding SkippedExactSelection, Converter={StaticResource converter}}" IsChecked="{Binding ActionThis}" />
-                        <TextBlock Grid.Column="1" Text="{Binding ShowName}" />
-                        <TextBlock Grid.Column="2" Text="{Binding Season}" />
-                        <TextBlock Grid.Column="3" Text="{Binding Episode}" />
-                        <TextBlock Grid.Column="4" Text="{Binding EpisodeName}" />
+                        <TextBlock Grid.Column="0" Text="{Binding IsTVShow}" />
+                        <CheckBox Grid.Column="1" IsEnabled="{Binding SkippedExactSelection, Converter={StaticResource converter}}" IsChecked="{Binding ActionThis}" />
+                        <TextBlock Grid.Column="2" Text="{Binding ShowName}" />
+                        <TextBlock Grid.Column="3" Text="{Binding Season}" />
+                        <TextBlock Grid.Column="4" Text="{Binding Episode}" />
+                        <TextBlock Grid.Column="5" Text="{Binding EpisodeName}" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
@@ -49,7 +51,7 @@
         <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Name="ButtonsStackPanel" Orientation="Horizontal" Visibility="Visible">
             <Button Name="MatchShowButton" IsEnabled="False" Content="Match" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="MatchShowButton_Click"/>
             <Button Name="IgnoreShowButton" IsEnabled="False" Content="Ignore" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="IgnoreShowButton_Click"/>
-            <Button Name="ShowDetailButton" IsEnabled="False" Content="Show Detail" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="ShowDetailButton_Click"/>
+            <Button Name="DetailButton" IsEnabled="False" Content="Detail" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="DetailButton_Click"/>
             <Button Name="EditButton" IsEnabled="False" Content="Edit" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="EditButton_Click"/>
             <TextBox Name="ShowNameTextBox" Visibility="Hidden" Margin="5" Width="125"/>
             <Button Name="EditOkButton" Visibility="Hidden" Content="OK" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="35" Click="EditOkButton_Click"/>

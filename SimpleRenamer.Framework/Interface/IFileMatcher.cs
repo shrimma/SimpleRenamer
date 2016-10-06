@@ -13,7 +13,7 @@ namespace SimpleRenamer.Framework.Interface
         /// </summary>
         /// <param name="fileName">The string to process</param>
         /// <returns>Populated TVEpisode object</returns>
-        Task<List<TVEpisode>> SearchFilesAsync(List<string> files);
+        Task<List<MatchedFile>> SearchFilesAsync(List<string> files);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

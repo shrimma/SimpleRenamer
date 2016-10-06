@@ -4,16 +4,16 @@ namespace SimpleRenamer.Framework.DataModel
 {
     public class TVEpisodeScrape
     {
-        public TVEpisode tvep { get; set; }
+        public MatchedFile tvep { get; set; }
         public Series series { get; set; }
 
-        public TVEpisodeScrape(TVEpisode ep, Series s)
+        public TVEpisodeScrape(MatchedFile ep, Series s)
         {
             tvep = ep;
             series = s;
         }
 
-        public TVEpisodeScrape(TVEpisode ep)
+        public TVEpisodeScrape(MatchedFile ep)
         {
             tvep = ep;
         }

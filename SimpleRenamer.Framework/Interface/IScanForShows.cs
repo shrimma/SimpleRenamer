@@ -14,7 +14,7 @@ namespace SimpleRenamer.Framework.Interface
         /// </summary>
         /// <param name="ct">CancellationToken</param>
         /// <returns>A list of TVEpisodes</returns>
-        Task<List<TVEpisode>> Scan(CancellationToken ct);
+        Task<List<MatchedFile>> Scan(CancellationToken ct);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

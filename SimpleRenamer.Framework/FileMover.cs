@@ -33,60 +33,73 @@ namespace SimpleRenamer.Framework
             settings = configManager.Settings;
         }
 
-        public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, bool downloadBanner)
+        public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner)
         {
             logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - Start");
             FileMoveResult result = new FileMoveResult(true, episode);
             string ext = Path.GetExtension(episode.FilePath);
-            int season;
-            int.TryParse(episode.Season, out season);
-            //use the destination folder and showname etc to define final destination
-            string showDirectory = string.Empty;
-            if (mapping != null && !string.IsNullOrEmpty(mapping.CustomFolderName))
+            if (episode.IsTVShow)
             {
-                showDirectory = Path.Combine(settings.DestinationFolder, mapping.CustomFolderName);
-            }
-            else
-            {
-                showDirectory = Path.Combine(settings.DestinationFolder, episode.ShowName);
-            }
-            string seasonDirectory = Path.Combine(showDirectory, string.Format("Season {0}", season));
-            result.DestinationFilePath = Path.Combine(seasonDirectory, episode.NewFileName + ext);
-
-            //create our destination folder if it doesn't already exist
-            if (!Directory.Exists(seasonDirectory))
-            {
-                Directory.CreateDirectory(seasonDirectory);
-            }
-
-            try
-            {
-                if (downloadBanner)
+                int season;
+                int.TryParse(episode.Season, out season);
+                //use the destination folder and showname etc to define final destination
+                string showDirectory = string.Empty;
+                if (mapping != null && !string.IsNullOrEmpty(mapping.CustomFolderName))
                 {
-                    bool bannerResult;
-                    if (!string.IsNullOrEmpty(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
+                    showDirectory = Path.Combine(settings.DestinationFolder, mapping.CustomFolderName);
+                }
+                else
+                {
+                    showDirectory = Path.Combine(settings.DestinationFolder, episode.ShowName);
+                }
+                string seasonDirectory = Path.Combine(showDirectory, string.Format("Season {0}", season));
+                result.DestinationFilePath = Path.Combine(seasonDirectory, episode.NewFileName + ext);
+
+                //create our destination folder if it doesn't already exist
+                if (!Directory.Exists(seasonDirectory))
+                {
+                    Directory.CreateDirectory(seasonDirectory);
+                }
+
+                try
+                {
+                    if (downloadBanner)
                     {
-                        //Grab Show banner if required
-                        bannerResult = await bannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
-                    }
-                    if (!string.IsNullOrEmpty(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))
-                    {
-                        //Grab Season banner if required
-                        bannerResult = await bannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
+                        bool bannerResult;
+                        if (!string.IsNullOrEmpty(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
+                        {
+                            //Grab Show banner if required
+                            bannerResult = await bannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
+                        }
+                        if (!string.IsNullOrEmpty(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))
+                        {
+                            //Grab Season banner if required
+                            bannerResult = await bannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    logger.TraceException(ex);
+                    //we don't really care if image download fails
+                }
             }
-            catch (Exception ex)
+            else if (episode.IsMovie)
             {
-                logger.TraceException(ex);
-                //we don't really care if image download fails
+                string movieDirectory = Path.Combine(settings.DestinationFolder, $"{episode.ShowName} ({episode.Season})");
+                result.DestinationFilePath = Path.Combine(movieDirectory, episode.ShowName + ext);
+                //create our destination folder if it doesn't already exist
+                if (!Directory.Exists(movieDirectory))
+                {
+                    Directory.CreateDirectory(movieDirectory);
+                }
             }
 
             logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - End");
             return result;
         }
 
-        public async Task<bool> MoveFileAsync(TVEpisode episode, string destinationFilePath)
+        public async Task<bool> MoveFileAsync(MatchedFile episode, string destinationFilePath)
         {
             logger.TraceMessage("MoveFileAsync - Start");
             try

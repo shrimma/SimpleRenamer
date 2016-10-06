@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework
 {
-    public class PerformActionsOnShows : IPerformActionsOnShows
+    public class ActionMatchedFiles : IPerformActionsOnShows
     {
         private ILogger logger;
         private ITVShowMatcher tvShowMatcher;
@@ -22,7 +22,7 @@ namespace SimpleRenamer.Framework
         public event EventHandler<FileMovedEventArgs> RaiseFileMovedEvent;
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public PerformActionsOnShows(ILogger log, ITVShowMatcher showMatch, IBackgroundQueue backgroundQ, IFileMover fileMove, IConfigurationManager configManager)
+        public ActionMatchedFiles(ILogger log, ITVShowMatcher showMatch, IBackgroundQueue backgroundQ, IFileMover fileMove, IConfigurationManager configManager)
         {
             if (log == null)
             {
@@ -53,26 +53,42 @@ namespace SimpleRenamer.Framework
             settings = configurationManager.Settings;
         }
 
-        public async Task Action(ObservableCollection<TVEpisode> scannedEpisodes, CancellationToken ct)
+        public async Task Action(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
-            List<FileMoveResult> filesToMove = await PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true).ToList(), ct);
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
+            //perform pre actions on TVshows
+            List<FileMoveResult> tvShowsToMove = await PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.IsTVShow == true).ToList(), ct);
+            //perform pre actions on movies
+            List<FileMoveResult> moviesToMove = await PreProcessMovies(scannedEpisodes.Where(x => x.ActionThis == true && x.IsMovie == true).ToList(), ct);
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
 
+            //concat final list of files to move
+            List<FileMoveResult> filesToMove = new List<FileMoveResult>();
+            if (tvShowsToMove != null && tvShowsToMove.Count > 0)
+            {
+                filesToMove.AddRange(tvShowsToMove);
+            }
+            if (moviesToMove != null && moviesToMove.Count > 0)
+            {
+                filesToMove.AddRange(moviesToMove);
+            }
+
+            //move these files
             if (filesToMove != null && filesToMove.Count > 0)
             {
-                await MoveTVShows(filesToMove, ct);
+                await MoveFiles(filesToMove, ct);
             }
         }
 
-        private async Task<List<FileMoveResult>> PreProcessTVShows(List<TVEpisode> scannedEpisodes, CancellationToken ct)
+        private async Task<List<FileMoveResult>> PreProcessTVShows(List<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
             List<Task<FileMoveResult>> tasks = new List<Task<FileMoveResult>>();
             List<ShowSeason> uniqueShowSeasons = new List<ShowSeason>();
             List<FileMoveResult> ProcessFiles = new List<FileMoveResult>();
             ShowNameMapping snm = configurationManager.ShowNameMappings;
             try
             {
-                foreach (TVEpisode ep in scannedEpisodes)
+                foreach (MatchedFile ep in scannedEpisodes)
                 {
                     if (settings.RenameFiles)
                     {
@@ -132,11 +148,52 @@ namespace SimpleRenamer.Framework
                 logger.TraceException(ex);
             }
 
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
             return ProcessFiles;
         }
 
-        private async Task<bool> MoveTVShows(List<FileMoveResult> filesToMove, CancellationToken ct)
+        private async Task<List<FileMoveResult>> PreProcessMovies(List<MatchedFile> scannedMovies, CancellationToken ct)
+        {
+            List<FileMoveResult> ProcessFiles = new List<FileMoveResult>();
+            try
+            {
+                foreach (MatchedFile ep in scannedMovies)
+                {
+                    if (settings.RenameFiles)
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false));
+                        if (result.Success)
+                        {
+                            ProcessFiles.Add(result);
+                            logger.TraceMessage(string.Format("Successfully processed file and downloaded banners: {0}", result.Episode.FilePath));
+                        }
+                        else
+                        {
+                            logger.TraceMessage(string.Format("Failed to process {0}", result.Episode.FilePath));
+                        }
+
+                    }
+                    else
+                    {
+                        FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false));
+                        if (result.Success)
+                        {
+                            ProcessFiles.Add(result);
+                            logger.TraceMessage(string.Format("Successfully processed file without renaming: {0}", result.Episode.FilePath));
+                        }
+                    }
+                    //fire event here
+                    RaiseFilePreProcessedEvent(this, new FilePreProcessedEventArgs());
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.TraceException(ex);
+            }
+            return ProcessFiles;
+        }
+
+        private async Task<bool> MoveFiles(List<FileMoveResult> filesToMove, CancellationToken ct)
         {
             try
             {

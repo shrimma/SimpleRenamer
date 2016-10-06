@@ -5,13 +5,13 @@ namespace SimpleRenamer.Framework.EventArguments
 {
     public class FileMovedEventArgs : EventArgs
     {
-        private TVEpisode tvEpisode;
-        public FileMovedEventArgs(TVEpisode tvEp)
+        private MatchedFile tvEpisode;
+        public FileMovedEventArgs(MatchedFile tvEp)
         {
             tvEpisode = tvEp;
         }
 
-        public TVEpisode Episode
+        public MatchedFile Episode
         {
             get { return tvEpisode; }
         }

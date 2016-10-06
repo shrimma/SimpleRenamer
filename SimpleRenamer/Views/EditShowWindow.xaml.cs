@@ -13,7 +13,7 @@ namespace SimpleRenamer.Views
     public partial class EditShowWindow : Window
     {
         private Settings currentSettings;
-        private TVEpisode currentEpisode;
+        private MatchedFile currentEpisode;
         private Mapping currentMapping;
         public event EventHandler<EditShowEventArgs> RaiseEditShowEvent;
 
@@ -29,7 +29,7 @@ namespace SimpleRenamer.Views
             this.Closing += EditShowWindow_Closing;
         }
 
-        public void SetCurrentShow(TVEpisode tvEp, Mapping mapping)
+        public void SetCurrentShow(MatchedFile tvEp, Mapping mapping)
         {
             currentEpisode = tvEp;
             currentMapping = mapping;

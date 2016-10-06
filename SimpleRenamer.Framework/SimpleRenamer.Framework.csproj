@@ -105,15 +105,15 @@
     <Compile Include="Interface\IScanForShows.cs" />
     <Compile Include="Interface\ITVShowMatcher.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="PerformActionsOnShows.cs" />
+    <Compile Include="ActionMatchedFiles.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FileMatcher.cs" />
     <Compile Include="DataModel\RegexFile.cs" />
-    <Compile Include="ScanForShows.cs" />
+    <Compile Include="ScanFiles.cs" />
     <Compile Include="DataModel\Settings.cs" />
     <Compile Include="DataModel\ShowSeason.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
-    <Compile Include="DataModel\TVEpisode.cs" />
+    <Compile Include="DataModel\MatchedFile.cs" />
     <Compile Include="TVShowMatcher.cs" />
     <Compile Include="Win32FileIO.cs" />
   </ItemGroup>

@@ -47,7 +47,7 @@ namespace SimpleRenamer.Framework
         /// <param name="episode"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public async Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode)
+        public async Task<TVEpisodeScrape> ScrapeDetailsAsync(MatchedFile episode)
         {
             logger.TraceMessage("ScrapeDetailsAsync - Start");
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {episode.FilePath}"));
@@ -77,7 +77,7 @@ namespace SimpleRenamer.Framework
         /// <param name="episode"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        private TVEpisode FixMismatchTitles(TVEpisode episode)
+        private MatchedFile FixMismatchTitles(MatchedFile episode)
         {
             ShowNameMapping showNameMapping = configurationManager.ShowNameMappings;
             logger.TraceMessage("FixMismatchTitles - Start");
@@ -110,7 +110,7 @@ namespace SimpleRenamer.Framework
         /// <param name="episode">The episode to scrape</param>
         /// <param name="settings">Our current settings</param>
         /// <returns></returns>
-        private async Task<TVEpisodeScrape> ScrapeShowAsync(TVEpisode episode)
+        private async Task<TVEpisodeScrape> ScrapeShowAsync(MatchedFile episode)
         {
             logger.TraceMessage("ScrapeShowAsync - Start");
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
@@ -146,7 +146,7 @@ namespace SimpleRenamer.Framework
             return episodeScrape;
         }
 
-        private async Task<TVEpisodeScrape> ScrapeSpecificShow(TVEpisode episode, string seriesId, bool newMatch)
+        private async Task<TVEpisodeScrape> ScrapeSpecificShow(MatchedFile episode, string seriesId, bool newMatch)
         {
             logger.TraceMessage("ScrapeSpecificShow - Start");
             uint season = 0;
@@ -174,7 +174,7 @@ namespace SimpleRenamer.Framework
             return new TVEpisodeScrape(episode, matchedSeries);
         }
 
-        public async Task<List<ShowView>> GetPossibleShowsForEpisode(TVEpisode episode)
+        public async Task<List<ShowView>> GetPossibleShowsForEpisode(MatchedFile episode)
         {
             logger.TraceMessage("GetPossibleShowsForEpisode - Start");
             uint season = 0;
@@ -206,7 +206,7 @@ namespace SimpleRenamer.Framework
             return shows;
         }
 
-        public async Task<TVEpisode> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, TVEpisode episode)
+        public async Task<MatchedFile> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, MatchedFile episode)
         {
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
             //if user selected a match then scrape the details
@@ -246,7 +246,7 @@ namespace SimpleRenamer.Framework
         /// <param name="episode">The episode to rename</param>
         /// <param name="settings">Our current settings</param>
         /// <returns></returns>
-        private TVEpisode GenerateFileName(TVEpisode episode)
+        private MatchedFile GenerateFileName(MatchedFile episode)
         {
             logger.TraceMessage("GenerateFileName - Start");
 
