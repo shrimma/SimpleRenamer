@@ -19,9 +19,9 @@ namespace SimpleRenamer.Framework.Interface
         /// <summary>
         /// Gets a list of possible series that a TVEpisode name could relate to
         /// </summary>
-        /// <param name="episode">Episode to be searched</param>
+        /// <param name="showName">The showname to be searched</param>
         /// <returns>A list of series</returns>
-        Task<List<ShowView>> GetPossibleShowsForEpisode(MatchedFile episode);
+        Task<List<ShowView>> GetPossibleShowsForEpisode(string showName);
 
         /// <summary>
         /// Updates a TV episode with the details of a selected series

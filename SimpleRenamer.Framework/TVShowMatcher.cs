@@ -174,15 +174,11 @@ namespace SimpleRenamer.Framework
             return new TVEpisodeScrape(episode, matchedSeries);
         }
 
-        public async Task<List<ShowView>> GetPossibleShowsForEpisode(MatchedFile episode)
+        public async Task<List<ShowView>> GetPossibleShowsForEpisode(string showName)
         {
             logger.TraceMessage("GetPossibleShowsForEpisode - Start");
-            uint season = 0;
-            uint.TryParse(episode.Season, out season);
-            int episodeNumber = 0;
-            int.TryParse(episode.Episode, out episodeNumber);
 
-            var series = await tvdbManager.SearchSeries(episode.ShowName, Language.English);
+            var series = await tvdbManager.SearchSeries(showName, Language.English);
 
             List<ShowView> shows = new List<ShowView>();
             foreach (var s in series)

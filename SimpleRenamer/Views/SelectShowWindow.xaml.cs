@@ -15,13 +15,18 @@ namespace SimpleRenamer.Views
         public event EventHandler<SelectShowEventArgs> RaiseSelectShowWindowEvent;
 
         private ILogger logger;
+        private ITVShowMatcher showMatcher;
         private ShowDetailsWindow showDetailsWindow;
 
-        public SelectShowWindow(ILogger log, ShowDetailsWindow showDetails)
+        public SelectShowWindow(ILogger log, ITVShowMatcher showMatch, ShowDetailsWindow showDetails)
         {
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
+            }
+            if (showMatch == null)
+            {
+                throw new ArgumentNullException(nameof(showMatch));
             }
             if (showDetails == null)
             {
@@ -29,6 +34,7 @@ namespace SimpleRenamer.Views
             }
 
             logger = log;
+            showMatcher = showMatch;
             showDetailsWindow = showDetails;
 
             InitializeComponent();
@@ -41,9 +47,10 @@ namespace SimpleRenamer.Views
             this.Hide();
         }
 
-        public void SetView(List<ShowView> showViews, string title)
+        public void SetView(List<ShowView> showViews, string title, string searchString)
         {
             ShowListBox.ItemsSource = showViews;
+            this.SearchTextBox.Text = searchString;
             this.Title = title;
         }
 
@@ -69,6 +76,13 @@ namespace SimpleRenamer.Views
             ShowView current = (ShowView)ShowListBox.SelectedItem;
             showDetailsWindow.GetSeries(current.Id);
             showDetailsWindow.ShowDialog();
+        }
+
+        private async void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            string searchText = SearchTextBox.Text;
+            List<ShowView> possibleShows = await showMatcher.GetPossibleShowsForEpisode(searchText);
+            SetView(possibleShows, this.Title, searchText);
         }
     }
 }

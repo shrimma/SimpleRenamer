@@ -261,8 +261,8 @@ namespace SimpleRenamer
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
                 if (temp.IsTVShow)
                 {
-                    List<ShowView> possibleShows = await tvShowMatcher.GetPossibleShowsForEpisode(temp);
-                    selectShowWindow.SetView(possibleShows, string.Format("Simple Renamer - TV - Select Show for file {0}", Path.GetFileName(temp.FilePath)));
+                    List<ShowView> possibleShows = await tvShowMatcher.GetPossibleShowsForEpisode(temp.ShowName);
+                    selectShowWindow.SetView(possibleShows, string.Format("Simple Renamer - TV - Select Show for file {0}", Path.GetFileName(temp.FilePath)), temp.ShowName);
                     selectShowWindow.ShowDialog();
                 }
                 else if (temp.IsMovie)
