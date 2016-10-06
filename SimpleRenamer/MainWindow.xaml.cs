@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace SimpleRenamer
@@ -84,6 +85,8 @@ namespace SimpleRenamer
                 //setup the perform actions event handlers
                 performActionsOnShows.RaiseFileMovedEvent += PerformActionsOnShows_RaiseFileMovedEvent;
                 performActionsOnShows.RaiseFilePreProcessedEvent += PerformActionsOnShows_RaiseFilePreProcessedEvent;
+                performActionsOnShows.RaiseProgressEvent += ProgressTextEvent;
+                scanForShows.RaiseProgressEvent += ProgressTextEvent;
 
                 this.Closing += MainWindow_Closing;
             }
@@ -91,6 +94,11 @@ namespace SimpleRenamer
             {
                 logger.TraceException(ex);
             }
+        }
+
+        private void ProgressTextEvent(object sender, ProgressTextEventArgs e)
+        {
+            ProgressTextBlock.Text = e.Text;
         }
 
         protected override void OnClosed(EventArgs e)
@@ -116,7 +124,7 @@ namespace SimpleRenamer
             {
                 logger.TraceMessage("Closing");
                 configurationManager.SaveConfiguration();
-                if (!RunButton.IsEnabled)
+                if (!ScanButton.IsEnabled)
                 {
                     e.Cancel = true;
                 }
@@ -127,22 +135,49 @@ namespace SimpleRenamer
             }
         }
 
-        private async void RunButton_Click(object sender, RoutedEventArgs e)
+        private void DisableUi()
         {
-            cts = new CancellationTokenSource();
-            RunButton.IsEnabled = false;
+            ScanButton.IsEnabled = false;
             SettingsButton.IsEnabled = false;
             ActionButton.IsEnabled = false;
             MatchShowButton.IsEnabled = false;
             IgnoreShowButton.IsEnabled = false;
             CancelButton.IsEnabled = true;
+            ButtonsStackPanel.Visibility = Visibility.Collapsed;
+            ProgressTextStackPanel.Visibility = Visibility.Visible;
+            ProgressBarStackPanel.Visibility = Visibility.Visible;
+        }
+
+        private void EnableUi()
+        {
+            ScanButton.IsEnabled = true;
+            SettingsButton.IsEnabled = true;
+            CancelButton.IsEnabled = false;
+            ButtonsStackPanel.Visibility = Visibility.Visible;
+            ProgressTextStackPanel.Visibility = Visibility.Collapsed;
+            ProgressBarStackPanel.Visibility = Visibility.Collapsed;
+            if (scannedEpisodes.Count > 0)
+            {
+                ActionButton.IsEnabled = true;
+            }
+        }
+
+        private async void ScanButton_Click(object sender, RoutedEventArgs e)
+        {
+            cts = new CancellationTokenSource();
+            DisableUi();
             try
             {
+                //set to indeterminate so it keeps looping while scanning
+                FileMoveProgressBar.IsIndeterminate = true;
+
                 logger.TraceMessage(string.Format("Starting"));
                 scannedEpisodes = new ObservableCollection<TVEpisode>(await scanForShows.Scan(cts.Token));
                 logger.TraceMessage($"Grabbed {scannedEpisodes.Count} episodes");
                 ShowsListBox.ItemsSource = scannedEpisodes;
                 logger.TraceMessage($"Populated listbox with the scanned episodes");
+                //add a bit of delay before the progress bar disappears
+                await Task.Delay(TimeSpan.FromMilliseconds(300));
             }
             catch (OperationCanceledException)
             {
@@ -155,13 +190,7 @@ namespace SimpleRenamer
             finally
             {
                 logger.TraceMessage("Finished");
-                RunButton.IsEnabled = true;
-                SettingsButton.IsEnabled = true;
-                CancelButton.IsEnabled = false;
-                if (scannedEpisodes.Count > 0)
-                {
-                    ActionButton.IsEnabled = true;
-                }
+                EnableUi();
             }
         }
 
@@ -197,19 +226,18 @@ namespace SimpleRenamer
         private async void ActionButton_Click(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
-            RunButton.IsEnabled = false;
-            SettingsButton.IsEnabled = false;
-            ActionButton.IsEnabled = false;
-            CancelButton.IsEnabled = true;
-            ButtonsStackPanel.Visibility = System.Windows.Visibility.Collapsed;
-            ProgressStackPanel.Visibility = System.Windows.Visibility.Visible;
+            DisableUi();
             try
             {
+                //set to indeterminate so it keeps looping while scanning
+                FileMoveProgressBar.IsIndeterminate = false;
                 //process the folders and jpg downloads async
                 logger.TraceMessage(string.Format("Starting"));
                 FileMoveProgressBar.Value = 0;
                 FileMoveProgressBar.Maximum = (scannedEpisodes.Where(x => x.ActionThis == true).Count()) * 2;
                 await performActionsOnShows.Action(scannedEpisodes, cts.Token);
+                //add a bit of delay before the progress bar disappears
+                await Task.Delay(TimeSpan.FromMilliseconds(300));
             }
             catch (OperationCanceledException)
             {
@@ -222,11 +250,7 @@ namespace SimpleRenamer
             finally
             {
                 logger.TraceMessage("Finished");
-                RunButton.IsEnabled = true;
-                SettingsButton.IsEnabled = true;
-                CancelButton.IsEnabled = false;
-                ButtonsStackPanel.Visibility = System.Windows.Visibility.Visible;
-                ProgressStackPanel.Visibility = System.Windows.Visibility.Collapsed;
+                EnableUi();
             }
         }
 

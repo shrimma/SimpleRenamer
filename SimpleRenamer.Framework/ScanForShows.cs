@@ -1,5 +1,5 @@
 ﻿using SimpleRenamer.Framework.DataModel;
-using SimpleRenamer.Framework.Extensions;
+using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
 using System;
 using System.Collections.Generic;
@@ -18,6 +18,7 @@ namespace SimpleRenamer.Framework
         private IFileMatcher fileMatcher;
         private IConfigurationManager configurationManager;
         private Settings settings;
+        public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
         public ScanForShows(ILogger log, IFileWatcher fileWatch, ITVShowMatcher showMatch, IFileMatcher fileMatch, IConfigurationManager configManager)
         {
@@ -47,6 +48,14 @@ namespace SimpleRenamer.Framework
             fileMatcher = fileMatch;
             configurationManager = configManager;
             settings = configurationManager.Settings;
+            fileWatcher.RaiseProgressEvent += RaiseProgress;
+            fileMatcher.RaiseProgressEvent += RaiseProgress;
+            tvShowMatcher.RaiseProgressEvent += RaiseProgress;
+        }
+
+        private void RaiseProgress(object sender, ProgressTextEventArgs e)
+        {
+            RaiseProgressEvent(this, e);
         }
 
         public async Task<List<TVEpisode>> Scan(CancellationToken ct)
@@ -59,67 +68,59 @@ namespace SimpleRenamer.Framework
 
         private async Task<List<TVEpisode>> MatchTVShows(List<string> videoFiles, CancellationToken ct)
         {
+            object lockList = new object();
             List<TVEpisode> scannedEpisodes = new List<TVEpisode>();
             try
             {
                 ShowNameMapping showNameMapping = configurationManager.ShowNameMappings;
                 ShowNameMapping originalMapping = configurationManager.ShowNameMappings;
-                List<Task<TVEpisode>> tasks = new List<Task<TVEpisode>>();
-                //spin up a task for each file
-                foreach (string fileName in videoFiles)
-                {
-                    logger.TraceMessage(string.Format("Trying to match {0}", fileName));
-                    tasks.Add(fileMatcher.SearchFileNameAsync(fileName));
-                }
-                //as each task completes
-                foreach (var t in tasks.InCompletionOrder())
+                List<TVEpisode> matchedFiles = await fileMatcher.SearchFilesAsync(videoFiles);
+
+                //for each file
+                Parallel.ForEach(matchedFiles, (tempEp) =>
                 {
                     ct.ThrowIfCancellationRequested();
-                    TVEpisode tempEp = await t;
                     TVEpisodeScrape scrapeResult = null;
-                    if (tempEp != null)
+
+                    //scrape the episode name and incorporate this in the filename (if setting allows)
+                    if (settings.RenameFiles)
                     {
-                        logger.TraceMessage(string.Format("Matched {0}", tempEp.EpisodeName));
-                        //scrape the episode name and incorporate this in the filename (if setting allows)
-                        if (settings.RenameFiles)
+                        scrapeResult = tvShowMatcher.ScrapeDetailsAsync(tempEp).GetAwaiter().GetResult();
+                        tempEp = scrapeResult.tvep;
+                        if (scrapeResult.series != null)
                         {
-                            scrapeResult = await tvShowMatcher.ScrapeDetailsAsync(tempEp);
-                            tempEp = scrapeResult.tvep;
-                            if (scrapeResult.series != null)
+                            Mapping map = new Mapping(scrapeResult.tvep.ShowName, scrapeResult.series.Title, scrapeResult.series.Id.ToString());
+                            if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                             {
-                                Mapping map = new Mapping(scrapeResult.tvep.ShowName, scrapeResult.series.Title, scrapeResult.series.Id.ToString());
-                                if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
-                                {
-                                    showNameMapping.Mappings.Add(map);
-                                }
+                                showNameMapping.Mappings.Add(map);
                             }
-                            ct.ThrowIfCancellationRequested();
                         }
-                        else
+                        ct.ThrowIfCancellationRequested();
+                    }
+                    else
+                    {
+                        tempEp.NewFileName = Path.GetFileNameWithoutExtension(tempEp.FilePath);
+                    }
+                    logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
+                    //only add the file if it needs renaming/moving
+                    int season;
+                    int.TryParse(tempEp.Season, out season);
+                    string destinationDirectory = Path.Combine(settings.DestinationFolder, tempEp.ShowName, string.Format("Season {0}", season));
+                    string destinationFilePath = Path.Combine(destinationDirectory, tempEp.NewFileName + Path.GetExtension(tempEp.FilePath));
+                    if (!tempEp.FilePath.Equals(destinationFilePath))
+                    {
+                        logger.TraceMessage(string.Format("Will move with name {0}", tempEp.NewFileName));
+                        lock (lockList)
                         {
-                            tempEp.NewFileName = Path.GetFileNameWithoutExtension(tempEp.FilePath);
-                        }
-                        logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
-                        //only add the file if it needs renaming/moving
-                        int season;
-                        int.TryParse(tempEp.Season, out season);
-                        string destinationDirectory = Path.Combine(settings.DestinationFolder, tempEp.ShowName, string.Format("Season {0}", season));
-                        string destinationFilePath = Path.Combine(destinationDirectory, tempEp.NewFileName + Path.GetExtension(tempEp.FilePath));
-                        if (!tempEp.FilePath.Equals(destinationFilePath))
-                        {
-                            logger.TraceMessage(string.Format("Will move with name {0}", tempEp.NewFileName));
                             scannedEpisodes.Add(tempEp);
-                        }
-                        else
-                        {
-                            logger.TraceMessage(string.Format("File is already in good location {0}", tempEp.FilePath));
                         }
                     }
                     else
                     {
-                        logger.TraceMessage(string.Format("Couldn't find a match!"));
+                        logger.TraceMessage(string.Format("File is already in good location {0}", tempEp.FilePath));
                     }
-                }
+                });
+
                 if (showNameMapping.Mappings != originalMapping.Mappings || showNameMapping.Mappings.Count != originalMapping.Mappings.Count)
                 {
                     configurationManager.ShowNameMappings = showNameMapping;

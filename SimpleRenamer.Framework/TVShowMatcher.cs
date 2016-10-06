@@ -1,4 +1,5 @@
 ﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ namespace SimpleRenamer.Framework
         private Settings settings;
         private ITheTvdbManager tvdbManager;
         private IConfigurationManager configurationManager;
+        public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
         public TVShowMatcher(IConfigurationManager configManager, ITheTvdbManager tvdb, ILogger log)
         {
@@ -48,6 +50,7 @@ namespace SimpleRenamer.Framework
         public async Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode)
         {
             logger.TraceMessage("ScrapeDetailsAsync - Start");
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {episode.FilePath}"));
             //read the mapping file and try and find any already selected matches
             episode = FixMismatchTitles(episode);
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();

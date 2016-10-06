@@ -1,4 +1,6 @@
 ﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.EventArguments;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -28,5 +30,10 @@ namespace SimpleRenamer.Framework.Interface
         /// <param name="episode">Episode to be updated</param>
         /// <returns>The updated TV episode</returns>
         Task<TVEpisode> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, TVEpisode episode);
+
+        /// <summary>
+        /// Fired whenever some noticeable progress is made
+        /// </summary>
+        event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
     }
 }

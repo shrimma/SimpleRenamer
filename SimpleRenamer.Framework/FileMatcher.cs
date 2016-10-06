@@ -1,6 +1,8 @@
 ﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -11,6 +13,7 @@ namespace SimpleRenamer.Framework
     {
         private RegexFile regexExpressions;
         private ILogger logger;
+        public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
         public FileMatcher(ILogger log, IConfigurationManager configManager)
         {
@@ -22,7 +25,38 @@ namespace SimpleRenamer.Framework
             regexExpressions = configManager.RegexExpressions;
         }
 
-        public async Task<TVEpisode> SearchFileNameAsync(string fileName)
+        public async Task<List<TVEpisode>> SearchFilesAsync(List<string> files)
+        {
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Parsing file names for show or movie details"));
+            object lockList = new object();
+            List<TVEpisode> episodes = new List<TVEpisode>();
+            Parallel.ForEach(files, (file) =>
+            {
+                TVEpisode episode = SearchFileNameAsync(file).GetAwaiter().GetResult();
+                if (episode != null)
+                {
+                    logger.TraceMessage(string.Format("Matched {0}", episode.EpisodeName));
+                    lock (lockList)
+                    {
+                        episodes.Add(episode);
+                    }
+                }
+                else
+                {
+                    logger.TraceMessage(string.Format("Couldn't find a match!"));
+                    episode = new TVEpisode(file, string.Empty, string.Empty, string.Empty);
+                    lock (lockList)
+                    {
+                        episodes.Add(episode);
+                    }
+                }
+            });
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Grabbed show or movie details from file names"));
+
+            return episodes;
+        }
+
+        private async Task<TVEpisode> SearchFileNameAsync(string fileName)
         {
             logger.TraceMessage("SearchFileNameAsync - Start");
             string showname = null;

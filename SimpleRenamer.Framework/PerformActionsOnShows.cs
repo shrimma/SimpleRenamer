@@ -20,6 +20,7 @@ namespace SimpleRenamer.Framework
         private Settings settings;
         public event EventHandler<FilePreProcessedEventArgs> RaiseFilePreProcessedEvent;
         public event EventHandler<FileMovedEventArgs> RaiseFileMovedEvent;
+        public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
         public PerformActionsOnShows(ILogger log, ITVShowMatcher showMatch, IBackgroundQueue backgroundQ, IFileMover fileMove, IConfigurationManager configManager)
         {
@@ -64,6 +65,7 @@ namespace SimpleRenamer.Framework
 
         private async Task<List<FileMoveResult>> PreProcessTVShows(List<TVEpisode> scannedEpisodes, CancellationToken ct)
         {
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
             List<Task<FileMoveResult>> tasks = new List<Task<FileMoveResult>>();
             List<ShowSeason> uniqueShowSeasons = new List<ShowSeason>();
             List<FileMoveResult> ProcessFiles = new List<FileMoveResult>();
@@ -129,6 +131,8 @@ namespace SimpleRenamer.Framework
             {
                 logger.TraceException(ex);
             }
+
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
             return ProcessFiles;
         }
 
@@ -139,11 +143,13 @@ namespace SimpleRenamer.Framework
                 //actually move/copy the files one at a time
                 foreach (FileMoveResult fmr in filesToMove)
                 {
+                    RaiseProgressEvent(this, new ProgressTextEventArgs($"Moving file {fmr.Episode.FilePath} to {fmr.DestinationFilePath}."));
                     ct.ThrowIfCancellationRequested();
                     bool result = await await backgroundQueue.QueueTask(() => fileMover.MoveFileAsync(fmr.Episode, fmr.DestinationFilePath));
                     if (result)
                     {
                         RaiseFileMovedEvent(this, new FileMovedEventArgs(fmr.Episode));
+                        RaiseProgressEvent(this, new ProgressTextEventArgs($"Finished {fmr.DestinationFilePath}."));
                         logger.TraceMessage(string.Format("Successfully {2} {0} to {1}", fmr.Episode.FilePath, fmr.DestinationFilePath, settings.CopyFiles ? "copied" : "moved"));
                     }
                     else
@@ -151,9 +157,6 @@ namespace SimpleRenamer.Framework
                         logger.TraceMessage(string.Format("Failed to {2} {0} to {1}", fmr.Episode.FilePath, fmr.DestinationFilePath, settings.CopyFiles ? "copy" : "move"));
                     }
                 }
-
-                //add a bit of delay before the progress bar disappears
-                await backgroundQueue.QueueTask(() => Thread.Sleep(500));
             }
             catch (Exception ex)
             {

@@ -84,6 +84,7 @@
     <Compile Include="DataModel\ShowView.cs" />
     <Compile Include="DataModel\TVEpisodeScrape.cs" />
     <Compile Include="EventArguments\FileMovedEventArgs.cs" />
+    <Compile Include="EventArguments\ProgressTextEventArgs.cs" />
     <Compile Include="FileMover.cs" />
     <Compile Include="DataModel\FileMoveResult.cs" />
     <Compile Include="EventArguments\FilePreProcessedEventArgs.cs" />
@@ -120,7 +121,6 @@
     <Content Include="RegexExpressions.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="TVDB.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
