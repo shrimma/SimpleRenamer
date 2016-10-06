@@ -65,9 +65,12 @@ namespace SimpleRenamer.Framework
             //use regex to attempt to figure out some details about the files ie showname, episode number, etc
             List<MatchedFile> matchedFiles = await SearchFileNames(videoFiles, ct);
 
-            //now try and match the tv shows with TVDB
+            //try and match the tv shows with TVDB
             List<MatchedFile> scannedEpisodes = await MatchTVShows(matchedFiles.Where(x => x.IsTVShow == true).ToList(), ct);
+            //try and match movies with TMDB
             List<MatchedFile> scannedMovies = await MatchMovies(matchedFiles.Where(x => x.IsMovie == true).ToList(), ct);
+            //check there aren't any completely unmatched files (due to undecypherable filenames)
+            List<MatchedFile> otherVideoFiles = matchedFiles.Where(x => x.IsTVShow == false && x.IsMovie == false).ToList();
 
             //add the tv shows and movies to the same list and return this
             List<MatchedFile> scannedFiles = new List<MatchedFile>();
@@ -78,6 +81,10 @@ namespace SimpleRenamer.Framework
             if (scannedMovies != null && scannedMovies.Count > 0)
             {
                 scannedFiles.AddRange(scannedMovies);
+            }
+            if (otherVideoFiles != null & otherVideoFiles.Count > 0)
+            {
+                scannedFiles.AddRange(otherVideoFiles);
             }
 
             return scannedFiles;
@@ -125,9 +132,7 @@ namespace SimpleRenamer.Framework
                     }
                     logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
                     //only add the file if it needs renaming/moving
-                    int season;
-                    int.TryParse(tempEp.Season, out season);
-                    string destinationDirectory = Path.Combine(settings.DestinationFolder, tempEp.ShowName, string.Format("Season {0}", season));
+                    string destinationDirectory = Path.Combine(settings.DestinationFolder, tempEp.ShowName, string.Format("Season {0}", tempEp.Season));
                     string destinationFilePath = Path.Combine(destinationDirectory, tempEp.NewFileName + Path.GetExtension(tempEp.FilePath));
                     if (!tempEp.FilePath.Equals(destinationFilePath))
                     {
@@ -158,9 +163,8 @@ namespace SimpleRenamer.Framework
 
         private async Task<List<MatchedFile>> MatchMovies(List<MatchedFile> matchedFiles, CancellationToken ct)
         {
-            object lockList = new object();
             List<MatchedFile> scannedMovies = new List<MatchedFile>();
-
+            //TODO match these to TMDB
             return scannedMovies;
         }
     }

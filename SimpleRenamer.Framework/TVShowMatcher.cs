@@ -45,7 +45,6 @@ namespace SimpleRenamer.Framework
         /// Scrape the TVDB and use the results for a better file name
         /// </summary>
         /// <param name="episode"></param>
-        /// <param name="settings"></param>
         /// <returns></returns>
         public async Task<TVEpisodeScrape> ScrapeDetailsAsync(MatchedFile episode)
         {
@@ -75,7 +74,6 @@ namespace SimpleRenamer.Framework
         /// If user has selected a specific show in the past then lets find and automatically use this
         /// </summary>
         /// <param name="episode"></param>
-        /// <param name="settings"></param>
         /// <returns></returns>
         private MatchedFile FixMismatchTitles(MatchedFile episode)
         {
@@ -108,7 +106,6 @@ namespace SimpleRenamer.Framework
         /// Scrape the show details from the given showname, season and episode number
         /// </summary>
         /// <param name="episode">The episode to scrape</param>
-        /// <param name="settings">Our current settings</param>
         /// <returns></returns>
         private async Task<TVEpisodeScrape> ScrapeShowAsync(MatchedFile episode)
         {
@@ -117,7 +114,7 @@ namespace SimpleRenamer.Framework
             var series = await tvdbManager.SearchSeries(episode.ShowName, Language.English);
             var seriesList = series.GetEnumerator();
             string seriesId = string.Empty;
-            //IF we have more than 1 result then popup the selection form so user can choose the exact match
+            //IF we have more than 1 result then flag the file to be manually matched
             if (series.Count > 1)
             {
                 episode.ActionThis = false;
@@ -126,20 +123,10 @@ namespace SimpleRenamer.Framework
             }
             else if (series.Count == 1)
             {
-                //if theres only one match then it is easy
+                //if theres only one match then scape the specific show
                 seriesList.MoveNext();
                 seriesId = seriesList.Current.Id.ToString();
-                //if seriesID is populated then grab the episode name (it's possible to be null if user skipped the selection
-                if (!string.IsNullOrEmpty(seriesId))
-                {
-                    episodeScrape = await ScrapeSpecificShow(episode, seriesId, true);
-                }
-                else
-                {
-                    episode.ActionThis = false;
-                    episode.SkippedExactSelection = true;
-                    episodeScrape.tvep = episode;
-                }
+                episodeScrape = await ScrapeSpecificShow(episode, seriesId, true);
             }
 
             logger.TraceMessage("ScrapeShowAsync - End");

@@ -212,25 +212,22 @@ namespace SimpleRenamer.Framework.DataModel
             }
         }
 
+        public MatchedFile(string filePath)
+        {
+            FilePath = filePath;
+            ShowName = filePath;
+            IsTVShow = false;
+            IsMovie = false;
+            SkippedExactSelection = true;
+            ActionThis = false;
+        }
+
         public MatchedFile(string filePath, string showName, string season, string episode)
         {
             FilePath = filePath;
             ShowName = showName;
             Season = season;
             Episode = episode;
-            IsTVShow = true;
-            IsMovie = false;
-            SkippedExactSelection = false;
-            ActionThis = true;
-        }
-
-        public MatchedFile(string filePath, string showName, string season, string episode, string episodeName)
-        {
-            FilePath = filePath;
-            ShowName = showName;
-            Season = season;
-            Episode = episode;
-            EpisodeName = episodeName;
             IsTVShow = true;
             IsMovie = false;
             SkippedExactSelection = false;

@@ -40,8 +40,6 @@ namespace SimpleRenamer.Framework
             string ext = Path.GetExtension(episode.FilePath);
             if (episode.IsTVShow)
             {
-                int season;
-                int.TryParse(episode.Season, out season);
                 //use the destination folder and showname etc to define final destination
                 string showDirectory = string.Empty;
                 if (mapping != null && !string.IsNullOrEmpty(mapping.CustomFolderName))
@@ -52,7 +50,7 @@ namespace SimpleRenamer.Framework
                 {
                     showDirectory = Path.Combine(settings.DestinationFolder, episode.ShowName);
                 }
-                string seasonDirectory = Path.Combine(showDirectory, string.Format("Season {0}", season));
+                string seasonDirectory = Path.Combine(showDirectory, string.Format("Season {0}", episode.Season));
                 result.DestinationFilePath = Path.Combine(seasonDirectory, episode.NewFileName + ext);
 
                 //create our destination folder if it doesn't already exist

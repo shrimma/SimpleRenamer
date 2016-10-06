@@ -35,7 +35,7 @@ namespace SimpleRenamer.Framework
                 MatchedFile episode = SearchFileNameAsync(file).GetAwaiter().GetResult();
                 if (episode != null)
                 {
-                    logger.TraceMessage(string.Format("Matched {0}", episode.EpisodeName));
+                    logger.TraceMessage(string.Format("Matched {0}", episode.FilePath));
                     lock (lockList)
                     {
                         episodes.Add(episode);
@@ -44,7 +44,7 @@ namespace SimpleRenamer.Framework
                 else
                 {
                     logger.TraceMessage(string.Format("Couldn't find a match!"));
-                    episode = new MatchedFile(file, string.Empty, string.Empty, string.Empty);
+                    episode = new MatchedFile(file);
                     lock (lockList)
                     {
                         episodes.Add(episode);
