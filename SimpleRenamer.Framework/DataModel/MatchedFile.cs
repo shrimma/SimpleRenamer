@@ -44,6 +44,20 @@ namespace SimpleRenamer.Framework.DataModel
             }
         }
 
+        private int tmdbShowId;
+        public int TMDBShowId
+        {
+            get { return tmdbShowId; }
+            set
+            {
+                if (value != tmdbShowId)
+                {
+                    tmdbShowId = value;
+                    Notify("TMDBShowId");
+                }
+            }
+        }
+
         private string showName;
         public string ShowName
         {

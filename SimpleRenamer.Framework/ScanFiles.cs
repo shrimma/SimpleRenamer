@@ -15,12 +15,13 @@ namespace SimpleRenamer.Framework
         private ILogger logger;
         private IFileWatcher fileWatcher;
         private ITVShowMatcher tvShowMatcher;
+        private IMovieMatcher movieMatcher;
         private IFileMatcher fileMatcher;
         private IConfigurationManager configurationManager;
         private Settings settings;
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public ScanFiles(ILogger log, IFileWatcher fileWatch, ITVShowMatcher showMatch, IFileMatcher fileMatch, IConfigurationManager configManager)
+        public ScanFiles(ILogger log, IFileWatcher fileWatch, ITVShowMatcher showMatch, IMovieMatcher movieMatch, IFileMatcher fileMatch, IConfigurationManager configManager)
         {
             if (log == null)
             {
@@ -34,6 +35,10 @@ namespace SimpleRenamer.Framework
             {
                 throw new ArgumentNullException(nameof(showMatch));
             }
+            if (movieMatch == null)
+            {
+                throw new ArgumentNullException(nameof(movieMatch));
+            }
             if (fileMatch == null)
             {
                 throw new ArgumentNullException(nameof(fileMatch));
@@ -45,6 +50,7 @@ namespace SimpleRenamer.Framework
             logger = log;
             fileWatcher = fileWatch;
             tvShowMatcher = showMatch;
+            movieMatcher = movieMatch;
             fileMatcher = fileMatch;
             configurationManager = configManager;
             settings = configurationManager.Settings;
@@ -163,8 +169,38 @@ namespace SimpleRenamer.Framework
 
         private async Task<List<MatchedFile>> MatchMovies(List<MatchedFile> matchedFiles, CancellationToken ct)
         {
+            object lockList = new object();
             List<MatchedFile> scannedMovies = new List<MatchedFile>();
-            //TODO match these to TMDB
+
+            try
+            {
+                //for each file
+                Parallel.ForEach(matchedFiles, (tempMovie) =>
+                {
+                    tempMovie = movieMatcher.ScrapeDetailsAsync(tempMovie).GetAwaiter().GetResult();
+
+                    //only add the file if it needs renaming/moving                
+                    string movieDirectory = Path.Combine(settings.DestinationFolder, $"{tempMovie.ShowName} ({tempMovie.Season})");
+                    string destinationFilePath = Path.Combine(movieDirectory, tempMovie.ShowName + Path.GetExtension(tempMovie.FilePath));
+                    if (!tempMovie.FilePath.Equals(destinationFilePath))
+                    {
+                        logger.TraceMessage(string.Format("Will move with name {0}", tempMovie.NewFileName));
+                        lock (lockList)
+                        {
+                            scannedMovies.Add(tempMovie);
+                        }
+                    }
+                    else
+                    {
+                        logger.TraceMessage(string.Format("File is already in good location {0}", tempMovie.FilePath));
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                logger.TraceException(ex);
+            }
+
             return scannedMovies;
         }
     }

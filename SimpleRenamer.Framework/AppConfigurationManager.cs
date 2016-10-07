@@ -20,7 +20,7 @@ namespace SimpleRenamer.Framework
             {
                 if (ignoredFiles == null)
                 {
-                    //READ THE FILE
+                    ignoredFiles = ReadIgnoreList();
                 }
                 return ignoredFiles;
             }
@@ -254,6 +254,14 @@ namespace SimpleRenamer.Framework
             get
             {
                 return "820147144A5BB54E";
+            }
+        }
+
+        public string TmDbApiKey
+        {
+            get
+            {
+                return "e9b955f1140da97e65df7e1bce1780bc";
             }
         }
     }

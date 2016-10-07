@@ -5,9 +5,14 @@ namespace SimpleRenamer.Framework.Interface
     public interface IConfigurationManager
     {
         /// <summary>
-        /// The API key for TVDB
+        /// The API key for TV Database
         /// </summary>
         string TvDbApiKey { get; }
+
+        /// <summary>
+        /// The API key for The Movie Database
+        /// </summary>
+        string TmDbApiKey { get; }
 
         string RegexFilePath { get; }
 

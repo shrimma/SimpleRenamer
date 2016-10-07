@@ -63,6 +63,7 @@ namespace SimpleRenamer.Framework
             string season = null;
             string episode = null;
             string movieTitle = null;
+            string yearString = null;
             int year = 0;
 
             try
@@ -91,6 +92,10 @@ namespace SimpleRenamer.Framework
                         //else match for movie regexp
                         else
                         {
+                            movieTitle = GetTrueShowName(tvshow.Groups["movie_title"].Value);
+                            yearString = tvshow.Groups["movie_year"].Value;
+                            int.TryParse(yearString, out year);
+
                             if (!string.IsNullOrEmpty(movieTitle))
                             {
                                 logger.TraceMessage("SearchFileNameAsync - Found movietitle, and year in file name");
