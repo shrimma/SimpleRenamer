@@ -13,6 +13,7 @@ namespace SimpleRenamer.DependencyInjection.Modules
             Bind<ITVShowMatcher>().To<TVShowMatcher>().InSingletonScope();
             Bind<IMovieMatcher>().To<MovieMatcher>().InSingletonScope();
             Bind<IScanForShows>().To<ScanFiles>().InSingletonScope();
+            Bind<ITmdbManager>().To<TmdbManager>().InSingletonScope();
         }
     }
 }

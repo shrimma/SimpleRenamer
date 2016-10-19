@@ -31,6 +31,7 @@ namespace SimpleRenamer
         private IConfigurationManager configurationManager;
         private SelectShowWindow selectShowWindow;
         private ShowDetailsWindow showDetailsWindow;
+        private MovieDetailsWindow movieDetailsWindow;
         private SettingsWindow settingsWindow;
         private EditShowWindow editShowWindow;
         private Settings settings;
@@ -73,6 +74,7 @@ namespace SimpleRenamer
                 InitializeComponent();
                 logger.TraceMessage("Starting Application");
                 showDetailsWindow = injectionContext.GetService<ShowDetailsWindow>();
+                movieDetailsWindow = injectionContext.GetService<MovieDetailsWindow>();
                 settingsWindow = injectionContext.GetService<SettingsWindow>();
                 editShowWindow = injectionContext.GetService<EditShowWindow>();
                 editShowWindow.RaiseEditShowEvent += new EventHandler<EditShowEventArgs>(EditShowWindowClosedEvent);
@@ -259,13 +261,13 @@ namespace SimpleRenamer
             try
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
-                if (temp.IsTVShow)
+                if (temp.FileType == FileType.TvShow)
                 {
                     List<ShowView> possibleShows = await tvShowMatcher.GetPossibleShowsForEpisode(temp.ShowName);
                     selectShowWindow.SetView(possibleShows, string.Format("Simple Renamer - TV - Select Show for file {0}", Path.GetFileName(temp.FilePath)), temp.ShowName);
                     selectShowWindow.ShowDialog();
                 }
-                else if (temp.IsMovie)
+                else if (temp.FileType == FileType.Movie)
                 {
                     //TODO
                 }
@@ -356,14 +358,15 @@ namespace SimpleRenamer
             {
                 logger.TraceMessage("Show Detail button clicked");
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
-                if (tempEp.IsTVShow)
+                if (tempEp.FileType == FileType.TvShow)
                 {
                     showDetailsWindow.GetSeries(tempEp.TVDBShowId);
                     showDetailsWindow.ShowDialog();
                 }
-                else if (tempEp.IsMovie)
+                else if (tempEp.FileType == FileType.Movie)
                 {
-                    //TODO
+                    movieDetailsWindow.GetMovie(tempEp.TMDBShowId.ToString());
+                    movieDetailsWindow.ShowDialog();
                 }
             }
             catch (Exception ex)
@@ -378,7 +381,7 @@ namespace SimpleRenamer
             {
                 logger.TraceMessage("Edit button clicked");
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
-                if (tempEp.IsTVShow)
+                if (tempEp.FileType == FileType.TvShow)
                 {
                     logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
                     ShowNameMapping snm = configurationManager.ShowNameMappings;
@@ -397,7 +400,7 @@ namespace SimpleRenamer
                         }
                     }
                 }
-                else if (tempEp.IsMovie)
+                else if (tempEp.FileType == FileType.Movie)
                 {
 
                 }

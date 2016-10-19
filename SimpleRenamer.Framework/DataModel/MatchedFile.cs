@@ -184,30 +184,16 @@ namespace SimpleRenamer.Framework.DataModel
             }
         }
 
-        private bool isTvShow;
-        public bool IsTVShow
+        private FileType fileType;
+        public FileType FileType
         {
-            get { return isTvShow; }
+            get { return fileType; }
             set
             {
-                if (value != isTvShow)
+                if (value != fileType)
                 {
-                    isTvShow = value;
-                    Notify("IsTVShow");
-                }
-            }
-        }
-
-        private bool isMovie;
-        public bool IsMovie
-        {
-            get { return isMovie; }
-            set
-            {
-                if (value != isMovie)
-                {
-                    isMovie = value;
-                    Notify("IsMovie");
+                    fileType = value;
+                    Notify("FileType");
                 }
             }
         }
@@ -230,8 +216,7 @@ namespace SimpleRenamer.Framework.DataModel
         {
             FilePath = filePath;
             ShowName = filePath;
-            IsTVShow = false;
-            IsMovie = false;
+            FileType = FileType.Unknown;
             SkippedExactSelection = true;
             ActionThis = false;
         }
@@ -242,8 +227,7 @@ namespace SimpleRenamer.Framework.DataModel
             ShowName = showName;
             Season = season;
             Episode = episode;
-            IsTVShow = true;
-            IsMovie = false;
+            FileType = FileType.TvShow;
             SkippedExactSelection = false;
             ActionThis = true;
         }
@@ -254,8 +238,7 @@ namespace SimpleRenamer.Framework.DataModel
             ShowName = movieTitle;
             Year = year;
             Season = year.ToString();
-            IsTVShow = false;
-            IsMovie = true;
+            FileType = FileType.Movie;
             SkippedExactSelection = false;
             ActionThis = true;
         }

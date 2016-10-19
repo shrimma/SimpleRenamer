@@ -4,7 +4,8 @@ using SimpleRenamer.Framework.Interface;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TMDbLib.Client;
+using TMDbLib.Objects.General;
+using TMDbLib.Objects.Search;
 
 namespace SimpleRenamer.Framework
 {
@@ -12,9 +13,9 @@ namespace SimpleRenamer.Framework
     {
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
         private ILogger logger;
-        private TMDbClient tmdbManager;
+        private ITmdbManager tmdbManager;
 
-        public MovieMatcher(ILogger log, IConfigurationManager configManager)
+        public MovieMatcher(ILogger log, IConfigurationManager configManager, ITmdbManager tmdbMan)
         {
             if (log == null)
             {
@@ -26,7 +27,7 @@ namespace SimpleRenamer.Framework
             }
 
             logger = log;
-            tmdbManager = new TMDbClient(configManager.TmDbApiKey);
+            tmdbManager = tmdbMan;
         }
 
         public async Task<List<ShowView>> GetPossibleMoviesForFile(string showName)
@@ -37,9 +38,10 @@ namespace SimpleRenamer.Framework
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie)
         {
             logger.TraceMessage("ScrapeDetailsAsync - Start");
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.FilePath}"));
+            //RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.FilePath}"));
 
-            var results = await tmdbManager.SearchMovieAsync(movie.ShowName, year: movie.Year);
+            SearchContainer<SearchMovie> results = tmdbManager.SearchMovieByName(movie.ShowName, movie.Year);
+
             //IF we have more than 1 result then flag the file to be manually matched
             if (results.Results.Count > 1)
             {

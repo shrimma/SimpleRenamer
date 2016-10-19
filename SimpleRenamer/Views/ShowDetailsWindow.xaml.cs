@@ -31,11 +31,17 @@ namespace SimpleRenamer.Views
             try
             {
                 InitializeComponent();
+                this.Closing += Window_Closing;
             }
             catch (Exception ex)
             {
                 logger.TraceException(ex);
             }
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.Hide();
         }
 
         public async void GetSeries(string showId)

@@ -57,9 +57,9 @@ namespace SimpleRenamer.Framework
         {
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
             //perform pre actions on TVshows
-            List<FileMoveResult> tvShowsToMove = await PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.IsTVShow == true).ToList(), ct);
+            List<FileMoveResult> tvShowsToMove = await PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.TvShow).ToList(), ct);
             //perform pre actions on movies
-            List<FileMoveResult> moviesToMove = await PreProcessMovies(scannedEpisodes.Where(x => x.ActionThis == true && x.IsMovie == true).ToList(), ct);
+            List<FileMoveResult> moviesToMove = await PreProcessMovies(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.Movie).ToList(), ct);
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
 
             //concat final list of files to move

@@ -51,6 +51,10 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -110,10 +114,13 @@
     <Compile Include="BackgroundQueue.cs" />
     <Compile Include="BannerDownloader.cs" />
     <Compile Include="AppConfigurationManager.cs" />
+    <Compile Include="DataModel\FileType.cs" />
     <Compile Include="DataModel\IgnoreList.cs" />
     <Compile Include="DataModel\LogType.cs" />
     <Compile Include="DataModel\Mapping.cs" />
+    <Compile Include="DataModel\MovieCredits.cs" />
     <Compile Include="DataModel\RegexExpression.cs" />
+    <Compile Include="DataModel\MovieInfo.cs" />
     <Compile Include="DataModel\SeriesWithBanner.cs" />
     <Compile Include="DataModel\ShowNameMapping.cs" />
     <Compile Include="DataModel\ShowView.cs" />
@@ -124,6 +131,7 @@
     <Compile Include="DataModel\FileMoveResult.cs" />
     <Compile Include="EventArguments\FilePreProcessedEventArgs.cs" />
     <Compile Include="FileWatcher.cs" />
+    <Compile Include="GetMovieDetails.cs" />
     <Compile Include="GetShowDetails.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Interface\IBackgroundQueue.cs" />
@@ -133,12 +141,14 @@
     <Compile Include="Interface\IFileMatcher.cs" />
     <Compile Include="Interface\IFileMover.cs" />
     <Compile Include="Interface\IFileWatcher.cs" />
+    <Compile Include="Interface\IGetMovieDetails.cs" />
     <Compile Include="Interface\IGetShowDetails.cs" />
     <Compile Include="Interface\IHelper.cs" />
     <Compile Include="Interface\ILogger.cs" />
     <Compile Include="Interface\IMovieMatcher.cs" />
     <Compile Include="Interface\IPerformActionsOnShows.cs" />
     <Compile Include="Interface\IScanForShows.cs" />
+    <Compile Include="Interface\ITmdbManager.cs" />
     <Compile Include="Interface\ITVShowMatcher.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="ActionMatchedFiles.cs" />
@@ -151,6 +161,7 @@
     <Compile Include="DataModel\ShowSeason.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="DataModel\MatchedFile.cs" />
+    <Compile Include="TmdbManager.cs" />
     <Compile Include="TVShowMatcher.cs" />
     <Compile Include="Win32FileIO.cs" />
   </ItemGroup>

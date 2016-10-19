@@ -38,7 +38,7 @@ namespace SimpleRenamer.Framework
             logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - Start");
             FileMoveResult result = new FileMoveResult(true, episode);
             string ext = Path.GetExtension(episode.FilePath);
-            if (episode.IsTVShow)
+            if (episode.FileType == FileType.TvShow)
             {
                 //use the destination folder and showname etc to define final destination
                 string showDirectory = string.Empty;
@@ -82,7 +82,7 @@ namespace SimpleRenamer.Framework
                     //we don't really care if image download fails
                 }
             }
-            else if (episode.IsMovie)
+            else if (episode.FileType == FileType.Movie)
             {
                 string movieDirectory = Path.Combine(settings.DestinationFolder, $"{episode.ShowName} ({episode.Season})");
                 result.DestinationFilePath = Path.Combine(movieDirectory, episode.ShowName + ext);

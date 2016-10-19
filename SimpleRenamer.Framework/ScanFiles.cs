@@ -72,11 +72,11 @@ namespace SimpleRenamer.Framework
             List<MatchedFile> matchedFiles = await SearchFileNames(videoFiles, ct);
 
             //try and match the tv shows with TVDB
-            List<MatchedFile> scannedEpisodes = await MatchTVShows(matchedFiles.Where(x => x.IsTVShow == true).ToList(), ct);
+            List<MatchedFile> scannedEpisodes = await MatchTVShows(matchedFiles.Where(x => x.FileType == FileType.TvShow).ToList(), ct);
             //try and match movies with TMDB
-            List<MatchedFile> scannedMovies = await MatchMovies(matchedFiles.Where(x => x.IsMovie == true).ToList(), ct);
+            List<MatchedFile> scannedMovies = await MatchMovies(matchedFiles.Where(x => x.FileType == FileType.Movie).ToList(), ct);
             //check there aren't any completely unmatched files (due to undecypherable filenames)
-            List<MatchedFile> otherVideoFiles = matchedFiles.Where(x => x.IsTVShow == false && x.IsMovie == false).ToList();
+            List<MatchedFile> otherVideoFiles = matchedFiles.Where(x => x.FileType == FileType.Unknown).ToList();
 
             //add the tv shows and movies to the same list and return this
             List<MatchedFile> scannedFiles = new List<MatchedFile>();
