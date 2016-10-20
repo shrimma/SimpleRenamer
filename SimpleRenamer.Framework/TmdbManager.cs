@@ -47,5 +47,17 @@ namespace SimpleRenamer.Framework
 
             return new MovieCredits(movie, credits);
         }
+
+        public SearchMovie SearchMovieById(string movieId)
+        {
+            var client = new RestClient($"https://api.themoviedb.org/3/search/movie/{movieId}?api_key={apiKey}");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("content-type", "application/json");
+            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
+
+            IRestResponse response = client.Execute(request);
+
+            return JsonConvert.DeserializeObject<SearchMovie>(response.Content);
+        }
     }
 }

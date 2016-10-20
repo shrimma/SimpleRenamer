@@ -138,7 +138,7 @@ namespace SimpleRenamer.Framework
                     }
                     logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
                     //only add the file if it needs renaming/moving
-                    string destinationDirectory = Path.Combine(settings.DestinationFolder, tempEp.ShowName, string.Format("Season {0}", tempEp.Season));
+                    string destinationDirectory = Path.Combine(settings.DestinationFolderTV, tempEp.ShowName, string.Format("Season {0}", tempEp.Season));
                     string destinationFilePath = Path.Combine(destinationDirectory, tempEp.NewFileName + Path.GetExtension(tempEp.FilePath));
                     if (!tempEp.FilePath.Equals(destinationFilePath))
                     {
@@ -179,8 +179,8 @@ namespace SimpleRenamer.Framework
                 {
                     tempMovie = movieMatcher.ScrapeDetailsAsync(tempMovie).GetAwaiter().GetResult();
 
-                    //only add the file if it needs renaming/moving                
-                    string movieDirectory = Path.Combine(settings.DestinationFolder, $"{tempMovie.ShowName} ({tempMovie.Season})");
+                    //only add the file if it needs renaming/moving
+                    string movieDirectory = Path.Combine(settings.DestinationFolderMovie, $"{tempMovie.ShowName} ({tempMovie.Season})");
                     string destinationFilePath = Path.Combine(movieDirectory, tempMovie.ShowName + Path.GetExtension(tempMovie.FilePath));
                     if (!tempMovie.FilePath.Equals(destinationFilePath))
                     {

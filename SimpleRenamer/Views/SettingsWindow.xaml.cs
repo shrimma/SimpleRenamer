@@ -111,7 +111,17 @@ namespace SimpleRenamer.Views
             DialogResult result = dialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                currentSettings.DestinationFolder = Path.GetFullPath(dialog.SelectedPath);
+                currentSettings.DestinationFolderTV = Path.GetFullPath(dialog.SelectedPath);
+            }
+        }
+
+        private void BrowseDestinationMovieButton_Click(object sender, RoutedEventArgs e)
+        {
+            FolderBrowserDialog dialog = new FolderBrowserDialog();
+            DialogResult result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                currentSettings.DestinationFolderMovie = Path.GetFullPath(dialog.SelectedPath);
             }
         }
 

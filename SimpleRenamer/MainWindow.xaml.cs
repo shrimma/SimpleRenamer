@@ -25,18 +25,20 @@ namespace SimpleRenamer
         //here are all our interfaces
         private ILogger logger;
         private ITVShowMatcher tvShowMatcher;
+        private IMovieMatcher movieMatcher;
         private IDependencyInjectionContext injectionContext;
         private IScanForShows scanForShows;
         private IPerformActionsOnShows performActionsOnShows;
         private IConfigurationManager configurationManager;
         private SelectShowWindow selectShowWindow;
+        private SelectMovieWindow selectMovieWindow;
         private ShowDetailsWindow showDetailsWindow;
         private MovieDetailsWindow movieDetailsWindow;
         private SettingsWindow settingsWindow;
         private EditShowWindow editShowWindow;
         private Settings settings;
 
-        public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, IDependencyInjectionContext injection, IPerformActionsOnShows performActions, IScanForShows scanShows, IConfigurationManager configManager)
+        public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, IMovieMatcher movieMatch, IDependencyInjectionContext injection, IPerformActionsOnShows performActions, IScanForShows scanShows, IConfigurationManager configManager)
         {
             if (log == null)
             {
@@ -45,6 +47,10 @@ namespace SimpleRenamer
             if (tvShowMatch == null)
             {
                 throw new ArgumentNullException(nameof(tvShowMatch));
+            }
+            if (movieMatch == null)
+            {
+                throw new ArgumentNullException(nameof(movieMatch));
             }
             if (injection == null)
             {
@@ -64,6 +70,7 @@ namespace SimpleRenamer
             }
             logger = log;
             tvShowMatcher = tvShowMatch;
+            movieMatcher = movieMatch;
             injectionContext = injection;
             scanForShows = scanShows;
             performActionsOnShows = performActions;
@@ -80,6 +87,8 @@ namespace SimpleRenamer
                 editShowWindow.RaiseEditShowEvent += new EventHandler<EditShowEventArgs>(EditShowWindowClosedEvent);
                 selectShowWindow = injectionContext.GetService<SelectShowWindow>();
                 selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
+                selectMovieWindow = injectionContext.GetService<SelectMovieWindow>();
+                selectMovieWindow.RaiseSelectMovieWindowEvent += SelectMovieWindow_RaiseSelectMovieWindowEvent;
                 settings = configurationManager.Settings;
                 scannedEpisodes = new ObservableCollection<MatchedFile>();
                 ShowsListBox.ItemsSource = scannedEpisodes;
@@ -261,15 +270,22 @@ namespace SimpleRenamer
             try
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
+                if (temp.FileType == FileType.Unknown)
+                {
+                    //IF UNKNOWN then we have to show a dialog here and ask whether movie or TV
+                }
+
                 if (temp.FileType == FileType.TvShow)
                 {
                     List<ShowView> possibleShows = await tvShowMatcher.GetPossibleShowsForEpisode(temp.ShowName);
-                    selectShowWindow.SetView(possibleShows, string.Format("Simple Renamer - TV - Select Show for file {0}", Path.GetFileName(temp.FilePath)), temp.ShowName);
+                    selectShowWindow.SetView(possibleShows, $"Simple Renamer - TV - Select Show for file {Path.GetFileName(temp.FilePath)}", temp.ShowName);
                     selectShowWindow.ShowDialog();
                 }
                 else if (temp.FileType == FileType.Movie)
                 {
-                    //TODO
+                    List<ShowView> possibleMovies = await movieMatcher.GetPossibleMoviesForFile(temp.ShowName);
+                    selectMovieWindow.SetView(possibleMovies, $"Simple Renamer - Movie - Select Title for file {Path.GetFileName(temp.FilePath)}", temp.ShowName);
+                    selectMovieWindow.ShowDialog();
                 }
             }
             catch (Exception ex)
@@ -285,10 +301,30 @@ namespace SimpleRenamer
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
                 MatchedFile updatedEpisode = await tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp);
                 //if a selection is made then force a rescan
-                if (!temp.SkippedExactSelection)
+                if (!updatedEpisode.SkippedExactSelection)
                 {
                     ShowsListBox.SelectedItem = updatedEpisode;
-                    scannedEpisodes.Clear();
+                    //TODO check this should be commented or not...original it was commented
+                    //scannedEpisodes.Clear();
+                    ActionButton.IsEnabled = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.TraceException(ex);
+            }
+        }
+
+        private async void SelectMovieWindow_RaiseSelectMovieWindowEvent(object sender, SelectMovieEventArgs e)
+        {
+            try
+            {
+                MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
+                MatchedFile updatedMovie = await movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp);
+                //if a selection is made then force a rescan
+                if (!updatedMovie.SkippedExactSelection)
+                {
+                    ShowsListBox.SelectedItem = updatedMovie;
                     ActionButton.IsEnabled = false;
                 }
             }
@@ -343,7 +379,11 @@ namespace SimpleRenamer
             if (temp != null && !temp.SkippedExactSelection && settings.RenameFiles)
             {
                 DetailButton.IsEnabled = true;
-                EditButton.IsEnabled = true;
+                //we can only edit show folders
+                if (temp.FileType == FileType.TvShow)
+                {
+                    EditButton.IsEnabled = true;
+                }
             }
             else
             {
@@ -478,8 +518,8 @@ namespace SimpleRenamer
                 DetailButton.IsEnabled = true;
                 EditButton.IsEnabled = true;
                 ShowNameTextBox.Text = "";
-                ShowNameTextBox.Visibility = System.Windows.Visibility.Hidden;
-                EditOkButton.Visibility = System.Windows.Visibility.Hidden;
+                ShowNameTextBox.Visibility = Visibility.Hidden;
+                EditOkButton.Visibility = Visibility.Hidden;
             }
             catch (Exception ex)
             {

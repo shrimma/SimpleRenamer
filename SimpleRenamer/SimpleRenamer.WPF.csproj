@@ -83,19 +83,23 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="EventArguments\SelectMovieEventArgs.cs" />
     <Compile Include="EventArguments\SelectShowEventArgs.cs" />
-    <Compile Include="IconBooleanConverter.cs" />
+    <Compile Include="ValueConverters\IconBooleanConverter.cs" />
     <Compile Include="Views\AddExtensionsWindow.xaml.cs">
       <DependentUpon>AddExtensionsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="EventArguments\EditShowEventArgs.cs" />
     <Compile Include="EventArguments\ExtensionEventArgs.cs" />
-    <Compile Include="InverseBooleanConverter.cs" />
+    <Compile Include="ValueConverters\InverseBooleanConverter.cs" />
     <Compile Include="Views\RegexExpressionsWindow.xaml.cs">
       <DependentUpon>RegexExpressionsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\EditShowWindow.xaml.cs">
       <DependentUpon>EditShowWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SelectMovieWindow.xaml.cs">
+      <DependentUpon>SelectMovieWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SelectShowWindow.xaml.cs">
       <DependentUpon>SelectShowWindow.xaml</DependentUpon>
@@ -130,6 +134,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\EditShowWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SelectMovieWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

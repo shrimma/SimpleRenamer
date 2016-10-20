@@ -76,17 +76,32 @@ namespace SimpleRenamer.Framework.DataModel
         public List<string> WatchFolders { get; set; }
         public List<string> ValidExtensions { get; set; }
 
-        private string destinationFolder;
+        private string destinationFolderTV;
 
-        public string DestinationFolder
+        public string DestinationFolderTV
         {
-            get { return destinationFolder; }
+            get { return destinationFolderTV; }
             set
             {
-                if (value != destinationFolder)
+                if (value != destinationFolderTV)
                 {
-                    destinationFolder = value;
-                    Notify("DestinationFolder");
+                    destinationFolderTV = value;
+                    Notify("DestinationFolderTV");
+                }
+            }
+        }
+
+        private string destinationFolderMovie;
+
+        public string DestinationFolderMovie
+        {
+            get { return destinationFolderMovie; }
+            set
+            {
+                if (value != destinationFolderMovie)
+                {
+                    destinationFolderMovie = value;
+                    Notify("DestinationFolderMovie");
                 }
             }
         }

@@ -44,11 +44,11 @@ namespace SimpleRenamer.Framework
                 string showDirectory = string.Empty;
                 if (mapping != null && !string.IsNullOrEmpty(mapping.CustomFolderName))
                 {
-                    showDirectory = Path.Combine(settings.DestinationFolder, mapping.CustomFolderName);
+                    showDirectory = Path.Combine(settings.DestinationFolderTV, mapping.CustomFolderName);
                 }
                 else
                 {
-                    showDirectory = Path.Combine(settings.DestinationFolder, episode.ShowName);
+                    showDirectory = Path.Combine(settings.DestinationFolderTV, episode.ShowName);
                 }
                 string seasonDirectory = Path.Combine(showDirectory, string.Format("Season {0}", episode.Season));
                 result.DestinationFilePath = Path.Combine(seasonDirectory, episode.NewFileName + ext);
@@ -84,7 +84,7 @@ namespace SimpleRenamer.Framework
             }
             else if (episode.FileType == FileType.Movie)
             {
-                string movieDirectory = Path.Combine(settings.DestinationFolder, $"{episode.ShowName} ({episode.Season})");
+                string movieDirectory = Path.Combine(settings.DestinationFolderMovie, $"{episode.ShowName} ({episode.Year})");
                 result.DestinationFilePath = Path.Combine(movieDirectory, episode.ShowName + ext);
                 //create our destination folder if it doesn't already exist
                 if (!Directory.Exists(movieDirectory))

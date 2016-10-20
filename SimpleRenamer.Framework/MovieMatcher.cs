@@ -15,24 +15,44 @@ namespace SimpleRenamer.Framework
         private ILogger logger;
         private ITmdbManager tmdbManager;
 
-        public MovieMatcher(ILogger log, IConfigurationManager configManager, ITmdbManager tmdbMan)
+        public MovieMatcher(ILogger log, ITmdbManager tmdbMan)
         {
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
             }
-            if (configManager == null)
+            if (tmdbMan == null)
             {
-                throw new ArgumentNullException(nameof(configManager));
+                throw new ArgumentNullException(nameof(tmdbMan));
             }
+
 
             logger = log;
             tmdbManager = tmdbMan;
         }
 
-        public async Task<List<ShowView>> GetPossibleMoviesForFile(string showName)
+        public async Task<List<ShowView>> GetPossibleMoviesForFile(string movieName)
         {
-            throw new NotImplementedException();
+            List<ShowView> movies = new List<ShowView>();
+            SearchContainer<SearchMovie> results = tmdbManager.SearchMovieByName(movieName, 0);
+            foreach (var s in results.Results)
+            {
+                string desc = string.Empty;
+                if (!string.IsNullOrEmpty(s.Overview))
+                {
+                    if (s.Overview.Length > 50)
+                    {
+                        desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                    }
+                    else
+                    {
+                        desc = s.Overview;
+                    }
+                }
+                movies.Add(new ShowView(s.Id.ToString(), s.Title, s.ReleaseDate.Value.Year.ToString(), desc));
+            }
+
+            return movies;
         }
 
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie)
@@ -50,7 +70,7 @@ namespace SimpleRenamer.Framework
             }
             else if (results.Results.Count == 1)
             {
-                //if theres only one match then scape the specific show                                
+                //if theres only one match then scape the specific show
                 movie.TMDBShowId = results.Results[0].Id;
                 movie.ShowImage = results.Results[0].PosterPath;
             }
@@ -58,9 +78,27 @@ namespace SimpleRenamer.Framework
             return movie;
         }
 
-        public async Task<MatchedFile> UpdateFileWithMatchedMovie(string selectedMovieId, MatchedFile episode)
+        public async Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile)
         {
-            throw new NotImplementedException();
+            logger.TraceMessage("UpdateFileWithMatchedMovie - Start");
+
+            if (!string.IsNullOrEmpty(movieId))
+            {
+                SearchMovie searchedMovie = tmdbManager.SearchMovieById(movieId);
+                matchedFile.ActionThis = true;
+                matchedFile.SkippedExactSelection = false;
+                matchedFile.ShowName = searchedMovie.Title;
+                matchedFile.TMDBShowId = searchedMovie.Id;
+                matchedFile.ShowImage = searchedMovie.PosterPath;
+            }
+            else
+            {
+                matchedFile.ActionThis = false;
+                matchedFile.SkippedExactSelection = true;
+            }
+
+            logger.TraceMessage("ScrapeDetailsAsync - End");
+            return matchedFile;
         }
     }
 }

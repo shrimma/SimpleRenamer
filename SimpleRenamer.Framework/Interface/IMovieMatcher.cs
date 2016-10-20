@@ -12,7 +12,7 @@ namespace SimpleRenamer.Framework.Interface
 
         Task<List<ShowView>> GetPossibleMoviesForFile(string showName);
 
-        Task<MatchedFile> UpdateFileWithMatchedMovie(string selectedMovieId, MatchedFile episode);
+        Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

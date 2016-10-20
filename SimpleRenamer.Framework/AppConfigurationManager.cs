@@ -156,7 +156,8 @@ namespace SimpleRenamer.Framework
             mySettings.NewFileNameFormat = configuration.AppSettings.Settings["NewFileNameFormat"].Value;
             mySettings.ValidExtensions = new List<string>(configuration.AppSettings.Settings["ValidExtensions"].Value.Split(new char[] { ';' }));
             mySettings.WatchFolders = new List<string>(configuration.AppSettings.Settings["WatchFolders"].Value.Split(new char[] { ';' }));
-            mySettings.DestinationFolder = configuration.AppSettings.Settings["DestinationFolder"].Value;
+            mySettings.DestinationFolderTV = configuration.AppSettings.Settings["DestinationFolderTV"].Value;
+            mySettings.DestinationFolderMovie = configuration.AppSettings.Settings["DestinationFolderMovie"].Value;
 
             return mySettings;
         }
@@ -245,7 +246,8 @@ namespace SimpleRenamer.Framework
                 watchFolders += folder + ";";
             }
             configuration.AppSettings.Settings["WatchFolders"].Value = watchFolders.TrimEnd(';');
-            configuration.AppSettings.Settings["DestinationFolder"].Value = settings.DestinationFolder;
+            configuration.AppSettings.Settings["DestinationFolderTV"].Value = settings.DestinationFolderTV;
+            configuration.AppSettings.Settings["DestinationFolderMovie"].Value = settings.DestinationFolderMovie;
             configuration.Save(ConfigurationSaveMode.Modified);
         }
 

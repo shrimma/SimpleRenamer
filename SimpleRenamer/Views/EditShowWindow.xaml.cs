@@ -34,7 +34,7 @@ namespace SimpleRenamer.Views
             currentEpisode = tvEp;
             currentMapping = mapping;
             this.Title = string.Format("{0}", currentMapping.TVDBShowName);
-            string folderPath = Path.Combine(currentSettings.DestinationFolder, string.IsNullOrEmpty(currentMapping.CustomFolderName) ? currentMapping.TVDBShowName : currentMapping.CustomFolderName);
+            string folderPath = Path.Combine(currentSettings.DestinationFolderTV, string.IsNullOrEmpty(currentMapping.CustomFolderName) ? currentMapping.TVDBShowName : currentMapping.CustomFolderName);
             ShowFolderTextBox.Text = folderPath;
 
         }
@@ -48,7 +48,7 @@ namespace SimpleRenamer.Views
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             string currentText = ShowFolderTextBox.Text;
-            currentText = currentText.Replace(currentSettings.DestinationFolder + @"\", "");
+            currentText = currentText.Replace(currentSettings.DestinationFolderTV + @"\", "");
             if (currentMapping.CustomFolderName.Equals(currentText))
             {
                 //if the custom folder name hasn't changed then don't raise
@@ -80,13 +80,13 @@ namespace SimpleRenamer.Views
         private void ShowFolderTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             string currentText = ShowFolderTextBox.Text;
-            ShowFolderTextBox.Text = currentText.Replace(currentSettings.DestinationFolder + @"\", "");
+            ShowFolderTextBox.Text = currentText.Replace(currentSettings.DestinationFolderTV + @"\", "");
         }
 
         private void ShowFolderTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             string currentText = ShowFolderTextBox.Text;
-            ShowFolderTextBox.Text = Path.Combine(currentSettings.DestinationFolder, currentText);
+            ShowFolderTextBox.Text = Path.Combine(currentSettings.DestinationFolderTV, currentText);
         }
     }
 }
