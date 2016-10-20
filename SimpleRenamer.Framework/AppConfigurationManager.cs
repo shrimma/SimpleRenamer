@@ -267,7 +267,7 @@ namespace SimpleRenamer.Framework
             }
         }
 
-        public string oneTrueErrorUrl
+        public string OneTrueErrorUrl
         {
             get
             {
@@ -275,7 +275,7 @@ namespace SimpleRenamer.Framework
             }
         }
 
-        public string oneTrueApplicationKey
+        public string OneTrueErrorApplicationKey
         {
             get
             {
@@ -283,7 +283,7 @@ namespace SimpleRenamer.Framework
             }
         }
 
-        public string oneTrueSharedSecret
+        public string OneTrueErrorSharedSecret
         {
             get
             {

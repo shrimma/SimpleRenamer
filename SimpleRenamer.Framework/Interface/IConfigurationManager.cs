@@ -14,11 +14,11 @@ namespace SimpleRenamer.Framework.Interface
         /// </summary>
         string TmDbApiKey { get; }
 
-        string oneTrueErrorUrl { get; }
+        string OneTrueErrorUrl { get; }
 
-        string oneTrueApplicationKey { get; }
+        string OneTrueErrorApplicationKey { get; }
 
-        string oneTrueSharedSecret { get; }
+        string OneTrueErrorSharedSecret { get; }
 
         string RegexFilePath { get; }
 

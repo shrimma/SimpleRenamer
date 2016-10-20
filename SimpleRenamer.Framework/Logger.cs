@@ -10,10 +10,13 @@ namespace SimpleRenamer.Framework
 
         public Logger(IConfigurationManager configManager)
         {
+            if (configManager == null)
+            {
+                throw new ArgumentNullException(nameof(configManager));
+            }
             log = log4net.LogManager.GetLogger(typeof(Logger));
             log4net.Config.XmlConfigurator.Configure();
-            var url = new Uri("http://localhost/OTE/");
-            OneTrue.Configuration.Credentials(url, "eec0416f7dc2458b874616f022d86b2a", "2d737731556c433d8bd443d82121aad6");
+            OneTrue.Configuration.Credentials(new Uri(configManager.OneTrueErrorUrl), configManager.OneTrueErrorApplicationKey, configManager.OneTrueErrorSharedSecret);
             OneTrue.Configuration.CatchLog4NetExceptions();
         }
 
