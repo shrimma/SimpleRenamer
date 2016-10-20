@@ -49,6 +49,14 @@
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="OneTrueError.Client, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OneTrueError.Client.1.0.0\lib\net40\OneTrueError.Client.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OneTrueError.Client.Log4Net, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OneTrueError.Client.log4net.1.0.0\lib\net45\OneTrueError.Client.Log4Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
@@ -166,6 +174,7 @@
     <Compile Include="Win32FileIO.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="readme.txt" />
     <Content Include="RegexExpressions.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

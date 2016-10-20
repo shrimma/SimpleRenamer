@@ -1,4 +1,6 @@
-﻿using SimpleRenamer.Framework.DataModel;
+﻿using OneTrueError.Client;
+using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.Interface;
 using System;
 namespace SimpleRenamer.Framework
 {
@@ -6,10 +8,13 @@ namespace SimpleRenamer.Framework
     {
         private log4net.ILog log { get; set; }
 
-        public Logger()
+        public Logger(IConfigurationManager configManager)
         {
             log = log4net.LogManager.GetLogger(typeof(Logger));
             log4net.Config.XmlConfigurator.Configure();
+            var url = new Uri("http://localhost/OTE/");
+            OneTrue.Configuration.Credentials(url, "eec0416f7dc2458b874616f022d86b2a", "2d737731556c433d8bd443d82121aad6");
+            OneTrue.Configuration.CatchLog4NetExceptions();
         }
 
         public void TraceMessage(string message = "", LogType logType = LogType.Info,
@@ -56,7 +61,7 @@ namespace SimpleRenamer.Framework
 
             string innerEx = ex.InnerException == null ? "" : ex.InnerException.Message;
             string logthis = string.Format("Message: {0}, Caller Member: {1}, Source File Path: {2}, Source Line Number: {3}, Exception: {4}, Message: {5}, Inner Exception: {6}", message, memberName, sourceFilePath, sourceLineNumber.ToString(), ex.ToString(), ex.Message, innerEx);
-            log.Fatal(logthis);
+            log.Fatal(logthis, ex);
         }
     }
 }

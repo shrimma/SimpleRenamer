@@ -266,5 +266,29 @@ namespace SimpleRenamer.Framework
                 return "e9b955f1140da97e65df7e1bce1780bc";
             }
         }
+
+        public string oneTrueErrorUrl
+        {
+            get
+            {
+                return "";
+            }
+        }
+
+        public string oneTrueApplicationKey
+        {
+            get
+            {
+                return "";
+            }
+        }
+
+        public string oneTrueSharedSecret
+        {
+            get
+            {
+                return "";
+            }
+        }
     }
 }
