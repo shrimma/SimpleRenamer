@@ -73,7 +73,8 @@ namespace SimpleRenamer.Framework
             List<string> foundFiles = new List<string>();
             foreach (string file in Directory.GetFiles(dir, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
-                if (IsValidExtension(Path.GetExtension(file)) && !ignoreList.IgnoreFiles.Contains(file))
+                //is a valid extension, is not ignored and isn't a sample
+                if (IsValidExtension(Path.GetExtension(file)) && !ignoreList.IgnoreFiles.Contains(file) && !Path.GetFileName(file).Contains("*.sample.*") && !Path.GetFileName(file).Contains("*.Sample.*"))
                 {
                     foundFiles.Add(file);
                 }

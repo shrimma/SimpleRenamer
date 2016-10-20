@@ -1,7 +1,6 @@
 ﻿using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
@@ -32,43 +31,12 @@ namespace SimpleRenamer.Framework
         {
             logger.TraceMessage("GetMovieInfo - Start");
             MovieCredits matchedMovie = tmdbManager.GetMovie(movieId);
-            BitmapImage bannerImage = null;
-
-            //get the show banner            
-            //using (Stream stream = await tmdbManager.GetBanner(matchedMovie.PosterPath))
-            //{
-            //    byte[] bytesInStream = new byte[stream.Length];
-            //    stream.Read(bytesInStream, 0, bytesInStream.Length);
-            //    bannerImage = LoadImage(bytesInStream);
-            //}
-
+            BitmapImage bannerImage = new BitmapImage();
+            bannerImage.BeginInit();
+            bannerImage.UriSource = new Uri(tmdbManager.GetPosterUri(matchedMovie.Movie.PosterPath));
+            bannerImage.EndInit();
 
             return new MovieInfo(matchedMovie, bannerImage);
-        }
-
-        private BitmapImage LoadImage(byte[] imageData)
-        {
-            logger.TraceMessage("LoadImage - Start");
-            if (imageData == null || imageData.Length == 0)
-            {
-                return null;
-            }
-
-            var image = new BitmapImage();
-            using (var mem = new MemoryStream(imageData))
-            {
-                mem.Position = 0;
-                image.BeginInit();
-                image.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.UriSource = null;
-                image.StreamSource = mem;
-                image.EndInit();
-            }
-            image.Freeze();
-
-            logger.TraceMessage("LoadImage - End");
-            return image;
         }
     }
 }

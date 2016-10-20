@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using WPFCustomMessageBox;
 
 namespace SimpleRenamer
 {
@@ -273,6 +274,15 @@ namespace SimpleRenamer
                 if (temp.FileType == FileType.Unknown)
                 {
                     //IF UNKNOWN then we have to show a dialog here and ask whether movie or TV
+                    MessageBoxResult result = CustomMessageBox.ShowYesNoCancel($"TV or Movie", $"Is the file at path: {temp.FilePath} a TV show or a movie?", "TV Show", "Movie", "Cancel");
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        temp.FileType = FileType.TvShow;
+                    }
+                    else if (result == MessageBoxResult.No)
+                    {
+                        temp.FileType = FileType.Movie;
+                    }
                 }
 
                 if (temp.FileType == FileType.TvShow)

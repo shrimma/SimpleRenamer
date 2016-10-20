@@ -11,5 +11,7 @@ namespace SimpleRenamer.Framework.Interface
         SearchMovie SearchMovieById(string tmdbId);
 
         MovieCredits GetMovie(string movieId);
+
+        string GetPosterUri(string posterPath);
     }
 }
