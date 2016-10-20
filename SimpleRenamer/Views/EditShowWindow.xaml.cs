@@ -42,6 +42,7 @@ namespace SimpleRenamer.Views
         private void EditShowWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             RaiseEditShowEvent(this, new EditShowEventArgs(null, null));
+            e.Cancel = true;
             this.Hide();
         }
 

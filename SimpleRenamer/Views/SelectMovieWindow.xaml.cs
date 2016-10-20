@@ -44,6 +44,7 @@ namespace SimpleRenamer.Views
         void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             RaiseSelectMovieWindowEvent(this, new SelectMovieEventArgs(null));
+            e.Cancel = true;
             this.Hide();
         }
 

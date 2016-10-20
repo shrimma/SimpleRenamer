@@ -271,27 +271,30 @@ namespace SimpleRenamer
             try
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
-                if (temp.FileType == FileType.Unknown)
+                FileType fileType = temp.FileType;
+                if (fileType == FileType.Unknown)
                 {
                     //IF UNKNOWN then we have to show a dialog here and ask whether movie or TV
-                    MessageBoxResult result = CustomMessageBox.ShowYesNoCancel($"TV or Movie", $"Is the file at path: {temp.FilePath} a TV show or a movie?", "TV Show", "Movie", "Cancel");
+                    MessageBoxResult result = CustomMessageBox.ShowYesNoCancel($"Is the file at path: {temp.FilePath} a TV show or a movie?", $"TV or Movie", "TV Show", "Movie", "Cancel");
                     if (result == MessageBoxResult.Yes)
                     {
-                        temp.FileType = FileType.TvShow;
+                        fileType = FileType.TvShow;
                     }
                     else if (result == MessageBoxResult.No)
                     {
-                        temp.FileType = FileType.Movie;
+                        fileType = FileType.Movie;
                     }
                 }
 
-                if (temp.FileType == FileType.TvShow)
+
+
+                if (fileType == FileType.TvShow)
                 {
                     List<ShowView> possibleShows = await tvShowMatcher.GetPossibleShowsForEpisode(temp.ShowName);
                     selectShowWindow.SetView(possibleShows, $"Simple Renamer - TV - Select Show for file {Path.GetFileName(temp.FilePath)}", temp.ShowName);
                     selectShowWindow.ShowDialog();
                 }
-                else if (temp.FileType == FileType.Movie)
+                else if (fileType == FileType.Movie)
                 {
                     List<ShowView> possibleMovies = await movieMatcher.GetPossibleMoviesForFile(temp.ShowName);
                     selectMovieWindow.SetView(possibleMovies, $"Simple Renamer - Movie - Select Title for file {Path.GetFileName(temp.FilePath)}", temp.ShowName);

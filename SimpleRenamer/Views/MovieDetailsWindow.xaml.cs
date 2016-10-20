@@ -41,6 +41,7 @@ namespace SimpleRenamer.Views
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            e.Cancel = true;
             this.Hide();
         }
 
@@ -57,6 +58,17 @@ namespace SimpleRenamer.Views
 
             //set the title, show description, rating and firstaired values
             this.Title = string.Format("{0} - Rating {1} - Year {2}", movie.Movie.Movie.Title, string.IsNullOrEmpty(movie.Movie.Movie.VoteAverage.ToString()) ? "0.0" : movie.Movie.Movie.VoteAverage.ToString(), movie.Movie.Movie.ReleaseDate.HasValue ? movie.Movie.Movie.ReleaseDate.Value.Year.ToString() : "1900");
+
+            if (!string.IsNullOrEmpty(movie.Movie.Movie.Tagline))
+            {
+                MovieTagLineTextBox.Text = movie.Movie.Movie.Tagline;
+                MovieTagLineTextBox.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                MovieTagLineTextBox.Visibility = Visibility.Collapsed;
+            }
+
             MovieDescriptionTextBox.Text = movie.Movie.Movie.Overview;
 
             //set the actor listbox

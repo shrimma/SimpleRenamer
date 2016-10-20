@@ -28,6 +28,7 @@ namespace SimpleRenamer.Views
         void AddExtensionsWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             RaiseCustomEvent(this, new ExtensionEventArgs(null));
+            e.Cancel = true;
             this.Hide();
         }
 

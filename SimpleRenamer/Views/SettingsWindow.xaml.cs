@@ -60,6 +60,22 @@ namespace SimpleRenamer.Views
             WatchListBox.ItemsSource = watchFolders;
             validExtensions = new ObservableCollection<string>(currentSettings.ValidExtensions);
             ExtensionsListBox.ItemsSource = validExtensions;
+
+            this.Closing += Window_Closing;
+        }
+
+        void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            currentSettings.ValidExtensions = new List<string>(validExtensions);
+            currentSettings.WatchFolders = new List<string>(watchFolders);
+
+            if (configurationManager.Settings != currentSettings)
+            {
+                //TODO popup
+            }
+
+            e.Cancel = true;
+            this.Hide();
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)

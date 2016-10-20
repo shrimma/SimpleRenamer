@@ -25,6 +25,13 @@ namespace SimpleRenamer.Views
             InitializeComponent();
             regExp = new ObservableCollection<RegexExpression>(configurationManager.RegexExpressions.RegexExpressions);
             ExpressionsListBox.ItemsSource = regExp;
+            this.Closing += Window_Closing;
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
+            this.Hide();
         }
 
         private void AddExpressionButton_Click(object sender, RoutedEventArgs e)
