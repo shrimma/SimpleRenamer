@@ -154,8 +154,12 @@ namespace SimpleRenamer.Framework
             mySettings.RenameFiles = bool.Parse(configuration.AppSettings.Settings["RenameFiles"].Value);
             mySettings.CopyFiles = bool.Parse(configuration.AppSettings.Settings["CopyFiles"].Value);
             mySettings.NewFileNameFormat = configuration.AppSettings.Settings["NewFileNameFormat"].Value;
-            mySettings.ValidExtensions = new List<string>(configuration.AppSettings.Settings["ValidExtensions"].Value.Split(new char[] { ';' }));
-            mySettings.WatchFolders = new List<string>(configuration.AppSettings.Settings["WatchFolders"].Value.Split(new char[] { ';' }));
+            List<string> extensions = new List<string>(configuration.AppSettings.Settings["ValidExtensions"].Value.Split(';'));
+            extensions.Remove("");
+            mySettings.ValidExtensions = extensions;
+            List<string> folders = new List<string>(configuration.AppSettings.Settings["WatchFolders"].Value.Split(';'));
+            folders.Remove("");
+            mySettings.WatchFolders = folders;
             mySettings.DestinationFolderTV = configuration.AppSettings.Settings["DestinationFolderTV"].Value;
             mySettings.DestinationFolderMovie = configuration.AppSettings.Settings["DestinationFolderMovie"].Value;
 

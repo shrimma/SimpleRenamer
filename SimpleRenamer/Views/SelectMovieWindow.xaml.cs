@@ -10,7 +10,7 @@ namespace SimpleRenamer.Views
     /// <summary>
     /// Interaction logic for SelectShowWpfForm.xaml
     /// </summary>
-    public partial class SelectMovieWindow : Window
+    public partial class SelectMovieWindow
     {
         public event EventHandler<SelectMovieEventArgs> RaiseSelectMovieWindowEvent;
 

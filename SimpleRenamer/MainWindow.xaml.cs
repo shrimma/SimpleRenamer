@@ -1,4 +1,5 @@
-﻿using SimpleRenamer.EventArguments;
+﻿using MahApps.Metro.Controls;
+using SimpleRenamer.EventArguments;
 using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
@@ -18,7 +19,7 @@ namespace SimpleRenamer
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : MetroWindow
     {
         public CancellationTokenSource cts;
         private ObservableCollection<MatchedFile> scannedEpisodes;

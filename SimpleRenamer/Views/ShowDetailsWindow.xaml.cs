@@ -2,14 +2,13 @@
 using SimpleRenamer.Framework.Interface;
 using System;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace SimpleRenamer.Views
 {
     /// <summary>
     /// Interaction logic for ShowDetailsForm.xaml
     /// </summary>
-    public partial class ShowDetailsWindow : Window
+    public partial class ShowDetailsWindow
     {
         private ILogger logger;
         private IGetShowDetails getShowDetails;
@@ -70,12 +69,6 @@ namespace SimpleRenamer.Views
             BannerImage.Source = series.BannerImage;
 
             logger.TraceMessage("GetSeriesInfo - End");
-        }
-
-        private void OKButton_Click(object sender, RoutedEventArgs e)
-        {
-            logger.TraceMessage("OKButton_Click - Start");
-            this.Close();
         }
     }
 }

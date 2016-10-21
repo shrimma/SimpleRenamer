@@ -10,7 +10,7 @@ namespace SimpleRenamer.Views
     /// <summary>
     /// Interaction logic for SelectShowWpfForm.xaml
     /// </summary>
-    public partial class SelectShowWindow : Window
+    public partial class SelectShowWindow
     {
         public event EventHandler<SelectShowEventArgs> RaiseSelectShowWindowEvent;
 

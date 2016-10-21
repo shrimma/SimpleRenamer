@@ -30,15 +30,17 @@ namespace SimpleRenamer.Framework
 
         private static bool AcceptAllCertifications(object sender, System.Security.Cryptography.X509Certificates.X509Certificate certification, System.Security.Cryptography.X509Certificates.X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
         {
-            //ignore certificate errors for the OTE server
-            if (certification.Issuer.Equals("CN=onetrueerror-vm"))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            ////ignore certificate errors for the OTE server
+            //if (certification.Issuer.Equals("CN=onetrueerror-vm"))
+            //{
+            //    return true;
+            //}
+            //else
+            //{
+            //    return false;
+            //}
+
+            return true;
         }
 
         public void TraceMessage(string message = "", LogType logType = LogType.Info,

@@ -10,7 +10,7 @@ namespace SimpleRenamer.Views
     /// <summary>
     /// Interaction logic for EditShowWindow.xaml
     /// </summary>
-    public partial class EditShowWindow : Window
+    public partial class EditShowWindow
     {
         private Settings currentSettings;
         private MatchedFile currentEpisode;

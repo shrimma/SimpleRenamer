@@ -10,7 +10,7 @@ namespace SimpleRenamer.Views
     /// <summary>
     /// Interaction logic for RegexExpressions.xaml
     /// </summary>
-    public partial class RegexExpressionsWindow : Window
+    public partial class RegexExpressionsWindow
     {
         public ObservableCollection<RegexExpression> regExp;
         private IConfigurationManager configurationManager;

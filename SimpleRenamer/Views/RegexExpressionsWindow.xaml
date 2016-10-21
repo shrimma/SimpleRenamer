@@ -1,7 +1,8 @@
-﻿<Window x:Class="SimpleRenamer.Views.RegexExpressionsWindow"
+﻿<Controls:MetroWindow x:Class="SimpleRenamer.Views.RegexExpressionsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Simple Renamed - Settings - Regex Expressions" Height="300" Width="675" MinHeight="300" MinWidth="675" MaxHeight="300" MaxWidth="675" Icon="tv.ico">
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        Title="Simple Renamer - Settings - Regex Expressions" Height="300" Width="675" MinHeight="300" MinWidth="675" MaxHeight="300" MaxWidth="675" Icon="tv.ico">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>
@@ -31,4 +32,4 @@
             <Button Name="CancelButton" Content="Cancel" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="CancelButton_Click"/>
         </StackPanel>
     </Grid>
-</Window>
+</Controls:MetroWindow>

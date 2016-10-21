@@ -1,4 +1,5 @@
-﻿using SimpleRenamer.EventArguments;
+﻿
+using SimpleRenamer.EventArguments;
 using SimpleRenamer.Framework.Interface;
 using System;
 using System.Windows;
@@ -8,7 +9,7 @@ namespace SimpleRenamer.Views
     /// <summary>
     /// Interaction logic for AddExtensionsWindow.xaml
     /// </summary>
-    public partial class AddExtensionsWindow : Window
+    public partial class AddExtensionsWindow
     {
         public event EventHandler<ExtensionEventArgs> RaiseCustomEvent;
         private IHelper helper;

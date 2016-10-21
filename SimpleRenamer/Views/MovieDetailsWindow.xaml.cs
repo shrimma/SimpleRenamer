@@ -9,7 +9,7 @@ namespace SimpleRenamer.Views
     /// <summary>
     /// Interaction logic for ShowDetailsForm.xaml
     /// </summary>
-    public partial class MovieDetailsWindow : Window
+    public partial class MovieDetailsWindow
     {
         private ILogger logger;
         private IGetMovieDetails getMovieDetails;
@@ -81,12 +81,6 @@ namespace SimpleRenamer.Views
             BannerImage.Source = movie.BannerImage;
 
             logger.TraceMessage("GetMovieInfo - End");
-        }
-
-        private void OKButton_Click(object sender, RoutedEventArgs e)
-        {
-            logger.TraceMessage("OKButton_Click - Start");
-            this.Close();
         }
     }
 }
