@@ -271,7 +271,7 @@ namespace SimpleRenamer.Framework
         {
             get
             {
-                return "";
+                return "https://jsote.uksouth.cloudapp.azure.com/OneTrueError/";
             }
         }
 
@@ -279,7 +279,7 @@ namespace SimpleRenamer.Framework
         {
             get
             {
-                return "";
+                return "d574b9a210704b1ba1d75bb70442e173";
             }
         }
 
@@ -287,7 +287,7 @@ namespace SimpleRenamer.Framework
         {
             get
             {
-                return "";
+                return "696c4b84e8d04a8c99cbc17570b1cc05";
             }
         }
     }

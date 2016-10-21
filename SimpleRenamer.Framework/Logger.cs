@@ -16,8 +16,29 @@ namespace SimpleRenamer.Framework
             }
             log = log4net.LogManager.GetLogger(typeof(Logger));
             log4net.Config.XmlConfigurator.Configure();
+
+            //ignore the certificate issue with OTE server
+            IgnoreBadCertificate();
             OneTrue.Configuration.Credentials(new Uri(configManager.OneTrueErrorUrl), configManager.OneTrueErrorApplicationKey, configManager.OneTrueErrorSharedSecret);
             OneTrue.Configuration.CatchLog4NetExceptions();
+        }
+
+        private static void IgnoreBadCertificate()
+        {
+            System.Net.ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(AcceptAllCertifications);
+        }
+
+        private static bool AcceptAllCertifications(object sender, System.Security.Cryptography.X509Certificates.X509Certificate certification, System.Security.Cryptography.X509Certificates.X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
+        {
+            //ignore certificate errors for the OTE server
+            if (certification.Issuer.Equals("CN=onetrueerror-vm"))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public void TraceMessage(string message = "", LogType logType = LogType.Info,
