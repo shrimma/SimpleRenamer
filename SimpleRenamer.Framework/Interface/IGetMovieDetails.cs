@@ -1,4 +1,5 @@
 ﻿using SimpleRenamer.Framework.DataModel;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework.Interface
@@ -10,6 +11,6 @@ namespace SimpleRenamer.Framework.Interface
         /// </summary>
         /// <param name="movieId">The TMDB movie ID</param>
         /// <returns>Populated MovieInfo object</returns>
-        Task<MovieInfo> GetMovieWithBanner(string movieId);
+        Task<MovieInfo> GetMovieWithBanner(string movieId, CancellationToken ct);
     }
 }

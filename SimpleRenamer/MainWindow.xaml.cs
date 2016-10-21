@@ -269,6 +269,7 @@ namespace SimpleRenamer
 
         private async void MatchShowButton_Click(object sender, RoutedEventArgs e)
         {
+            cts = new CancellationTokenSource();
             try
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
@@ -297,7 +298,7 @@ namespace SimpleRenamer
                 }
                 else if (fileType == FileType.Movie)
                 {
-                    List<ShowView> possibleMovies = await movieMatcher.GetPossibleMoviesForFile(temp.ShowName);
+                    List<ShowView> possibleMovies = await movieMatcher.GetPossibleMoviesForFile(temp.ShowName, cts.Token);
                     selectMovieWindow.SetView(possibleMovies, $"Simple Renamer - Movie - Select Title for file {Path.GetFileName(temp.FilePath)}", temp.ShowName);
                     selectMovieWindow.ShowDialog();
                 }
@@ -331,10 +332,11 @@ namespace SimpleRenamer
 
         private async void SelectMovieWindow_RaiseSelectMovieWindowEvent(object sender, SelectMovieEventArgs e)
         {
+            CancellationTokenSource cts = new CancellationTokenSource();
             try
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
-                MatchedFile updatedMovie = await movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp);
+                MatchedFile updatedMovie = await movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp, cts.Token);
                 //if a selection is made then force a rescan
                 if (!updatedMovie.SkippedExactSelection)
                 {

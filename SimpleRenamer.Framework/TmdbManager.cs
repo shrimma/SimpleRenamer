@@ -2,6 +2,8 @@
 using RestSharp;
 using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
+using System.Threading;
+using System.Threading.Tasks;
 using TMDbLib.Objects.General;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
@@ -19,7 +21,7 @@ namespace SimpleRenamer.Framework
             baseUri = "";
         }
 
-        public SearchContainer<SearchMovie> SearchMovieByName(string movieName, int movieYear)
+        public async Task<SearchContainer<SearchMovie>> SearchMovieByNameAsync(string movieName, int movieYear, CancellationToken ct)
         {
             RestClient client;
             //if no movie year then don't include in the query
@@ -35,12 +37,12 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
-            IRestResponse response = client.Execute(request);
+            IRestResponse response = await client.ExecuteTaskAsync(request, ct);
 
             return JsonConvert.DeserializeObject<SearchContainer<SearchMovie>>(response.Content);
         }
 
-        public MovieCredits GetMovie(string movieId)
+        public async Task<MovieCredits> GetMovieAsync(string movieId, CancellationToken ct)
         {
             var client = new RestClient($"https://api.themoviedb.org/3/movie/{movieId}?api_key={apiKey}");
             var request = new RestRequest(Method.GET);
@@ -53,25 +55,25 @@ namespace SimpleRenamer.Framework
             request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            response = client.Execute(request);
+            response = await client.ExecuteTaskAsync(request, ct);
             Credits credits = JsonConvert.DeserializeObject<Credits>(response.Content);
 
             return new MovieCredits(movie, credits);
         }
 
-        public SearchMovie SearchMovieById(string movieId)
+        public async Task<SearchMovie> SearchMovieByIdAsync(string movieId, CancellationToken ct)
         {
             var client = new RestClient($"https://api.themoviedb.org/3/search/movie/{movieId}?api_key={apiKey}");
             var request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
-            IRestResponse response = client.Execute(request);
+            IRestResponse response = await client.ExecuteTaskAsync(request, ct);
 
             return JsonConvert.DeserializeObject<SearchMovie>(response.Content);
         }
 
-        public string GetPosterUri(string posterPath)
+        public async Task<string> GetPosterUriAsync(string posterPath, CancellationToken ct)
         {
             //if we havent grabbed the base uri yet this session
             if (string.IsNullOrEmpty(baseUri))
@@ -81,7 +83,7 @@ namespace SimpleRenamer.Framework
                 request.AddHeader("content-type", "application/json");
                 request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
-                IRestResponse response = client.Execute(request);
+                IRestResponse response = await client.ExecuteTaskAsync(request, ct);
 
                 TMDbConfig tmdbConfig = JsonConvert.DeserializeObject<TMDbConfig>(response.Content);
                 baseUri = tmdbConfig.Images.BaseUrl;

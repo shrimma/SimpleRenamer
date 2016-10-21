@@ -3,6 +3,7 @@ using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
 
 namespace SimpleRenamer.Views
@@ -81,8 +82,9 @@ namespace SimpleRenamer.Views
 
         private async void SearchButton_Click(object sender, RoutedEventArgs e)
         {
+            CancellationTokenSource cts = new CancellationTokenSource();
             string searchText = SearchTextBox.Text;
-            List<ShowView> possibleShows = await movieMatcher.GetPossibleMoviesForFile(searchText);
+            List<ShowView> possibleShows = await movieMatcher.GetPossibleMoviesForFile(searchText, cts.Token);
             SetView(possibleShows, this.Title, searchText);
         }
     }

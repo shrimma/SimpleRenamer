@@ -177,7 +177,7 @@ namespace SimpleRenamer.Framework
                 //for each file
                 Parallel.ForEach(matchedFiles, (tempMovie) =>
                 {
-                    tempMovie = movieMatcher.ScrapeDetailsAsync(tempMovie).GetAwaiter().GetResult();
+                    tempMovie = movieMatcher.ScrapeDetailsAsync(tempMovie, ct).GetAwaiter().GetResult();
 
                     //only add the file if it needs renaming/moving
                     string movieDirectory = Path.Combine(settings.DestinationFolderMovie, $"{tempMovie.ShowName} ({tempMovie.Season})");

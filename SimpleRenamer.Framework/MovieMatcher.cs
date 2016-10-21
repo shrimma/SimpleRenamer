@@ -3,6 +3,7 @@ using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using TMDbLib.Objects.General;
 using TMDbLib.Objects.Search;
@@ -31,10 +32,10 @@ namespace SimpleRenamer.Framework
             tmdbManager = tmdbMan;
         }
 
-        public async Task<List<ShowView>> GetPossibleMoviesForFile(string movieName)
+        public async Task<List<ShowView>> GetPossibleMoviesForFile(string movieName, CancellationToken ct)
         {
             List<ShowView> movies = new List<ShowView>();
-            SearchContainer<SearchMovie> results = tmdbManager.SearchMovieByName(movieName, 0);
+            SearchContainer<SearchMovie> results = await tmdbManager.SearchMovieByNameAsync(movieName, 0, ct);
             foreach (var s in results.Results)
             {
                 string desc = string.Empty;
@@ -55,12 +56,12 @@ namespace SimpleRenamer.Framework
             return movies;
         }
 
-        public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie)
+        public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie, CancellationToken ct)
         {
             logger.TraceMessage("ScrapeDetailsAsync - Start");
             //RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.FilePath}"));
 
-            SearchContainer<SearchMovie> results = tmdbManager.SearchMovieByName(movie.ShowName, movie.Year);
+            SearchContainer<SearchMovie> results = await tmdbManager.SearchMovieByNameAsync(movie.ShowName, movie.Year, ct);
 
             //IF we have more than 1 result then flag the file to be manually matched
             if (results.Results.Count > 1)
@@ -78,13 +79,13 @@ namespace SimpleRenamer.Framework
             return movie;
         }
 
-        public async Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile)
+        public async Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile, CancellationToken ct)
         {
             logger.TraceMessage("UpdateFileWithMatchedMovie - Start");
 
             if (!string.IsNullOrEmpty(movieId))
             {
-                SearchMovie searchedMovie = tmdbManager.SearchMovieById(movieId);
+                SearchMovie searchedMovie = await tmdbManager.SearchMovieByIdAsync(movieId, ct);
                 matchedFile.ActionThis = true;
                 matchedFile.SkippedExactSelection = false;
                 matchedFile.ShowName = searchedMovie.Title;

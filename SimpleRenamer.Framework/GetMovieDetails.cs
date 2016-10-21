@@ -1,6 +1,7 @@
 ﻿using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
@@ -27,13 +28,13 @@ namespace SimpleRenamer.Framework
         }
 
 
-        public async Task<MovieInfo> GetMovieWithBanner(string movieId)
+        public async Task<MovieInfo> GetMovieWithBanner(string movieId, CancellationToken ct)
         {
             logger.TraceMessage("GetMovieInfo - Start");
-            MovieCredits matchedMovie = tmdbManager.GetMovie(movieId);
+            MovieCredits matchedMovie = await tmdbManager.GetMovieAsync(movieId, ct);
             BitmapImage bannerImage = new BitmapImage();
             bannerImage.BeginInit();
-            bannerImage.UriSource = new Uri(tmdbManager.GetPosterUri(matchedMovie.Movie.PosterPath));
+            bannerImage.UriSource = new Uri(await tmdbManager.GetPosterUriAsync(matchedMovie.Movie.PosterPath, ct));
             bannerImage.EndInit();
 
             return new MovieInfo(matchedMovie, bannerImage);

@@ -1,4 +1,6 @@
 ﻿using SimpleRenamer.Framework.DataModel;
+using System.Threading;
+using System.Threading.Tasks;
 using TMDbLib.Objects.General;
 using TMDbLib.Objects.Search;
 
@@ -6,12 +8,12 @@ namespace SimpleRenamer.Framework.Interface
 {
     public interface ITmdbManager
     {
-        SearchContainer<SearchMovie> SearchMovieByName(string movieName, int movieYear);
+        Task<SearchContainer<SearchMovie>> SearchMovieByNameAsync(string movieName, int movieYear, CancellationToken ct);
 
-        SearchMovie SearchMovieById(string tmdbId);
+        Task<SearchMovie> SearchMovieByIdAsync(string tmdbId, CancellationToken ct);
 
-        MovieCredits GetMovie(string movieId);
+        Task<MovieCredits> GetMovieAsync(string movieId, CancellationToken ct);
 
-        string GetPosterUri(string posterPath);
+        Task<string> GetPosterUriAsync(string posterPath, CancellationToken ct);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -53,8 +54,8 @@ namespace SimpleRenamer.Views
         private async Task GetMovieInfo(string movieId)
         {
             logger.TraceMessage("GetMovieInfo - Start");
-
-            MovieInfo movie = await getMovieDetails.GetMovieWithBanner(movieId);
+            CancellationTokenSource cts = new CancellationTokenSource();
+            MovieInfo movie = await getMovieDetails.GetMovieWithBanner(movieId, cts.Token);
 
             //set the title, show description, rating and firstaired values
             this.Title = string.Format("{0} - Rating {1} - Year {2}", movie.Movie.Movie.Title, string.IsNullOrEmpty(movie.Movie.Movie.VoteAverage.ToString()) ? "0.0" : movie.Movie.Movie.VoteAverage.ToString(), movie.Movie.Movie.ReleaseDate.HasValue ? movie.Movie.Movie.ReleaseDate.Value.Year.ToString() : "1900");
