@@ -14,8 +14,8 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="75" />
         </Grid.ColumnDefinitions>
-        <TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Name="SearchTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5"/>
-        <Button Grid.Row="0" Grid.Column="2" Name="SearchButton" Content="Search" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="65" Click="SearchButton_Click" />
+        <TextBox Controls:TextBoxHelper.ClearTextButton="True"  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Name="SearchTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5"/>
+        <Button Style="{DynamicResource SquareButtonStyle}" Grid.Row="0" Grid.Column="2" Name="SearchButton" Content="Search" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="65" Click="SearchButton_Click" />
         <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Name="ShowListBox" Height="175" Margin="5" VerticalAlignment="Top">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -32,8 +32,8 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <Button Grid.Row="2" Grid.Column="0" Name="SelectButton" Content="Select" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="SelectButton_Click"/>
-        <Button Grid.Row="2" Grid.Column="1" Name="SkipButton" Content="Skip" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="SkipButton_Click"/>
-        <Button Grid.Row="2" Grid.Column="2" Name="ViewButton" Content="View" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="65" Click="ViewButton_Click"/>
+        <Button Style="{DynamicResource SquareButtonStyle}" Grid.Row="2" Grid.Column="0" Name="SelectButton" Content="Select" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="SelectButton_Click"/>
+        <Button Style="{DynamicResource SquareButtonStyle}" Grid.Row="2" Grid.Column="1" Name="SkipButton" Content="Skip" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="SkipButton_Click"/>
+        <Button Style="{DynamicResource AccentedSquareButtonStyle}" Grid.Row="2" Grid.Column="2" Name="ViewButton" Content="View" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="65" Click="ViewButton_Click"/>
     </Grid>
 </Controls:MetroWindow>

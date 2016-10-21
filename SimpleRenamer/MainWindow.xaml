@@ -33,7 +33,7 @@
             <ColumnDefinition Width="100" />
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal" >
-            <Button Style="{DynamicResource SquareButtonStyle}" Name="ScanButton" Content="Scan" HorizontalAlignment="Left" Margin="5,5,5,0" VerticalAlignment="Top" Width="75" Click="ScanButton_Click"/>
+            <Button Style="{DynamicResource AccentedSquareButtonStyle}" Name="ScanButton" Content="Scan" HorizontalAlignment="Left" Margin="5,5,5,0" VerticalAlignment="Top" Width="75" Click="ScanButton_Click"/>
             <Button Style="{DynamicResource SquareButtonStyle}" Name="ActionButton" Content="Action" IsEnabled="False" HorizontalAlignment="Left" Margin="5,5,5,0" VerticalAlignment="Top" Width="75" Click="ActionButton_Click"/>
             <Button Style="{DynamicResource SquareButtonStyle}" Name="CancelButton" Content="Cancel" IsEnabled="False" HorizontalAlignment="Left" Margin="5,5,5,0" VerticalAlignment="Top" Width="75" Click="CancelButton_Click"/>
         </StackPanel>
