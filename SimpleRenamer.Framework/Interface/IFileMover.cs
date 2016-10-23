@@ -1,4 +1,5 @@
 ﻿using SimpleRenamer.Framework.DataModel;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework.Interface
@@ -20,6 +21,6 @@ namespace SimpleRenamer.Framework.Interface
         /// <param name="mapping">The mapping of the file to TVDB</param>
         /// <param name="downloadBanner">Whether to download a banner</param>
         /// <returns></returns>
-        Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner);
+        Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner, CancellationToken ct);
     }
 }

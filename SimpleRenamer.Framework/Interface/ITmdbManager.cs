@@ -1,8 +1,7 @@
 ﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.TmdbModel;
 using System.Threading;
 using System.Threading.Tasks;
-using TMDbLib.Objects.General;
-using TMDbLib.Objects.Search;
 
 namespace SimpleRenamer.Framework.Interface
 {

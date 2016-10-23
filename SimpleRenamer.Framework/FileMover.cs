@@ -3,6 +3,7 @@ using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 namespace SimpleRenamer.Framework
 {
@@ -33,7 +34,7 @@ namespace SimpleRenamer.Framework
             settings = configManager.Settings;
         }
 
-        public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner)
+        public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner, CancellationToken ct)
         {
             logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - Start");
             FileMoveResult result = new FileMoveResult(true, episode);
@@ -67,12 +68,12 @@ namespace SimpleRenamer.Framework
                         if (!string.IsNullOrEmpty(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
                         {
                             //Grab Show banner if required
-                            bannerResult = await bannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
+                            bannerResult = await bannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory, ct);
                         }
                         if (!string.IsNullOrEmpty(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))
                         {
                             //Grab Season banner if required
-                            bannerResult = await bannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
+                            bannerResult = await bannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory, ct);
                         }
                     }
                 }

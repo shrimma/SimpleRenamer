@@ -9,8 +9,8 @@ namespace SimpleRenamer.DependencyInjection.Modules
         public override void Load()
         {
             Bind<IFileMover>().To<FileMover>().InSingletonScope();
-            Bind<IBannerDownloader>().To<BannerDownloader>().InSingletonScope();
             Bind<IPerformActionsOnShows>().To<ActionMatchedFiles>().InSingletonScope();
+            Bind<IBannerDownloader>().To<BannerDownloader>().InSingletonScope();
             Bind<IGetShowDetails>().To<GetShowDetails>().InSingletonScope();
             Bind<IGetMovieDetails>().To<GetMovieDetails>().InSingletonScope();
         }

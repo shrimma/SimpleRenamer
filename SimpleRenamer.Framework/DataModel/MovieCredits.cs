@@ -1,4 +1,5 @@
-﻿using TMDbLib.Objects.Movies;
+﻿
+using SimpleRenamer.Framework.TmdbModel;
 
 namespace SimpleRenamer.Framework.DataModel
 {

@@ -120,11 +120,11 @@ namespace SimpleRenamer.Framework
                     //scrape the episode name and incorporate this in the filename (if setting allows)
                     if (settings.RenameFiles)
                     {
-                        scrapeResult = tvShowMatcher.ScrapeDetailsAsync(tempEp).GetAwaiter().GetResult();
+                        scrapeResult = tvShowMatcher.ScrapeDetailsAsync(tempEp, ct).GetAwaiter().GetResult();
                         tempEp = scrapeResult.tvep;
                         if (scrapeResult.series != null)
                         {
-                            Mapping map = new Mapping(scrapeResult.tvep.ShowName, scrapeResult.series.Title, scrapeResult.series.Id.ToString());
+                            Mapping map = new Mapping(scrapeResult.tvep.ShowName, scrapeResult.series.Series.SeriesName, scrapeResult.series.Series.Id.ToString());
                             if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                             {
                                 showNameMapping.Mappings.Add(map);

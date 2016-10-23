@@ -2,11 +2,9 @@
 using RestSharp;
 using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
+using SimpleRenamer.Framework.TmdbModel;
 using System.Threading;
 using System.Threading.Tasks;
-using TMDbLib.Objects.General;
-using TMDbLib.Objects.Movies;
-using TMDbLib.Objects.Search;
 
 namespace SimpleRenamer.Framework
 {
@@ -37,7 +35,8 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
-            IRestResponse response = await client.ExecuteTaskAsync(request, ct);
+            //IRestResponse response = await client.ExecuteTaskAsync(request, ct);
+            IRestResponse response = client.Execute(request);
 
             return JsonConvert.DeserializeObject<SearchContainer<SearchMovie>>(response.Content);
         }
@@ -48,6 +47,7 @@ namespace SimpleRenamer.Framework
             var request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
+            //IRestResponse response = client.Execute(request);
             IRestResponse response = client.Execute(request);
             Movie movie = JsonConvert.DeserializeObject<Movie>(response.Content);
 
@@ -55,7 +55,8 @@ namespace SimpleRenamer.Framework
             request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            response = await client.ExecuteTaskAsync(request, ct);
+            //response = await client.ExecuteTaskAsync(request, ct);
+            response = client.Execute(request);
             Credits credits = JsonConvert.DeserializeObject<Credits>(response.Content);
 
             return new MovieCredits(movie, credits);
@@ -68,7 +69,8 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
-            IRestResponse response = await client.ExecuteTaskAsync(request, ct);
+            //IRestResponse response = await client.ExecuteTaskAsync(request, ct);
+            IRestResponse response = client.Execute(request);
 
             return JsonConvert.DeserializeObject<SearchMovie>(response.Content);
         }
@@ -83,7 +85,8 @@ namespace SimpleRenamer.Framework
                 request.AddHeader("content-type", "application/json");
                 request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
-                IRestResponse response = await client.ExecuteTaskAsync(request, ct);
+                //IRestResponse response = await client.ExecuteTaskAsync(request, ct);
+                IRestResponse response = client.Execute(request);
 
                 TMDbConfig tmdbConfig = JsonConvert.DeserializeObject<TMDbConfig>(response.Content);
                 baseUri = tmdbConfig.Images.BaseUrl;

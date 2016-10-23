@@ -3,6 +3,7 @@ using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
 
 namespace SimpleRenamer.Views
@@ -72,17 +73,19 @@ namespace SimpleRenamer.Views
             this.Hide();
         }
 
-        private void ViewButton_Click(object sender, RoutedEventArgs e)
+        private async void ViewButton_Click(object sender, RoutedEventArgs e)
         {
+            CancellationTokenSource cts = new CancellationTokenSource();
             ShowView current = (ShowView)ShowListBox.SelectedItem;
-            showDetailsWindow.GetSeries(current.Id);
+            await showDetailsWindow.GetSeriesInfo(current.Id, cts.Token);
             showDetailsWindow.ShowDialog();
         }
 
         private async void SearchButton_Click(object sender, RoutedEventArgs e)
         {
+            CancellationTokenSource cts = new CancellationTokenSource();
             string searchText = SearchTextBox.Text;
-            List<ShowView> possibleShows = await showMatcher.GetPossibleShowsForEpisode(searchText);
+            List<ShowView> possibleShows = await showMatcher.GetPossibleShowsForEpisode(searchText, cts.Token);
             SetView(possibleShows, this.Title, searchText);
         }
     }

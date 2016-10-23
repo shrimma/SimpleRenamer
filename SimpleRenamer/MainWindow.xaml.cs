@@ -292,7 +292,7 @@ namespace SimpleRenamer
 
                 if (fileType == FileType.TvShow)
                 {
-                    List<ShowView> possibleShows = await tvShowMatcher.GetPossibleShowsForEpisode(temp.ShowName);
+                    List<ShowView> possibleShows = await tvShowMatcher.GetPossibleShowsForEpisode(temp.ShowName, cts.Token);
                     selectShowWindow.SetView(possibleShows, $"Simple Renamer - TV - Select Show for file {Path.GetFileName(temp.FilePath)}", temp.ShowName);
                     selectShowWindow.ShowDialog();
                 }
@@ -311,10 +311,11 @@ namespace SimpleRenamer
 
         private async void SelectShowWindow_RaiseSelectShowWindowEvent(object sender, SelectShowEventArgs e)
         {
+            cts = new CancellationTokenSource();
             try
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
-                MatchedFile updatedEpisode = await tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp);
+                MatchedFile updatedEpisode = await tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp, cts.Token);
                 //if a selection is made then force a rescan
                 if (!updatedEpisode.SkippedExactSelection)
                 {
@@ -408,7 +409,7 @@ namespace SimpleRenamer
             }
         }
 
-        private void DetailButton_Click(object sender, RoutedEventArgs e)
+        private async void DetailButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -416,7 +417,7 @@ namespace SimpleRenamer
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 if (tempEp.FileType == FileType.TvShow)
                 {
-                    showDetailsWindow.GetSeries(tempEp.TVDBShowId);
+                    await showDetailsWindow.GetSeriesInfo(tempEp.TVDBShowId, cts.Token);
                     showDetailsWindow.ShowDialog();
                 }
                 else if (tempEp.FileType == FileType.Movie)

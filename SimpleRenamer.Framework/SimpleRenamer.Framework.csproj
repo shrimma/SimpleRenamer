@@ -66,42 +66,10 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.0.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Net.Http, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.4.1.0\lib\net46\System.Net.Http.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net45\System.Net.Http.Extensions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net45\System.Net.Http.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.2.0\lib\net46\System.Security.Cryptography.Algorithms.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Encoding.4.0.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Primitives.4.0.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.1.0\lib\net46\System.Security.Cryptography.X509Certificates.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
@@ -109,19 +77,10 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TheTVDBSharp.Portable, Version=1.1.5613.23854, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TheTVDBSharp.1.1.5613.23854\lib\portable-net45+win+wpa81+wp80\TheTVDBSharp.Portable.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="TMDbLib, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TMDbLib.0.9.6.0-alpha\lib\net46\TMDbLib.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BackgroundQueue.cs" />
-    <Compile Include="BannerDownloader.cs" />
     <Compile Include="AppConfigurationManager.cs" />
     <Compile Include="DataModel\FileType.cs" />
     <Compile Include="DataModel\IgnoreList.cs" />
@@ -141,6 +100,7 @@
     <Compile Include="EventArguments\FilePreProcessedEventArgs.cs" />
     <Compile Include="FileWatcher.cs" />
     <Compile Include="GetMovieDetails.cs" />
+    <Compile Include="BannerDownloader.cs" />
     <Compile Include="GetShowDetails.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Interface\IBackgroundQueue.cs" />
@@ -172,6 +132,54 @@
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="DataModel\MatchedFile.cs" />
     <Compile Include="TmdbManager.cs" />
+    <Compile Include="TmdbModel\AccountState.cs" />
+    <Compile Include="TmdbModel\AccountStateConverter.cs" />
+    <Compile Include="TmdbModel\AlternativeTitle.cs" />
+    <Compile Include="TmdbModel\AlternativeTitles.cs" />
+    <Compile Include="TmdbModel\Cast.cs" />
+    <Compile Include="TmdbModel\Change.cs" />
+    <Compile Include="TmdbModel\ChangeAction.cs" />
+    <Compile Include="TmdbModel\ChangeItemAdded.cs" />
+    <Compile Include="TmdbModel\ChangeItemBase.cs" />
+    <Compile Include="TmdbModel\ChangeItemConverter.cs" />
+    <Compile Include="TmdbModel\ChangeItemCreated.cs" />
+    <Compile Include="TmdbModel\ChangeItemDeleted.cs" />
+    <Compile Include="TmdbModel\ChangeItemUpdated.cs" />
+    <Compile Include="TmdbModel\ChangesContainer.cs" />
+    <Compile Include="TmdbModel\ConfigImageTypes.cs" />
+    <Compile Include="TmdbModel\Country.cs" />
+    <Compile Include="TmdbModel\Credits.cs" />
+    <Compile Include="TmdbModel\Crew.cs" />
+    <Compile Include="TmdbModel\EnumExtensions.cs" />
+    <Compile Include="TmdbModel\Genre.cs" />
+    <Compile Include="TmdbModel\ImageData.cs" />
+    <Compile Include="TmdbModel\Images.cs" />
+    <Compile Include="TmdbModel\Keyword.cs" />
+    <Compile Include="TmdbModel\KeywordsContainer.cs" />
+    <Compile Include="TmdbModel\ListResult.cs" />
+    <Compile Include="TmdbModel\MediaType.cs" />
+    <Compile Include="TmdbModel\Movie.cs" />
+    <Compile Include="TmdbModel\ProductionCompany.cs" />
+    <Compile Include="TmdbModel\ProductionCountry.cs" />
+    <Compile Include="TmdbModel\ReleaseDateItem.cs" />
+    <Compile Include="TmdbModel\ReleaseDatesContainer.cs" />
+    <Compile Include="TmdbModel\ReleaseDateType.cs" />
+    <Compile Include="TmdbModel\Releases.cs" />
+    <Compile Include="TmdbModel\ResultContainer.cs" />
+    <Compile Include="TmdbModel\ReviewBase.cs" />
+    <Compile Include="TmdbModel\SearchBase.cs" />
+    <Compile Include="TmdbModel\SearchBaseConverter.cs" />
+    <Compile Include="TmdbModel\SearchCollection.cs" />
+    <Compile Include="TmdbModel\SearchContainer.cs" />
+    <Compile Include="TmdbModel\SearchMovie.cs" />
+    <Compile Include="TmdbModel\SearchMovieTvBase.cs" />
+    <Compile Include="TmdbModel\SpokenLanguage.cs" />
+    <Compile Include="TmdbModel\TMDbConfig.cs" />
+    <Compile Include="TmdbModel\TmdbUtcTimeConverter.cs" />
+    <Compile Include="TmdbModel\Translation.cs" />
+    <Compile Include="TmdbModel\TranslationsContainer.cs" />
+    <Compile Include="TmdbModel\TranslationWithCountry.cs" />
+    <Compile Include="TmdbModel\Video.cs" />
     <Compile Include="TvdbManager.cs" />
     <Compile Include="TvdbModel\Auth.cs" />
     <Compile Include="TvdbModel\BasicEpisode.cs" />
@@ -209,9 +217,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
   </Target>
-  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

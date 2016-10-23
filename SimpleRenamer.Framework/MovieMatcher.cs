@@ -1,12 +1,11 @@
 ﻿using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
+using SimpleRenamer.Framework.TmdbModel;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TMDbLib.Objects.General;
-using TMDbLib.Objects.Search;
 
 namespace SimpleRenamer.Framework
 {

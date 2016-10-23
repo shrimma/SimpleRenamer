@@ -1,6 +1,7 @@
 ﻿using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimpleRenamer.Views
@@ -44,20 +45,15 @@ namespace SimpleRenamer.Views
             this.Hide();
         }
 
-        public async void GetSeries(string showId)
-        {
-            await GetSeriesInfo(showId);
-        }
-
-        private async Task GetSeriesInfo(string showId)
+        public async Task GetSeriesInfo(string showId, CancellationToken ct)
         {
             logger.TraceMessage("GetSeriesInfo - Start");
 
-            SeriesWithBanner series = await getShowDetails.GetShowWithBanner(showId);
+            SeriesWithBanner series = await getShowDetails.GetShowWithBannerAsync(showId, ct);
 
             //set the title, show description, rating and firstaired values
-            this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.Title, string.IsNullOrEmpty(series.Series.Rating.ToString()) ? "0.0" : series.Series.Rating.ToString(), string.IsNullOrEmpty(series.Series.FirstAired.ToString()) ? "1900" : series.Series.FirstAired.ToString());
-            ShowDescriptionTextBox.Text = series.Series.Description;
+            this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.Series.SeriesName, string.IsNullOrEmpty(series.Series.Series.Rating.ToString()) ? "0.0" : series.Series.Series.Rating.ToString(), string.IsNullOrEmpty(series.Series.Series.FirstAired.ToString()) ? "1900" : series.Series.Series.FirstAired.ToString());
+            ShowDescriptionTextBox.Text = series.Series.Series.Overview;
 
             //set the actor listbox
             ActorsListBox.ItemsSource = series.Series.Actors;

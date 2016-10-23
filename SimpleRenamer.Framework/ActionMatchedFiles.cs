@@ -107,7 +107,7 @@ namespace SimpleRenamer.Framework
                         if (alreadyGrabbedBanners)
                         {
                             //if we have already processed this show season combo then dont download the banners again
-                            FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, false));
+                            FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, false, ct));
                             if (result.Success)
                             {
                                 ProcessFiles.Add(result);
@@ -117,7 +117,7 @@ namespace SimpleRenamer.Framework
                         else
                         {
                             ct.ThrowIfCancellationRequested();
-                            FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, true));
+                            FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, true, ct));
                             if (result.Success)
                             {
                                 ProcessFiles.Add(result);
@@ -132,7 +132,7 @@ namespace SimpleRenamer.Framework
                     }
                     else
                     {
-                        FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false));
+                        FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false, ct));
                         if (result.Success)
                         {
                             ProcessFiles.Add(result);
@@ -161,7 +161,7 @@ namespace SimpleRenamer.Framework
                     if (settings.RenameFiles)
                     {
                         ct.ThrowIfCancellationRequested();
-                        FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false));
+                        FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false, ct));
                         if (result.Success)
                         {
                             ProcessFiles.Add(result);
@@ -175,7 +175,7 @@ namespace SimpleRenamer.Framework
                     }
                     else
                     {
-                        FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false));
+                        FileMoveResult result = await await backgroundQueue.QueueTask(() => fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false, ct));
                         if (result.Success)
                         {
                             ProcessFiles.Add(result);
