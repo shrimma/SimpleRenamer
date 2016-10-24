@@ -3,6 +3,7 @@ using SimpleRenamer.EventArguments;
 using SimpleRenamer.Framework.Interface;
 using System;
 using System.Windows;
+using System.Windows.Input;
 
 namespace SimpleRenamer.Views
 {
@@ -13,6 +14,7 @@ namespace SimpleRenamer.Views
     {
         public event EventHandler<ExtensionEventArgs> RaiseCustomEvent;
         private IHelper helper;
+        private bool flyoutEnabled;
 
         public AddExtensionsWindow(IHelper help)
         {
@@ -23,6 +25,7 @@ namespace SimpleRenamer.Views
 
             helper = help;
             InitializeComponent();
+            flyoutEnabled = true;
             this.Closing += AddExtensionsWindow_Closing;
         }
 
@@ -30,25 +33,63 @@ namespace SimpleRenamer.Views
         {
             RaiseCustomEvent(this, new ExtensionEventArgs(null));
             e.Cancel = true;
+            this.ExtensionTextBox.Text = string.Empty;
             this.Hide();
         }
 
+
+
         private void OKButton_Click(object sender, RoutedEventArgs e)
+        {
+            SaveInputExtension(ExtensionTextBox.Text);
+
+        }
+
+        private void SaveInputExtension(string extension)
         {
             if (helper.IsFileExtensionValid(ExtensionTextBox.Text))
             {
                 RaiseCustomEvent(this, new ExtensionEventArgs(ExtensionTextBox.Text));
+                this.ExtensionTextBox.Text = string.Empty;
                 this.Hide();
             }
             else
             {
-                MessageBox.Show("Not a valid file extension.", "Error", MessageBoxButton.OK);
+                ErrorFlyout.IsOpen = true;
+                this.OKButton.IsEnabled = false;
+                this.ExtensionTextBox.IsEnabled = false;
+                this.flyoutEnabled = false;
             }
+        }
+
+        private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            SaveInputExtension(e.Parameter.ToString());
+        }
+
+        private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = flyoutEnabled;
+        }
+
+        private void CloseBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ErrorFlyout.IsOpen = false;
+            this.OKButton.IsEnabled = true;
+            this.ExtensionTextBox.IsEnabled = true;
+            this.flyoutEnabled = true;
+        }
+
+        private void CloseBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             RaiseCustomEvent(this, new ExtensionEventArgs(null));
+            //clear the text
+            this.ExtensionTextBox.Text = string.Empty;
             this.Hide();
         }
     }
