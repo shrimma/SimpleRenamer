@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using WPFCustomMessageBox;
 
 namespace SimpleRenamer
@@ -33,7 +34,6 @@ namespace SimpleRenamer
         private IPerformActionsOnShows performActionsOnShows;
         private IConfigurationManager configurationManager;
         private SelectShowWindow selectShowWindow;
-        private SelectMovieWindow selectMovieWindow;
         private ShowDetailsWindow showDetailsWindow;
         private MovieDetailsWindow movieDetailsWindow;
         private SettingsWindow settingsWindow;
@@ -89,11 +89,11 @@ namespace SimpleRenamer
                 editShowWindow.RaiseEditShowEvent += new EventHandler<EditShowEventArgs>(EditShowWindowClosedEvent);
                 selectShowWindow = injectionContext.GetService<SelectShowWindow>();
                 selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
-                selectMovieWindow = injectionContext.GetService<SelectMovieWindow>();
-                selectMovieWindow.RaiseSelectMovieWindowEvent += SelectMovieWindow_RaiseSelectMovieWindowEvent;
                 settings = configurationManager.Settings;
                 scannedEpisodes = new ObservableCollection<MatchedFile>();
                 ShowsListBox.ItemsSource = scannedEpisodes;
+                ShowsListBox.SizeChanged += ListView_SizeChanged;
+                ShowsListBox.Loaded += ListView_Loaded;
 
                 //setup the perform actions event handlers
                 performActionsOnShows.RaiseFileMovedEvent += PerformActionsOnShows_RaiseFileMovedEvent;
@@ -107,6 +107,28 @@ namespace SimpleRenamer
             {
                 logger.TraceException(ex);
             }
+        }
+
+        private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateColumnsWidth(sender as ListView);
+        }
+
+        private void ListView_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateColumnsWidth(sender as ListView);
+        }
+
+        private void UpdateColumnsWidth(ListView listView)
+        {
+            int autoFillColumnIndex = (listView.View as GridView).Columns.Count - 1;
+            if (listView.ActualWidth == Double.NaN)
+                listView.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
+            double remainingSpace = listView.ActualWidth;
+            for (int i = 0; i < (listView.View as GridView).Columns.Count; i++)
+                if (i != autoFillColumnIndex)
+                    remainingSpace -= (listView.View as GridView).Columns[i].ActualWidth;
+            (listView.View as GridView).Columns[autoFillColumnIndex].Width = remainingSpace >= 0 ? remainingSpace : 0;
         }
 
         private void ProgressTextEvent(object sender, ProgressTextEventArgs e)
@@ -136,11 +158,15 @@ namespace SimpleRenamer
             try
             {
                 logger.TraceMessage("Closing");
-                configurationManager.SaveConfiguration();
-                if (!ScanButton.IsEnabled)
+                if (ScanButton.IsEnabled == false)
                 {
                     e.Cancel = true;
                 }
+                else if (ActionButton.IsEnabled == false)
+                {
+                    e.Cancel = true;
+                }
+                configurationManager.SaveConfiguration();
             }
             catch (Exception ex)
             {
@@ -156,6 +182,7 @@ namespace SimpleRenamer
             MatchShowButton.IsEnabled = false;
             IgnoreShowButton.IsEnabled = false;
             CancelButton.IsEnabled = true;
+            ShowsListBox.IsEnabled = false;
             ButtonsStackPanel.Visibility = Visibility.Collapsed;
             ProgressTextStackPanel.Visibility = Visibility.Visible;
             ProgressBarStackPanel.Visibility = Visibility.Visible;
@@ -166,6 +193,7 @@ namespace SimpleRenamer
             ScanButton.IsEnabled = true;
             SettingsButton.IsEnabled = true;
             CancelButton.IsEnabled = false;
+            ShowsListBox.IsEnabled = true;
             ButtonsStackPanel.Visibility = Visibility.Visible;
             ProgressTextStackPanel.Visibility = Visibility.Collapsed;
             ProgressBarStackPanel.Visibility = Visibility.Collapsed;
@@ -288,20 +316,21 @@ namespace SimpleRenamer
                     }
                 }
 
-
-
+                List<ShowView> possibleMatches;
+                string title;
+                //call the correct methods depending on the filetype
                 if (fileType == FileType.TvShow)
                 {
-                    List<ShowView> possibleShows = await tvShowMatcher.GetPossibleShowsForEpisode(temp.ShowName, cts.Token);
-                    selectShowWindow.SetView(possibleShows, $"Simple Renamer - TV - Select Show for file {Path.GetFileName(temp.FilePath)}", temp.ShowName);
-                    selectShowWindow.ShowDialog();
+                    possibleMatches = await tvShowMatcher.GetPossibleShowsForEpisode(temp.ShowName, cts.Token);
+                    title = "TV";
                 }
-                else if (fileType == FileType.Movie)
+                else
                 {
-                    List<ShowView> possibleMovies = await movieMatcher.GetPossibleMoviesForFile(temp.ShowName, cts.Token);
-                    selectMovieWindow.SetView(possibleMovies, $"Simple Renamer - Movie - Select Title for file {Path.GetFileName(temp.FilePath)}", temp.ShowName);
-                    selectMovieWindow.ShowDialog();
+                    possibleMatches = await movieMatcher.GetPossibleMoviesForFile(temp.ShowName, cts.Token);
+                    title = "Movie";
                 }
+                selectShowWindow.SetView(possibleMatches, $"Simple Renamer - {title} - Select Show for file {Path.GetFileName(temp.FilePath)}", temp.ShowName, fileType);
+                selectShowWindow.ShowDialog();
             }
             catch (Exception ex)
             {
@@ -315,14 +344,20 @@ namespace SimpleRenamer
             try
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
-                MatchedFile updatedEpisode = await tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp, cts.Token);
-                //if a selection is made then force a rescan
-                if (!updatedEpisode.SkippedExactSelection)
+                MatchedFile updatedFile;
+                if (e.Type == FileType.TvShow)
                 {
-                    ShowsListBox.SelectedItem = updatedEpisode;
-                    //TODO check this should be commented or not...original it was commented
-                    //scannedEpisodes.Clear();
-                    ActionButton.IsEnabled = false;
+                    updatedFile = await tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp, cts.Token);
+                }
+                else
+                {
+                    updatedFile = await movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp, cts.Token);
+                }
+
+                //if selection was skipped then we can't enable actioning
+                if (updatedFile.SkippedExactSelection == false)
+                {
+                    ShowsListBox.SelectedItem = updatedFile;
                 }
             }
             catch (Exception ex)
@@ -331,27 +366,7 @@ namespace SimpleRenamer
             }
         }
 
-        private async void SelectMovieWindow_RaiseSelectMovieWindowEvent(object sender, SelectMovieEventArgs e)
-        {
-            CancellationTokenSource cts = new CancellationTokenSource();
-            try
-            {
-                MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
-                MatchedFile updatedMovie = await movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp, cts.Token);
-                //if a selection is made then force a rescan
-                if (!updatedMovie.SkippedExactSelection)
-                {
-                    ShowsListBox.SelectedItem = updatedMovie;
-                    ActionButton.IsEnabled = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.TraceException(ex);
-            }
-        }
-
-        private async void IgnoreShowButton_Click(object sender, RoutedEventArgs e)
+        private void IgnoreShowButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -409,7 +424,7 @@ namespace SimpleRenamer
             }
         }
 
-        private async void DetailButton_Click(object sender, RoutedEventArgs e)
+        private void DetailButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -417,12 +432,12 @@ namespace SimpleRenamer
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 if (tempEp.FileType == FileType.TvShow)
                 {
-                    await showDetailsWindow.GetSeriesInfo(tempEp.TVDBShowId, cts.Token);
+                    showDetailsWindow.GetSeriesInfo(tempEp.TVDBShowId);
                     showDetailsWindow.ShowDialog();
                 }
                 else if (tempEp.FileType == FileType.Movie)
                 {
-                    movieDetailsWindow.GetMovie(tempEp.TMDBShowId.ToString());
+                    movieDetailsWindow.GetMovieInfo(tempEp.TMDBShowId.ToString());
                     movieDetailsWindow.ShowDialog();
                 }
             }
@@ -432,7 +447,7 @@ namespace SimpleRenamer
             }
         }
 
-        private async void EditButton_Click(object sender, RoutedEventArgs e)
+        private void EditButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -482,7 +497,7 @@ namespace SimpleRenamer
             }
         }
 
-        public async void EditShowWindowClosedEvent(object sender, EditShowEventArgs e)
+        public void EditShowWindowClosedEvent(object sender, EditShowEventArgs e)
         {
             try
             {

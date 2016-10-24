@@ -61,7 +61,7 @@ namespace SimpleRenamer.Framework
             }
             else
             {
-                episodeScrape = await ScrapeSpecificShow(episode, episode.TVDBShowId, false, ct);
+                episodeScrape = await ScrapeSpecificShow(episode, episode.TVDBShowId, false);
             }
 
             //generate the new file name
@@ -112,34 +112,34 @@ namespace SimpleRenamer.Framework
         {
             logger.TraceMessage("ScrapeShowAsync - Start");
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
-            var series = await tvdbManager.SearchSeriesByNameAsync(episode.ShowName, ct);
+            var series = await tvdbManager.SearchSeriesByNameAsync(episode.ShowName);
             string seriesId = string.Empty;
-            //IF we have more than 1 result then flag the file to be manually matched
-            if (series.Series.Count > 1)
+            //IF we have no results or more than 1 result then flag the file to be manually matched
+            if (series == null || series.Count > 1)
             {
                 episode.ActionThis = false;
                 episode.SkippedExactSelection = true;
                 episodeScrape.tvep = episode;
             }
-            else if (series.Series.Count == 1)
+            else if (series.Count == 1)
             {
-                //if theres only one match then scape the specific show                
-                seriesId = series.Series[0].Id.ToString();
-                episodeScrape = await ScrapeSpecificShow(episode, seriesId, true, ct);
+                //if theres only one match then scape the specific show
+                seriesId = series[0].Id.ToString();
+                episodeScrape = await ScrapeSpecificShow(episode, seriesId, true);
             }
 
             logger.TraceMessage("ScrapeShowAsync - End");
             return episodeScrape;
         }
 
-        private async Task<TVEpisodeScrape> ScrapeSpecificShow(MatchedFile episode, string seriesId, bool newMatch, CancellationToken ct)
+        private async Task<TVEpisodeScrape> ScrapeSpecificShow(MatchedFile episode, string seriesId, bool newMatch)
         {
             logger.TraceMessage("ScrapeSpecificShow - Start");
             uint season = 0;
             uint.TryParse(episode.Season, out season);
             int episodeNumber = 0;
             int.TryParse(episode.Episode, out episodeNumber);
-            CompleteSeries matchedSeries = await tvdbManager.GetSeriesByIdAsync(seriesId, ct);
+            CompleteSeries matchedSeries = await tvdbManager.GetSeriesByIdAsync(seriesId);
             episode.TVDBShowId = seriesId;
             episode.ShowName = matchedSeries.Series.SeriesName;
             episode.EpisodeName = matchedSeries.Episodes.Where(s => s.AiredSeason.Value == season && s.AiredEpisodeNumber == episodeNumber).FirstOrDefault().EpisodeName;
@@ -160,29 +160,33 @@ namespace SimpleRenamer.Framework
         public async Task<List<ShowView>> GetPossibleShowsForEpisode(string showName, CancellationToken ct)
         {
             logger.TraceMessage("GetPossibleShowsForEpisode - Start");
-            var series = await tvdbManager.SearchSeriesByNameAsync(showName, ct);
+            var series = await tvdbManager.SearchSeriesByNameAsync(showName);
             DateTime dt = new DateTime();
             string airedDate;
             List<ShowView> shows = new List<ShowView>();
-            foreach (var s in series.Series)
+            if (series != null)
             {
-                string desc = string.Empty;
-                if (!string.IsNullOrEmpty(s.Overview))
+                foreach (SeriesSearchData s in series)
                 {
-                    if (s.Overview.Length > 50)
+                    string desc = string.Empty;
+                    if (!string.IsNullOrEmpty(s.Overview))
                     {
-                        desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                        if (s.Overview.Length > 50)
+                        {
+                            desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                        }
+                        else
+                        {
+                            desc = s.Overview;
+                        }
                     }
-                    else
-                    {
-                        desc = s.Overview;
-                    }
-                }
 
-                bool parsed = DateTime.TryParseExact(s.FirstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt);
-                airedDate = parsed ? dt.Year.ToString() : "";
-                shows.Add(new ShowView(s.Id.ToString(), s.SeriesName, airedDate, desc));
+                    bool parsed = DateTime.TryParseExact(s.FirstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt);
+                    airedDate = parsed ? dt.Year.ToString() : "";
+                    shows.Add(new ShowView(s.Id.ToString(), s.SeriesName, airedDate, desc));
+                }
             }
+
 
             logger.TraceMessage("SelectShowFromListGetPossibleShowsForEpisode - End");
             return shows;
@@ -194,7 +198,7 @@ namespace SimpleRenamer.Framework
             //if user selected a match then scrape the details
             if (!string.IsNullOrEmpty(selectedSeriesId))
             {
-                episodeScrape = await ScrapeSpecificShow(episode, selectedSeriesId, true, ct);
+                episodeScrape = await ScrapeSpecificShow(episode, selectedSeriesId, true);
                 episodeScrape.tvep.ActionThis = true;
                 episodeScrape.tvep.SkippedExactSelection = false;
 

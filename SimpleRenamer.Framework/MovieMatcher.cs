@@ -34,7 +34,7 @@ namespace SimpleRenamer.Framework
         public async Task<List<ShowView>> GetPossibleMoviesForFile(string movieName, CancellationToken ct)
         {
             List<ShowView> movies = new List<ShowView>();
-            SearchContainer<SearchMovie> results = await tmdbManager.SearchMovieByNameAsync(movieName, 0, ct);
+            SearchContainer<SearchMovie> results = await tmdbManager.SearchMovieByNameAsync(movieName, 0);
             foreach (var s in results.Results)
             {
                 string desc = string.Empty;
@@ -60,7 +60,7 @@ namespace SimpleRenamer.Framework
             logger.TraceMessage("ScrapeDetailsAsync - Start");
             //RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.FilePath}"));
 
-            SearchContainer<SearchMovie> results = await tmdbManager.SearchMovieByNameAsync(movie.ShowName, movie.Year, ct);
+            SearchContainer<SearchMovie> results = await tmdbManager.SearchMovieByNameAsync(movie.ShowName, movie.Year);
 
             //IF we have more than 1 result then flag the file to be manually matched
             if (results.Results.Count > 1)
@@ -84,7 +84,7 @@ namespace SimpleRenamer.Framework
 
             if (!string.IsNullOrEmpty(movieId))
             {
-                SearchMovie searchedMovie = await tmdbManager.SearchMovieByIdAsync(movieId, ct);
+                SearchMovie searchedMovie = await tmdbManager.SearchMovieByIdAsync(movieId);
                 matchedFile.ActionThis = true;
                 matchedFile.SkippedExactSelection = false;
                 matchedFile.ShowName = searchedMovie.Title;

@@ -1,15 +1,15 @@
 ﻿using SimpleRenamer.Framework.TvdbModel;
-using System.Threading;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework.Interface
 {
     public interface ITvdbManager
     {
-        Task<SearchData> SearchSeriesByNameAsync(string seriesName, CancellationToken ct);
+        Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName);
 
-        Task<CompleteSeries> GetSeriesByIdAsync(string tmdbId, CancellationToken ct);
+        Task<CompleteSeries> GetSeriesByIdAsync(string tmdbId);
 
-        Task<string> GetBannerUriAsync(string bannerPath, CancellationToken ct);
+        string GetBannerUri(string bannerPath);
     }
 }

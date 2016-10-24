@@ -1,5 +1,4 @@
 ﻿using SimpleRenamer.Framework.DataModel;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework.Interface
@@ -11,6 +10,6 @@ namespace SimpleRenamer.Framework.Interface
         /// </summary>
         /// <param name="showId">The TVDB show ID to grab banner for</param>
         /// <returns>Populated SeriesWithBanner object</returns>
-        Task<SeriesWithBanner> GetShowWithBannerAsync(string showId, CancellationToken ct);
+        Task<SeriesWithBanner> GetShowWithBannerAsync(string showId);
     }
 }

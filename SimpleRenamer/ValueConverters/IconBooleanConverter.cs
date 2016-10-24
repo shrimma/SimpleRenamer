@@ -26,7 +26,7 @@ namespace SimpleRenamer
             }
             else
             {
-                return "";
+                return "Images/movie.png";
             }
         }
 

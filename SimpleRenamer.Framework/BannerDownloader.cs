@@ -27,7 +27,7 @@ namespace SimpleRenamer.Framework
             tvdbManager = tvdb;
         }
 
-        /// <inheritdoc/>        
+        /// <inheritdoc/>
         public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder, CancellationToken ct)
         {
             logger.TraceMessage("SaveBannerAsync - Start");
@@ -37,7 +37,7 @@ namespace SimpleRenamer.Framework
 
                 using (WebClient client = new WebClient())
                 {
-                    client.DownloadFileAsync(new Uri(await tvdbManager.GetBannerUriAsync(tvdbBannerPath, ct)), fullBannerPath);
+                    client.DownloadFileAsync(new Uri(tvdbManager.GetBannerUri(tvdbBannerPath)), fullBannerPath);
                 }
             }
 

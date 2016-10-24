@@ -2,7 +2,7 @@
 using RestSharp;
 using SimpleRenamer.Framework.Interface;
 using SimpleRenamer.Framework.TvdbModel;
-using System.Threading;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework
@@ -19,7 +19,7 @@ namespace SimpleRenamer.Framework
             jwtToken = "";
         }
 
-        private async Task Login(CancellationToken ct)
+        private async Task Login()
         {
             Auth auth = new Auth();
             auth.Apikey = apiKey;
@@ -28,24 +28,23 @@ namespace SimpleRenamer.Framework
             var request = new RestRequest(Method.POST);
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", auth.ToJson(), ParameterType.RequestBody);
-            //TODO figure out why async doesnt work
-            //IRestResponse response = await client.ExecuteTaskAsync(request, ct);
+
             IRestResponse response = client.Execute(request);
 
             Token token = JsonConvert.DeserializeObject<Token>(response.Content);
             jwtToken = token._Token;
         }
 
-        public async Task<string> GetBannerUriAsync(string bannerPath, CancellationToken ct)
+        public string GetBannerUri(string bannerPath)
         {
             return $"http://thetvdb.com/banners/{bannerPath}";
         }
 
-        public async Task<CompleteSeries> GetSeriesByIdAsync(string tmdbId, CancellationToken ct)
+        public async Task<CompleteSeries> GetSeriesByIdAsync(string tmdbId)
         {
             if (string.IsNullOrEmpty(jwtToken))
             {
-                await Login(ct);
+                await Login();
             }
 
             //get general series data
@@ -53,7 +52,6 @@ namespace SimpleRenamer.Framework
             var request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            //IRestResponse response = await client.ExecuteTaskAsync(request, ct);
             IRestResponse response = client.Execute(request);
             SeriesData series = JsonConvert.DeserializeObject<SeriesData>(response.Content);
 
@@ -62,7 +60,6 @@ namespace SimpleRenamer.Framework
             request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            //response = await client.ExecuteTaskAsync(request, ct);
             response = client.Execute(request);
             SeriesActors actors = JsonConvert.DeserializeObject<SeriesActors>(response.Content);
 
@@ -71,7 +68,6 @@ namespace SimpleRenamer.Framework
             request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            //response = await client.ExecuteTaskAsync(request, ct);
             response = client.Execute(request);
             SeriesEpisodes episodes = JsonConvert.DeserializeObject<SeriesEpisodes>(response.Content);
 
@@ -81,7 +77,6 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("keyType", "poster", ParameterType.QueryString);
-            //response = await client.ExecuteTaskAsync(request, ct);
             response = client.Execute(request);
             SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
 
@@ -91,7 +86,6 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("keyType", "season", ParameterType.QueryString);
-            //response = await client.ExecuteTaskAsync(request, ct);
             response = client.Execute(request);
             SeriesImageQueryResults seasonPosters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
 
@@ -101,18 +95,17 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("keyType", "series", ParameterType.QueryString);
-            //response = await client.ExecuteTaskAsync(request, ct);
             response = client.Execute(request);
             SeriesImageQueryResults seriesBanners = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
 
             return new CompleteSeries(series.Data, actors.Data, episodes.Data, posters.Data, seasonPosters.Data, seriesBanners.Data);
         }
 
-        public async Task<SearchData> SearchSeriesByNameAsync(string seriesName, CancellationToken ct)
+        public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName)
         {
             if (string.IsNullOrEmpty(jwtToken))
             {
-                await Login(ct);
+                await Login();
             }
 
             RestClient client = new RestClient($"{baseUri}/search/series");
@@ -120,11 +113,9 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("name", seriesName, ParameterType.QueryString);
-            //IRestResponse response = await client.ExecuteTaskAsync(request, ct);
             IRestResponse response = client.Execute(request);
-
             SearchData data = JsonConvert.DeserializeObject<SearchData>(response.Content);
-            return data;
+            return data.Series;
         }
     }
 }

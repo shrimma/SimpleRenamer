@@ -3,7 +3,6 @@ using SimpleRenamer.Framework.Interface;
 using SimpleRenamer.Framework.TvdbModel;
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
@@ -29,15 +28,15 @@ namespace SimpleRenamer.Framework
             tvdbManager = tvdb;
         }
 
-        public async Task<SeriesWithBanner> GetShowWithBannerAsync(string showId, CancellationToken ct)
+        public async Task<SeriesWithBanner> GetShowWithBannerAsync(string showId)
         {
             logger.TraceMessage("GetSeriesInfo - Start");
-            CompleteSeries matchedSeries = await tvdbManager.GetSeriesByIdAsync(showId, ct);
+            CompleteSeries matchedSeries = await tvdbManager.GetSeriesByIdAsync(showId);
             BitmapImage bannerImage = new BitmapImage();
             bannerImage.BeginInit();
             if (matchedSeries.SeriesBanners != null && matchedSeries.SeriesBanners.Count > 0)
             {
-                bannerImage.UriSource = new Uri(await tvdbManager.GetBannerUriAsync(matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName, ct));
+                bannerImage.UriSource = new Uri(tvdbManager.GetBannerUri(matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName));
             }
             else
             {

@@ -2,7 +2,15 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-             Title="Simple Renamer - TV - Search Show" Height="250" Width="600" MinHeight="250" MinWidth="600" MaxHeight="250" MaxWidth="600" Icon="tv.ico">
+             Title="Simple Renamer - TV - Search Show" Height="250" Width="600" MinHeight="250" MinWidth="600" Icon="tv.ico">
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Find" Executed="CommandBinding_Executed" CanExecute="CommandBinding_CanExecute"/>
+    </Window.CommandBindings>
+    <Window.Resources>
+        <Style TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
@@ -10,19 +18,15 @@
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="75" />
         </Grid.ColumnDefinitions>
         <TextBox Name="SearchTextBox" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="5,0"
                          Controls:TextBoxHelper.ButtonCommand="{Binding TextBoxButtonCmd, Mode=OneWay}"
                          Controls:TextBoxHelper.ClearTextButton="True"
-                         Controls:TextBoxHelper.UseFloatingWatermark="True"
                          Controls:TextBoxHelper.Watermark="Search...">
             <TextBox.InputBindings>
-                <KeyBinding Key="Return"
-                                    Command="{Binding SearchButton_Click, Mode=OneWay}"
-                                    CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=TextBox}, Path=Text, Mode=OneWay}" />
+                <KeyBinding Key="Return" Command="ApplicationCommands.Find" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=TextBox}, Path=Text, Mode=OneWay}" />
             </TextBox.InputBindings>
             <TextBox.Style>
                 <Style BasedOn="{StaticResource SearchMetroTextBox}" TargetType="{x:Type TextBox}">
@@ -35,26 +39,37 @@
                 </Style>
             </TextBox.Style>
         </TextBox>
-        <!--<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Name="SearchTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5"/>
-        <Button Style="{DynamicResource SquareButtonStyle}" Grid.Row="0" Grid.Column="2" Name="SearchButton" Content="Search" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="65" Click="SearchButton_Click" />-->
-        <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Name="ShowListBox" Height="175" Margin="5" VerticalAlignment="Top">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="200" />
-                            <ColumnDefinition Width="40" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="{Binding ShowName}" />
-                        <TextBlock Grid.Column="1" Text="{Binding Year}" />
-                        <TextBlock Grid.Column="2" Text="{Binding Description}" />
-                    </Grid>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <Button Style="{DynamicResource SquareButtonStyle}" Grid.Row="2" Grid.Column="0" Name="SelectButton" Content="Select" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="SelectButton_Click"/>
-        <Button Style="{DynamicResource SquareButtonStyle}" Grid.Row="2" Grid.Column="1" Name="SkipButton" Content="Skip" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="75" Click="SkipButton_Click"/>
-        <Button Style="{DynamicResource AccentedSquareButtonStyle}" Grid.Row="2" Grid.Column="2" Name="ViewButton" Content="View" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="65" Click="ViewButton_Click"/>
+        <ListView Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Name="ShowListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Title" Width="Auto" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ShowName}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Year" Width="50" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Year}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Overview">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Description}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal">
+            <Button Style="{DynamicResource SquareButtonStyle}" Name="SelectButton" Content="Select" HorizontalAlignment="Left" Margin="5,0,5,0" VerticalAlignment="Top" Width="75" Click="SelectButton_Click"/>
+            <Button Style="{DynamicResource SquareButtonStyle}" Name="SkipButton" Content="Skip" HorizontalAlignment="Left" Margin="5,0,5,0" VerticalAlignment="Top" Width="75" Click="SkipButton_Click"/>
+        </StackPanel>
+        <Button Style="{DynamicResource AccentedSquareButtonStyle}" Grid.Row="2" Grid.Column="2" Name="ViewButton" Content="View" HorizontalAlignment="Left" Margin="5,0,5,0" VerticalAlignment="Top" Width="65" Click="ViewButton_Click"/>
     </Grid>
 </Controls:MetroWindow>

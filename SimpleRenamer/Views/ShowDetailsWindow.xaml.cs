@@ -1,8 +1,10 @@
 ﻿using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
 using System;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace SimpleRenamer.Views
 {
@@ -31,6 +33,10 @@ namespace SimpleRenamer.Views
             try
             {
                 InitializeComponent();
+                ActorsListBox.SizeChanged += ListView_SizeChanged;
+                EpisodesListBox.SizeChanged += ListView_SizeChanged;
+                ActorsListBox.Loaded += ListView_Loaded;
+                EpisodesListBox.Loaded += ListView_Loaded;
                 this.Closing += Window_Closing;
             }
             catch (Exception ex)
@@ -45,11 +51,33 @@ namespace SimpleRenamer.Views
             this.Hide();
         }
 
-        public async Task GetSeriesInfo(string showId, CancellationToken ct)
+        private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateColumnsWidth(sender as ListView);
+        }
+
+        private void ListView_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateColumnsWidth(sender as ListView);
+        }
+
+        private void UpdateColumnsWidth(ListView listView)
+        {
+            int autoFillColumnIndex = (listView.View as GridView).Columns.Count - 1;
+            if (listView.ActualWidth == Double.NaN)
+                listView.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
+            double remainingSpace = listView.ActualWidth;
+            for (int i = 0; i < (listView.View as GridView).Columns.Count; i++)
+                if (i != autoFillColumnIndex)
+                    remainingSpace -= (listView.View as GridView).Columns[i].ActualWidth;
+            (listView.View as GridView).Columns[autoFillColumnIndex].Width = remainingSpace >= 0 ? remainingSpace : 0;
+        }
+
+        public async Task GetSeriesInfo(string showId)
         {
             logger.TraceMessage("GetSeriesInfo - Start");
 
-            SeriesWithBanner series = await getShowDetails.GetShowWithBannerAsync(showId, ct);
+            SeriesWithBanner series = await getShowDetails.GetShowWithBannerAsync(showId);
 
             //set the title, show description, rating and firstaired values
             this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.Series.SeriesName, string.IsNullOrEmpty(series.Series.Series.Rating.ToString()) ? "0.0" : series.Series.Series.Rating.ToString(), string.IsNullOrEmpty(series.Series.Series.FirstAired.ToString()) ? "1900" : series.Series.Series.FirstAired.ToString());
@@ -59,7 +87,7 @@ namespace SimpleRenamer.Views
             ActorsListBox.ItemsSource = series.Series.Actors;
 
             //set the episodes listbox
-            EpisodesListBox.ItemsSource = series.Series.Episodes;
+            EpisodesListBox.ItemsSource = series.Series.Episodes.OrderBy(x => x.AiredEpisodeNumber).OrderBy(x => x.AiredSeason);
 
             //set the banner
             BannerImage.Source = series.BannerImage;

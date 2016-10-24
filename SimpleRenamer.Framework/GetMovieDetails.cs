@@ -31,10 +31,10 @@ namespace SimpleRenamer.Framework
         public async Task<MovieInfo> GetMovieWithBanner(string movieId, CancellationToken ct)
         {
             logger.TraceMessage("GetMovieInfo - Start");
-            MovieCredits matchedMovie = await tmdbManager.GetMovieAsync(movieId, ct);
+            MovieCredits matchedMovie = await tmdbManager.GetMovieAsync(movieId);
             BitmapImage bannerImage = new BitmapImage();
             bannerImage.BeginInit();
-            bannerImage.UriSource = new Uri(await tmdbManager.GetPosterUriAsync(matchedMovie.Movie.PosterPath, ct));
+            bannerImage.UriSource = new Uri(await tmdbManager.GetPosterUriAsync(matchedMovie.Movie.PosterPath));
             bannerImage.EndInit();
 
             return new MovieInfo(matchedMovie, bannerImage);

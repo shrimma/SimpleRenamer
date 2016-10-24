@@ -3,10 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:l="clr-namespace:SimpleRenamer"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-        Title="Simple Renamer" Height="400" Width="525" MinHeight="400" MinWidth="525" MaxHeight="400" MaxWidth="525" Icon="tv.ico">
+        Title="Simple Renamer" Height="400" Width="525" MinHeight="200" MinWidth="400" Icon="tv.ico">
     <Window.Resources>
         <l:InverseBooleanConverter x:Key="converter"/>
         <l:IconFileTypeConverter x:Key="iconconverter"/>
+        <Style TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
     </Window.Resources>
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands>
@@ -28,41 +31,63 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="100" />
-        </Grid.ColumnDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal" >
             <Button Style="{DynamicResource AccentedSquareButtonStyle}" Name="ScanButton" Content="Scan" HorizontalAlignment="Left" Margin="5,5,5,0" VerticalAlignment="Top" Width="75" Click="ScanButton_Click"/>
             <Button Style="{DynamicResource SquareButtonStyle}" Name="ActionButton" Content="Action" IsEnabled="False" HorizontalAlignment="Left" Margin="5,5,5,0" VerticalAlignment="Top" Width="75" Click="ActionButton_Click"/>
             <Button Style="{DynamicResource SquareButtonStyle}" Name="CancelButton" Content="Cancel" IsEnabled="False" HorizontalAlignment="Left" Margin="5,5,5,0" VerticalAlignment="Top" Width="75" Click="CancelButton_Click"/>
         </StackPanel>
-        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Name="ProgressTextStackPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Visibility="Collapsed">
+        <StackPanel Grid.Row="1" Name="ProgressTextStackPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Visibility="Collapsed">
             <TextBlock Name="ProgressTextBlock" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
         </StackPanel>
-        <ListBox Grid.Row="2" Grid.ColumnSpan="2" Name="ShowsListBox" HorizontalAlignment="Stretch" Margin="5" VerticalAlignment="Stretch" ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" SelectionChanged="ShowsListBox_SelectionChanged">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="50" />
-                            <ColumnDefinition Width="50" />
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="50" />
-                            <ColumnDefinition Width="50" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Image Height="28" Width="50" Grid.Column="0" Source="{Binding FileType, Converter={StaticResource iconconverter}}" />
-                        <CheckBox Grid.Column="1" IsEnabled="{Binding SkippedExactSelection, Converter={StaticResource converter}}" IsChecked="{Binding ActionThis}" />
-                        <TextBlock Grid.Column="2" Text="{Binding ShowName}" />
-                        <TextBlock Grid.Column="3" Text="{Binding Season}" />
-                        <TextBlock Grid.Column="4" Text="{Binding Episode}" />
-                        <TextBlock Grid.Column="5" Text="{Binding EpisodeName}" />
-                    </Grid>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Name="ButtonsStackPanel" Orientation="Horizontal" Visibility="Visible">
+        <ListView Grid.Row="2" HorizontalAlignment="Stretch" Margin="5" VerticalAlignment="Stretch" Name="ShowsListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ShowsListBox_SelectionChanged">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Type" Width="50" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Image Height="28" Width="50" Source="{Binding FileType, Converter={StaticResource iconconverter}}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Action" Width="55" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsEnabled="{Binding SkippedExactSelection, Converter={StaticResource converter}}" IsChecked="{Binding ActionThis}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Title" Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ShowName}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Season" Width="55">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Season}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Episode" Width="55">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Episode}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Name" Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding EpisodeName}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <StackPanel Grid.Row="3" Name="ButtonsStackPanel" Orientation="Horizontal" Visibility="Visible">
             <Button Style="{DynamicResource SquareButtonStyle}" Name="MatchShowButton" IsEnabled="False" Content="Match" HorizontalAlignment="Left" Margin="5,0,5,5" VerticalAlignment="Top" Width="75" Click="MatchShowButton_Click"/>
             <Button Style="{DynamicResource SquareButtonStyle}" Name="IgnoreShowButton" IsEnabled="False" Content="Ignore" HorizontalAlignment="Left" Margin="5,0,5,5" VerticalAlignment="Top" Width="75" Click="IgnoreShowButton_Click"/>
             <Button Style="{DynamicResource SquareButtonStyle}" Name="DetailButton" IsEnabled="False" Content="Detail" HorizontalAlignment="Left" Margin="5,0,5,5" VerticalAlignment="Top" Width="75" Click="DetailButton_Click"/>
@@ -70,7 +95,7 @@
             <TextBox Name="ShowNameTextBox" Visibility="Hidden" Margin="5,0,5,5" Width="125"/>
             <Button Style="{DynamicResource SquareButtonStyle}" Name="EditOkButton" Visibility="Hidden" Content="OK" HorizontalAlignment="Left" Margin="5,0,5,5" VerticalAlignment="Top" Width="35" Click="EditOkButton_Click"/>
         </StackPanel>
-        <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Name="ProgressBarStackPanel" Visibility="Collapsed">
+        <StackPanel Grid.Row="3" Name="ProgressBarStackPanel" Visibility="Collapsed">
             <ProgressBar Name="FileMoveProgressBar" Margin="5" Height="20" Width="515" Minimum="0"  Maximum="100" />
         </StackPanel>
     </Grid>

@@ -4,6 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace SimpleRenamer.Views
 {
@@ -32,6 +33,10 @@ namespace SimpleRenamer.Views
             try
             {
                 InitializeComponent();
+                ActorsListBox.SizeChanged += ListView_SizeChanged;
+                CrewListBox.SizeChanged += ListView_SizeChanged;
+                ActorsListBox.Loaded += ListView_Loaded;
+                CrewListBox.Loaded += ListView_Loaded;
                 this.Closing += Window_Closing;
             }
             catch (Exception ex)
@@ -46,12 +51,29 @@ namespace SimpleRenamer.Views
             this.Hide();
         }
 
-        public async void GetMovie(string movieId)
+        private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            await GetMovieInfo(movieId);
+            UpdateColumnsWidth(sender as ListView);
         }
 
-        private async Task GetMovieInfo(string movieId)
+        private void ListView_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateColumnsWidth(sender as ListView);
+        }
+
+        private void UpdateColumnsWidth(ListView listView)
+        {
+            int autoFillColumnIndex = (listView.View as GridView).Columns.Count - 1;
+            if (listView.ActualWidth == Double.NaN)
+                listView.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
+            double remainingSpace = listView.ActualWidth;
+            for (int i = 0; i < (listView.View as GridView).Columns.Count; i++)
+                if (i != autoFillColumnIndex)
+                    remainingSpace -= (listView.View as GridView).Columns[i].ActualWidth;
+            (listView.View as GridView).Columns[autoFillColumnIndex].Width = remainingSpace >= 0 ? remainingSpace : 0;
+        }
+
+        public async Task GetMovieInfo(string movieId)
         {
             logger.TraceMessage("GetMovieInfo - Start");
             CancellationTokenSource cts = new CancellationTokenSource();

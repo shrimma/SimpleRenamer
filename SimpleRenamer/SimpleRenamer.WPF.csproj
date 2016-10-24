@@ -70,7 +70,6 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="TMDbLib, Version=0.9.6.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -84,7 +83,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="EventArguments\SelectMovieEventArgs.cs" />
     <Compile Include="EventArguments\SelectShowEventArgs.cs" />
     <Compile Include="ValueConverters\IconBooleanConverter.cs" />
     <Compile Include="Views\AddExtensionsWindow.xaml.cs">
@@ -98,9 +96,6 @@
     </Compile>
     <Compile Include="Views\EditShowWindow.xaml.cs">
       <DependentUpon>EditShowWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\SelectMovieWindow.xaml.cs">
-      <DependentUpon>SelectMovieWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SelectShowWindow.xaml.cs">
       <DependentUpon>SelectShowWindow.xaml</DependentUpon>
@@ -143,10 +138,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\EditShowWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\SelectMovieWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
