@@ -37,7 +37,7 @@ namespace SimpleRenamer.Framework.TvdbModel
         /// <param name="Added">Added.</param>
         /// <param name="SiteRating">SiteRating.</param>
         /// <param name="SiteRatingCount">SiteRatingCount.</param>
-        public Series(int? Id = null, string SeriesName = null, List<string> Aliases = null, string Banner = null, int? SeriesId = null, string Status = null, string FirstAired = null, string Network = null, string NetworkId = null, string Runtime = null, List<string> Genre = null, string Overview = null, int? LastUpdated = null, string AirsDayOfWeek = null, string AirsTime = null, string Rating = null, string ImdbId = null, string Zap2itId = null, string Added = null, decimal? SiteRating = null, int? SiteRatingCount = null)
+        public Series(int? Id = null, string SeriesName = null, List<string> Aliases = null, string Banner = null, string SeriesId = null, string Status = null, string FirstAired = null, string Network = null, string NetworkId = null, string Runtime = null, List<string> Genre = null, string Overview = null, int? LastUpdated = null, string AirsDayOfWeek = null, string AirsTime = null, string Rating = null, string ImdbId = null, string Zap2itId = null, string Added = null, decimal? SiteRating = null, int? SiteRatingCount = null)
         {
             this.Id = Id;
             this.SeriesName = SeriesName;
@@ -86,7 +86,7 @@ namespace SimpleRenamer.Framework.TvdbModel
         /// Gets or Sets SeriesId
         /// </summary>
         [DataMember(Name = "seriesId", EmitDefaultValue = false)]
-        public int? SeriesId { get; set; }
+        public string SeriesId { get; set; }
         /// <summary>
         /// Gets or Sets Status
         /// </summary>
