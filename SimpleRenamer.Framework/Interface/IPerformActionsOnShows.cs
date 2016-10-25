@@ -30,6 +30,6 @@ namespace SimpleRenamer.Framework.Interface
         /// <param name="scannedEpisodes">The episodes to action</param>
         /// <param name="ct">CancellationToken</param>
         /// <returns></returns>
-        Task Action(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct);
+        Task<bool> Action(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct);
     }
 }

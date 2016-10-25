@@ -538,43 +538,5 @@ namespace SimpleRenamer
                 logger.TraceException(ex);
             }
         }
-
-        private void EditOkButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
-                string oldTitle = tempEp.ShowName;
-                string newTitle = ShowNameTextBox.Text;
-
-                if (!newTitle.Equals(oldTitle))
-                {
-                    MessageBoxResult mbr = MessageBox.Show("Are you sure you want to change this shows name?", "Confirmation", MessageBoxButton.OKCancel);
-                    if (mbr == MessageBoxResult.OK)
-                    {
-                        foreach (MatchedFile tve in scannedEpisodes)
-                        {
-                            if (tve.ShowName.Equals(oldTitle))
-                            {
-                                tve.ShowName = newTitle;
-                            }
-                        }
-                    }
-                }
-
-                ShowsListBox.IsEnabled = true;
-                IgnoreShowButton.IsEnabled = true;
-                MatchShowButton.IsEnabled = true;
-                DetailButton.IsEnabled = true;
-                EditButton.IsEnabled = true;
-                ShowNameTextBox.Text = "";
-                ShowNameTextBox.Visibility = Visibility.Hidden;
-                EditOkButton.Visibility = Visibility.Hidden;
-            }
-            catch (Exception ex)
-            {
-                logger.TraceException(ex);
-            }
-        }
     }
 }

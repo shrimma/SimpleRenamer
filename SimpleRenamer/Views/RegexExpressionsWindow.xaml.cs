@@ -44,14 +44,9 @@ namespace SimpleRenamer.Views
             regExp.Remove((RegexExpression)ExpressionsListBox.SelectedItem);
         }
 
-        private async void SaveButton_Click(object sender, RoutedEventArgs e)
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             configurationManager.RegexExpressions.RegexExpressions = new List<RegexExpression>(regExp);
-            this.Hide();
-        }
-
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
             this.Hide();
         }
     }

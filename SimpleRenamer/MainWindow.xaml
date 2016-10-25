@@ -92,8 +92,6 @@
             <Button Style="{DynamicResource SquareButtonStyle}" Name="IgnoreShowButton" IsEnabled="False" Content="Ignore" HorizontalAlignment="Left" Margin="5,0,5,5" VerticalAlignment="Top" Width="75" Click="IgnoreShowButton_Click"/>
             <Button Style="{DynamicResource SquareButtonStyle}" Name="DetailButton" IsEnabled="False" Content="Detail" HorizontalAlignment="Left" Margin="5,0,5,5" VerticalAlignment="Top" Width="75" Click="DetailButton_Click"/>
             <Button Style="{DynamicResource SquareButtonStyle}" Name="EditButton" IsEnabled="False" Content="Edit" HorizontalAlignment="Left" Margin="5,0,5,5" VerticalAlignment="Top" Width="75" Click="EditButton_Click"/>
-            <TextBox Name="ShowNameTextBox" Visibility="Hidden" Margin="5,0,5,5" Width="125"/>
-            <Button Style="{DynamicResource SquareButtonStyle}" Name="EditOkButton" Visibility="Hidden" Content="OK" HorizontalAlignment="Left" Margin="5,0,5,5" VerticalAlignment="Top" Width="35" Click="EditOkButton_Click"/>
         </StackPanel>
         <StackPanel Grid.Row="3" Name="ProgressBarStackPanel" Visibility="Collapsed">
             <ProgressBar Name="FileMoveProgressBar" Margin="5" Height="20" Width="515" Minimum="0"  Maximum="100" />

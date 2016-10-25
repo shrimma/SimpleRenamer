@@ -53,7 +53,7 @@ namespace SimpleRenamer.Framework
             settings = configurationManager.Settings;
         }
 
-        public async Task Action(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct)
+        public async Task<bool> Action(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
             return await Task.Run(async () =>
             {
@@ -80,6 +80,8 @@ namespace SimpleRenamer.Framework
                 {
                     await MoveFiles(filesToMove, ct);
                 }
+
+                return true;
             });
         }
 
