@@ -80,7 +80,7 @@
                     <GridViewColumn Header="Name" Width="Auto">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding EpisodeName}" TextAlignment="Right" />
+                                <TextBlock Text="{Binding EpisodeName}" TextAlignment="Left" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

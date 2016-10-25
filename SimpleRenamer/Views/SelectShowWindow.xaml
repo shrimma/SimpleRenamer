@@ -39,6 +39,7 @@
                 </Style>
             </TextBox.Style>
         </TextBox>
+        <Controls:ProgressRing Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Foreground="White" Name="LoadingProgress" IsActive="True" />
         <ListView Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Name="ShowListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListView.View>
                 <GridView>
@@ -59,7 +60,7 @@
                     <GridViewColumn Header="Overview">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Description}" TextAlignment="Right" />
+                                <TextBlock Text="{Binding Description}" TextAlignment="Left" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

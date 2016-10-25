@@ -57,6 +57,7 @@ namespace SimpleRenamer.Framework
             fileWatcher.RaiseProgressEvent += RaiseProgress;
             fileMatcher.RaiseProgressEvent += RaiseProgress;
             tvShowMatcher.RaiseProgressEvent += RaiseProgress;
+            movieMatcher.RaiseProgressEvent += RaiseProgress;
         }
 
         private void RaiseProgress(object sender, ProgressTextEventArgs e)

@@ -33,10 +33,19 @@ namespace SimpleRenamer.Framework
             logger.TraceMessage("GetMovieInfo - Start");
             MovieCredits matchedMovie = await tmdbManager.GetMovieAsync(movieId);
             BitmapImage bannerImage = new BitmapImage();
-            bannerImage.BeginInit();
-            bannerImage.UriSource = new Uri(await tmdbManager.GetPosterUriAsync(matchedMovie.Movie.PosterPath));
-            bannerImage.EndInit();
 
+            if (!string.IsNullOrEmpty(matchedMovie.Movie.PosterPath))
+            {
+                bannerImage.BeginInit();
+                bannerImage.UriSource = new Uri(await tmdbManager.GetPosterUriAsync(matchedMovie.Movie.PosterPath));
+                bannerImage.EndInit();
+            }
+            else
+            {
+                //TODO add a not found poster
+            }
+
+            logger.TraceMessage("GetMovieInfo - End");
             return new MovieInfo(matchedMovie, bannerImage);
         }
     }

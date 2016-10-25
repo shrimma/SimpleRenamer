@@ -11,9 +11,9 @@ namespace SimpleRenamer.Framework
 {
     public class MovieMatcher : IMovieMatcher
     {
-        public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
         private ILogger logger;
         private ITmdbManager tmdbManager;
+        public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
         public MovieMatcher(ILogger log, ITmdbManager tmdbMan)
         {
@@ -61,7 +61,7 @@ namespace SimpleRenamer.Framework
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie, CancellationToken ct)
         {
             logger.TraceMessage("ScrapeDetailsAsync - Start");
-            //RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.FilePath}"));
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.FilePath}"));
 
             SearchContainer<SearchMovie> results = await tmdbManager.SearchMovieByNameAsync(movie.ShowName, movie.Year);
 

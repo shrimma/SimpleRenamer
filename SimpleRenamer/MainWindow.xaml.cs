@@ -335,19 +335,8 @@ namespace SimpleRenamer
                 }
 
                 List<ShowView> possibleMatches;
-                string title;
-                //call the correct methods depending on the filetype
-                if (fileType == FileType.TvShow)
-                {
-                    possibleMatches = await tvShowMatcher.GetPossibleShowsForEpisode(temp.ShowName, cts.Token);
-                    title = "TV";
-                }
-                else
-                {
-                    possibleMatches = await movieMatcher.GetPossibleMoviesForFile(temp.ShowName, cts.Token);
-                    title = "Movie";
-                }
-                selectShowWindow.SetView(possibleMatches, $"Simple Renamer - {title} - Select Show for file {Path.GetFileName(temp.FilePath)}", temp.ShowName, fileType);
+                string title = fileType == FileType.TvShow ? "TV" : "Movie";
+                selectShowWindow.SearchForMatches($"Simple Renamer - {title} - Select Show for file {Path.GetFileName(temp.FilePath)}", temp.ShowName, fileType);
                 selectShowWindow.ShowDialog();
             }
             catch (Exception ex)

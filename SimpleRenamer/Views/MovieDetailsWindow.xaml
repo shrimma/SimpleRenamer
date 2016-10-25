@@ -21,6 +21,7 @@
             <ColumnDefinition Width="322" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+        <Controls:ProgressRing Grid.Row="0" Grid.RowSpan="6" Grid.Column="0" Foreground="White" Name="LoadingProgress" IsActive="True" />
         <Image HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Grid.RowSpan="6" Name="BannerImage" Height="513" Width="322" Margin="5" />
         <TextBlock Grid.Row="0" Grid.Column="1" Name="MovieTagLineTextBox" Margin="5" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True"/>
         <TextBlock Grid.Row="1" Grid.Column="1"  Name="MovieDescriptionTextBox" Margin="5,0,5,0" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True" />
