@@ -55,29 +55,32 @@ namespace SimpleRenamer.Framework
 
         public async Task Action(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
-            //perform pre actions on TVshows
-            List<FileMoveResult> tvShowsToMove = await PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.TvShow).ToList(), ct);
-            //perform pre actions on movies
-            List<FileMoveResult> moviesToMove = await PreProcessMovies(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.Movie).ToList(), ct);
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
+            return await Task.Run(async () =>
+            {
+                RaiseProgressEvent(this, new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
+                //perform pre actions on TVshows
+                List<FileMoveResult> tvShowsToMove = await PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.TvShow).ToList(), ct);
+                //perform pre actions on movies
+                List<FileMoveResult> moviesToMove = await PreProcessMovies(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.Movie).ToList(), ct);
+                RaiseProgressEvent(this, new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
 
-            //concat final list of files to move
-            List<FileMoveResult> filesToMove = new List<FileMoveResult>();
-            if (tvShowsToMove != null && tvShowsToMove.Count > 0)
-            {
-                filesToMove.AddRange(tvShowsToMove);
-            }
-            if (moviesToMove != null && moviesToMove.Count > 0)
-            {
-                filesToMove.AddRange(moviesToMove);
-            }
+                //concat final list of files to move
+                List<FileMoveResult> filesToMove = new List<FileMoveResult>();
+                if (tvShowsToMove != null && tvShowsToMove.Count > 0)
+                {
+                    filesToMove.AddRange(tvShowsToMove);
+                }
+                if (moviesToMove != null && moviesToMove.Count > 0)
+                {
+                    filesToMove.AddRange(moviesToMove);
+                }
 
-            //move these files
-            if (filesToMove != null && filesToMove.Count > 0)
-            {
-                await MoveFiles(filesToMove, ct);
-            }
+                //move these files
+                if (filesToMove != null && filesToMove.Count > 0)
+                {
+                    await MoveFiles(filesToMove, ct);
+                }
+            });
         }
 
         private async Task<List<FileMoveResult>> PreProcessTVShows(List<MatchedFile> scannedEpisodes, CancellationToken ct)

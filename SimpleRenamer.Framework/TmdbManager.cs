@@ -33,8 +33,7 @@ namespace SimpleRenamer.Framework
             var request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            //TODO figure out why async doesnt always work
-            IRestResponse response = client.Execute(request);
+            IRestResponse response = await client.ExecuteTaskAsync(request);
 
             return JsonConvert.DeserializeObject<SearchContainer<SearchMovie>>(response.Content);
         }

@@ -29,7 +29,7 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", auth.ToJson(), ParameterType.RequestBody);
 
-            IRestResponse response = client.Execute(request);
+            IRestResponse response = await client.ExecuteTaskAsync(request);
 
             Token token = JsonConvert.DeserializeObject<Token>(response.Content);
             jwtToken = token._Token;
@@ -52,7 +52,7 @@ namespace SimpleRenamer.Framework
             var request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            IRestResponse response = client.Execute(request);
+            IRestResponse response = await client.ExecuteTaskAsync(request);
             SeriesData series = JsonConvert.DeserializeObject<SeriesData>(response.Content);
 
             //get actors
@@ -60,7 +60,7 @@ namespace SimpleRenamer.Framework
             request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            response = client.Execute(request);
+            response = await client.ExecuteTaskAsync(request);
             SeriesActors actors = JsonConvert.DeserializeObject<SeriesActors>(response.Content);
 
             //get episodes
@@ -68,7 +68,7 @@ namespace SimpleRenamer.Framework
             request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            response = client.Execute(request);
+            response = await client.ExecuteTaskAsync(request);
             SeriesEpisodes episodes = JsonConvert.DeserializeObject<SeriesEpisodes>(response.Content);
 
             //get series posters
@@ -77,7 +77,7 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("keyType", "poster", ParameterType.QueryString);
-            response = client.Execute(request);
+            response = await client.ExecuteTaskAsync(request);
             SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
 
             //get season specific posters
@@ -86,7 +86,7 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("keyType", "season", ParameterType.QueryString);
-            response = client.Execute(request);
+            response = await client.ExecuteTaskAsync(request);
             SeriesImageQueryResults seasonPosters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
 
             //get series banners
@@ -95,7 +95,7 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("keyType", "series", ParameterType.QueryString);
-            response = client.Execute(request);
+            response = await client.ExecuteTaskAsync(request);
             SeriesImageQueryResults seriesBanners = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
 
             return new CompleteSeries(series.Data, actors.Data, episodes.Data, posters.Data, seasonPosters.Data, seriesBanners.Data);
@@ -113,7 +113,7 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("name", seriesName, ParameterType.QueryString);
-            IRestResponse response = client.Execute(request);
+            IRestResponse response = await client.ExecuteTaskAsync(request);
             SearchData data = JsonConvert.DeserializeObject<SearchData>(response.Content);
             return data.Series;
         }

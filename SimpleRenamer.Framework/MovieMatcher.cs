@@ -33,26 +33,29 @@ namespace SimpleRenamer.Framework
 
         public async Task<List<ShowView>> GetPossibleMoviesForFile(string movieName, CancellationToken ct)
         {
-            List<ShowView> movies = new List<ShowView>();
-            SearchContainer<SearchMovie> results = await tmdbManager.SearchMovieByNameAsync(movieName, 0);
-            foreach (var s in results.Results)
+            return await Task.Run(async () =>
             {
-                string desc = string.Empty;
-                if (!string.IsNullOrEmpty(s.Overview))
+                List<ShowView> movies = new List<ShowView>();
+                SearchContainer<SearchMovie> results = await tmdbManager.SearchMovieByNameAsync(movieName, 0);
+                foreach (var s in results.Results)
                 {
-                    if (s.Overview.Length > 50)
+                    string desc = string.Empty;
+                    if (!string.IsNullOrEmpty(s.Overview))
                     {
-                        desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                        if (s.Overview.Length > 50)
+                        {
+                            desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                        }
+                        else
+                        {
+                            desc = s.Overview;
+                        }
                     }
-                    else
-                    {
-                        desc = s.Overview;
-                    }
+                    movies.Add(new ShowView(s.Id.ToString(), s.Title, s.ReleaseDate.Value.Year.ToString(), desc));
                 }
-                movies.Add(new ShowView(s.Id.ToString(), s.Title, s.ReleaseDate.Value.Year.ToString(), desc));
-            }
 
-            return movies;
+                return movies;
+            });
         }
 
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie, CancellationToken ct)
@@ -80,25 +83,28 @@ namespace SimpleRenamer.Framework
 
         public async Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile, CancellationToken ct)
         {
-            logger.TraceMessage("UpdateFileWithMatchedMovie - Start");
-
-            if (!string.IsNullOrEmpty(movieId))
+            return await Task.Run(async () =>
             {
-                SearchMovie searchedMovie = await tmdbManager.SearchMovieByIdAsync(movieId);
-                matchedFile.ActionThis = true;
-                matchedFile.SkippedExactSelection = false;
-                matchedFile.ShowName = searchedMovie.Title;
-                matchedFile.TMDBShowId = searchedMovie.Id;
-                matchedFile.ShowImage = searchedMovie.PosterPath;
-            }
-            else
-            {
-                matchedFile.ActionThis = false;
-                matchedFile.SkippedExactSelection = true;
-            }
+                logger.TraceMessage("UpdateFileWithMatchedMovie - Start");
 
-            logger.TraceMessage("ScrapeDetailsAsync - End");
-            return matchedFile;
+                if (!string.IsNullOrEmpty(movieId))
+                {
+                    SearchMovie searchedMovie = await tmdbManager.SearchMovieByIdAsync(movieId);
+                    matchedFile.ActionThis = true;
+                    matchedFile.SkippedExactSelection = false;
+                    matchedFile.ShowName = searchedMovie.Title;
+                    matchedFile.TMDBShowId = searchedMovie.Id;
+                    matchedFile.ShowImage = searchedMovie.PosterPath;
+                }
+                else
+                {
+                    matchedFile.ActionThis = false;
+                    matchedFile.SkippedExactSelection = true;
+                }
+
+                logger.TraceMessage("ScrapeDetailsAsync - End");
+                return matchedFile;
+            });
         }
     }
 }

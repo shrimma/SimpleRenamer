@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using WPFCustomMessageBox;
 
 namespace SimpleRenamer
@@ -133,7 +134,21 @@ namespace SimpleRenamer
 
         private void ProgressTextEvent(object sender, ProgressTextEventArgs e)
         {
-            ProgressTextBlock.Text = e.Text;
+            SetProgressText(e.Text);
+        }
+
+        private void SetProgressText(string text)
+        {
+            if (ProgressTextBlock.Dispatcher.CheckAccess())
+            {
+                //calling thread owns the dispatchers
+                ProgressTextBlock.Text = text;
+            }
+            else
+            {
+                //invocation required
+                ProgressTextBlock.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => SetProgressText(text)));
+            }
         }
 
         protected override void OnClosed(EventArgs e)
@@ -205,6 +220,8 @@ namespace SimpleRenamer
 
         private async void ScanButton_Click(object sender, RoutedEventArgs e)
         {
+            scannedEpisodes = new ObservableCollection<MatchedFile>();
+            ShowsListBox.ItemsSource = scannedEpisodes;
             cts = new CancellationTokenSource();
             DisableUi();
             try
@@ -213,7 +230,8 @@ namespace SimpleRenamer
                 FileMoveProgressBar.IsIndeterminate = true;
 
                 logger.TraceMessage(string.Format("Starting"));
-                scannedEpisodes = new ObservableCollection<MatchedFile>(await scanForShows.Scan(cts.Token));
+                var ep = await scanForShows.Scan(cts.Token);
+                scannedEpisodes = new ObservableCollection<MatchedFile>(ep);
                 logger.TraceMessage($"Grabbed {scannedEpisodes.Count} episodes");
                 ShowsListBox.ItemsSource = scannedEpisodes;
                 logger.TraceMessage($"Populated listbox with the scanned episodes");
