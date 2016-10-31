@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using WPFCustomMessageBox;
 
@@ -38,8 +39,10 @@ namespace SimpleRenamer
         private ShowDetailsWindow showDetailsWindow;
         private MovieDetailsWindow movieDetailsWindow;
         private SettingsWindow settingsWindow;
-        private EditShowWindow editShowWindow;
         private Settings settings;
+        private string EditShowCurrentFolder;
+        private string EditShowTvdbShowName;
+        private string EditShowTvdbId;
 
         public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, IMovieMatcher movieMatch, IDependencyInjectionContext injection, IPerformActionsOnShows performActions, IScanForShows scanShows, IConfigurationManager configManager)
         {
@@ -86,8 +89,6 @@ namespace SimpleRenamer
                 showDetailsWindow = injectionContext.GetService<ShowDetailsWindow>();
                 movieDetailsWindow = injectionContext.GetService<MovieDetailsWindow>();
                 settingsWindow = injectionContext.GetService<SettingsWindow>();
-                editShowWindow = injectionContext.GetService<EditShowWindow>();
-                editShowWindow.RaiseEditShowEvent += new EventHandler<EditShowEventArgs>(EditShowWindowClosedEvent);
                 selectShowWindow = injectionContext.GetService<SelectShowWindow>();
                 selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
                 settings = configurationManager.Settings;
@@ -377,7 +378,7 @@ namespace SimpleRenamer
         {
             try
             {
-                MessageBoxResult mbr = MessageBox.Show("Are you sure?", "Ignore this?", MessageBoxButton.OKCancel);
+                MessageBoxResult mbr = CustomMessageBox.Show("Are you sure?", "Ignore this?", MessageBoxButton.OKCancel);
                 if (mbr == MessageBoxResult.OK)
                 {
                     MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
@@ -494,9 +495,12 @@ namespace SimpleRenamer
         {
             try
             {
-                //set the edit show window to the selected episode and show dialog
-                editShowWindow.SetCurrentShow(tempEp, mapping);
-                editShowWindow.ShowDialog();
+                string folderPath = Path.Combine(settings.DestinationFolderTV, string.IsNullOrEmpty(mapping.CustomFolderName) ? mapping.TVDBShowName : mapping.CustomFolderName);
+                EditShowCurrentFolder = mapping.CustomFolderName;
+                EditShowTvdbShowName = tempEp.ShowName;
+                EditShowTvdbId = tempEp.TVDBShowId;
+                EditShowFolderTextBox.Text = folderPath;
+                EditFlyout.IsOpen = true;
             }
             catch (Exception ex)
             {
@@ -504,28 +508,62 @@ namespace SimpleRenamer
             }
         }
 
-        public void EditShowWindowClosedEvent(object sender, EditShowEventArgs e)
+        private void EditShowCloseBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            try
+            EditFlyout.IsOpen = false;
+            bool updateMapping = false;
+            string currentText = EditShowFolderTextBox.Text;
+
+            if (EditShowCurrentFolder.Equals(currentText))
             {
-                if (e.Mapping != null)
+                //if the custom folder name hasn't changed then don't do anything
+            }
+            else if (EditShowTvdbShowName.Equals(currentText) && string.IsNullOrEmpty(EditShowCurrentFolder))
+            {
+                //if the new folder name equals the tvshowname and no customfolder name then dont do anything
+            }
+            else if (EditShowTvdbShowName.Equals(currentText) && !string.IsNullOrEmpty(EditShowCurrentFolder))
+            {
+                //if the new folder name equals the tvshowname and there is a customfoldername already then reset customfoldername to blank
+                currentText = string.Empty;
+                updateMapping = true;
+            }
+            else
+            {
+                //else we have a new custom folder to set
+                updateMapping = true;
+            }
+
+            if (updateMapping)
+            {
+                ShowNameMapping snm = configurationManager.ShowNameMappings;
+                if (snm != null && snm.Mappings.Count > 0)
                 {
-                    ShowNameMapping snm = configurationManager.ShowNameMappings;
-                    if (snm != null && snm.Mappings.Count > 0)
+                    Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(EditShowTvdbId)).FirstOrDefault();
+                    if (mapping != null)
                     {
-                        Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(e.Mapping.TVDBShowID)).FirstOrDefault();
-                        if (mapping != null)
-                        {
-                            mapping.CustomFolderName = e.NewFolder;
-                            configurationManager.ShowNameMappings = snm;
-                        }
+                        mapping.CustomFolderName = currentText;
+                        configurationManager.ShowNameMappings = snm;
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                logger.TraceException(ex);
-            }
+        }
+
+        private void EditShowCloseBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
+        private void EditShowFolderTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            string currentText = EditShowFolderTextBox.Text;
+            EditShowFolderTextBox.Text = currentText.Replace(settings.DestinationFolderTV + @"\", "");
+        }
+
+        private void EditShowFolderTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            string currentText = EditShowFolderTextBox.Text;
+            EditShowFolderTextBox.Text = Path.Combine(settings.DestinationFolderTV, currentText);
         }
     }
 }

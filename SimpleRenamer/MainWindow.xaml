@@ -4,6 +4,9 @@
         xmlns:l="clr-namespace:SimpleRenamer"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         Title="Simple Renamer" Height="400" Width="525" MinHeight="200" MinWidth="400" Icon="tv.ico">
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Close" Executed="EditShowCloseBinding_Executed" CanExecute="EditShowCloseBinding_CanExecute"/>
+    </Window.CommandBindings>
     <Window.Resources>
         <l:InverseBooleanConverter x:Key="converter"/>
         <l:IconFileTypeConverter x:Key="iconconverter"/>
@@ -24,6 +27,20 @@
             </Button>
         </Controls:WindowCommands>
     </Controls:MetroWindow.RightWindowCommands>
+    <Controls:MetroWindow.Flyouts>
+        <Controls:FlyoutsControl>
+            <Controls:Flyout Name="EditFlyout" Theme="Accent" Header="Edit Show" Position="Right" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:FlyoutsControl}, Path=ActualWidth}" Margin="200 0 0 0" CloseCommand="ApplicationCommands.Close">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0">Custom Show Directory</Label>
+                    <TextBox Grid.Row="1" Margin="5" Name="EditShowFolderTextBox" GotFocus="EditShowFolderTextBox_GotFocus" LostFocus="EditShowFolderTextBox_LostFocus" />
+                </Grid>
+            </Controls:Flyout>
+        </Controls:FlyoutsControl>
+    </Controls:MetroWindow.Flyouts>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />

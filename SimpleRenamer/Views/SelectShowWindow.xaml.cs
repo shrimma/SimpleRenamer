@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using WPFCustomMessageBox;
 
 namespace SimpleRenamer.Views
 {
@@ -134,7 +135,7 @@ namespace SimpleRenamer.Views
             ShowView current = (ShowView)ShowListBox.SelectedItem;
             if (current != null)
             {
-                MessageBoxResult r = MessageBox.Show("Are you sure?", "Confirmation", MessageBoxButton.OKCancel);
+                MessageBoxResult r = CustomMessageBox.Show("Are you sure?", "Confirmation", MessageBoxButton.OKCancel);
                 if (r == MessageBoxResult.OK)
                 {
                     RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(current.Id, currentFileType));

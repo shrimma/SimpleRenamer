@@ -88,14 +88,10 @@
     <Compile Include="Views\AddExtensionsWindow.xaml.cs">
       <DependentUpon>AddExtensionsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EventArguments\EditShowEventArgs.cs" />
     <Compile Include="EventArguments\ExtensionEventArgs.cs" />
     <Compile Include="ValueConverters\InverseBooleanConverter.cs" />
     <Compile Include="Views\RegexExpressionsWindow.xaml.cs">
       <DependentUpon>RegexExpressionsWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\EditShowWindow.xaml.cs">
-      <DependentUpon>EditShowWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SelectShowWindow.xaml.cs">
       <DependentUpon>SelectShowWindow.xaml</DependentUpon>
@@ -136,10 +132,6 @@
     <Page Include="Views\RegexExpressionsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\EditShowWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\SelectShowWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
