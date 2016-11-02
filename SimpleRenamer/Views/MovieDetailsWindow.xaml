@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-             Title="Simple Renamer - Movie - Details" Height="523" Width="800" MinHeight="523" MinWidth="800" Icon="tv.ico">
+             Title="Simple Renamer - Movie - Details" Height="523" Width="800" MinHeight="523" MinWidth="800" Icon="..\Icons\tv.ico">
     <Window.Resources>
         <Style TargetType="ListViewItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />

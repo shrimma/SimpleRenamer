@@ -4,7 +4,7 @@
         xmlns:l="clr-namespace:SimpleRenamer"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-        Title="Simple Renamer" Height="420" Width="525" MinHeight="200" MinWidth="400" Icon="tv.ico">
+        Title="Simple Renamer" Height="420" Width="525" MinHeight="200" MinWidth="400" Icon="Icons\tv.ico">
     <Window.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Close" Executed="EditShowCloseBinding_Executed" CanExecute="EditShowCloseBinding_CanExecute"/>
     </Window.CommandBindings>

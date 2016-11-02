@@ -39,7 +39,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>tv.ico</ApplicationIcon>
+    <ApplicationIcon>Icons\tv.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
@@ -185,10 +185,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="tv.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Views\tv.ico" />
+    <Resource Include="Icons\tv.ico" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
