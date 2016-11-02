@@ -48,6 +48,12 @@ namespace SimpleRenamer.Views
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             e.Cancel = true;
+            //clear the UI
+            MovieTagLineTextBox.Text = string.Empty;
+            MovieDescriptionTextBox.Text = string.Empty;
+            ActorsListBox.ItemsSource = null;
+            CrewListBox.ItemsSource = null;
+            BannerImage.Source = null;
             this.Hide();
         }
 
@@ -76,6 +82,8 @@ namespace SimpleRenamer.Views
         public async Task GetMovieInfo(string movieId)
         {
             logger.TraceMessage("GetMovieInfo - Start");
+            //enable progress spinner
+            LoadingProgress.IsActive = true;
             CancellationTokenSource cts = new CancellationTokenSource();
             MovieInfo movie = await getMovieDetails.GetMovieWithBanner(movieId, cts.Token);
 

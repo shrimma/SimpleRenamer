@@ -18,15 +18,15 @@ namespace SimpleRenamer
 
             if (temp == FileType.TvShow)
             {
-                return "/Images/tv.png";
+                return "Television";
             }
             else if (temp == FileType.Movie)
             {
-                return "/Images/movie.png";
+                return "Movie";
             }
             else
             {
-                return "Images/movie.png";
+                return "HelpCircle";
             }
         }
 

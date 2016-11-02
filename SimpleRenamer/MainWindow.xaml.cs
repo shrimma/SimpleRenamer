@@ -5,7 +5,6 @@ using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
 using SimpleRenamer.Views;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -13,7 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using WPFCustomMessageBox;
+using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace SimpleRenamer
 {
@@ -37,8 +37,12 @@ namespace SimpleRenamer
         private ShowDetailsWindow showDetailsWindow;
         private MovieDetailsWindow movieDetailsWindow;
         private SettingsWindow settingsWindow;
-        private EditShowWindow editShowWindow;
         private Settings settings;
+        private string EditShowCurrentFolder;
+        private string EditShowTvdbShowName;
+        private string EditShowTvdbId;
+        private string MediaTypePath;
+        private string MediaTypeShowName;
 
         public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, IMovieMatcher movieMatch, IDependencyInjectionContext injection, IPerformActionsOnShows performActions, IScanForShows scanShows, IConfigurationManager configManager)
         {
@@ -85,8 +89,6 @@ namespace SimpleRenamer
                 showDetailsWindow = injectionContext.GetService<ShowDetailsWindow>();
                 movieDetailsWindow = injectionContext.GetService<MovieDetailsWindow>();
                 settingsWindow = injectionContext.GetService<SettingsWindow>();
-                editShowWindow = injectionContext.GetService<EditShowWindow>();
-                editShowWindow.RaiseEditShowEvent += new EventHandler<EditShowEventArgs>(EditShowWindowClosedEvent);
                 selectShowWindow = injectionContext.GetService<SelectShowWindow>();
                 selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
                 settings = configurationManager.Settings;
@@ -133,7 +135,21 @@ namespace SimpleRenamer
 
         private void ProgressTextEvent(object sender, ProgressTextEventArgs e)
         {
-            ProgressTextBlock.Text = e.Text;
+            SetProgressText(e.Text);
+        }
+
+        private void SetProgressText(string text)
+        {
+            if (ProgressTextBlock.Dispatcher.CheckAccess())
+            {
+                //calling thread owns the dispatchers
+                ProgressTextBlock.Text = text;
+            }
+            else
+            {
+                //invocation required
+                ProgressTextBlock.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => SetProgressText(text)));
+            }
         }
 
         protected override void OnClosed(EventArgs e)
@@ -176,27 +192,43 @@ namespace SimpleRenamer
 
         private void DisableUi()
         {
+            //disable all action buttons
             ScanButton.IsEnabled = false;
             SettingsButton.IsEnabled = false;
             ActionButton.IsEnabled = false;
             MatchShowButton.IsEnabled = false;
             IgnoreShowButton.IsEnabled = false;
-            CancelButton.IsEnabled = true;
             ShowsListBox.IsEnabled = false;
-            ButtonsStackPanel.Visibility = Visibility.Collapsed;
+            //enable the cancel button
+            CancelButton.IsEnabled = true;
+            //hide the scan and action buttons
+            ScanButton.Visibility = Visibility.Hidden;
+            ActionButton.Visibility = Visibility.Hidden;
+            //hide the bottom row of buttons
+            ButtonsStackPanel.Visibility = Visibility.Hidden;
+            //show the cancel button and progress bar
+            CancelButton.Visibility = Visibility.Visible;
             ProgressTextStackPanel.Visibility = Visibility.Visible;
             ProgressBarStackPanel.Visibility = Visibility.Visible;
         }
 
         private void EnableUi()
         {
+            //enable all action buttons
             ScanButton.IsEnabled = true;
             SettingsButton.IsEnabled = true;
-            CancelButton.IsEnabled = false;
             ShowsListBox.IsEnabled = true;
+            //disable the cancel button
+            CancelButton.IsEnabled = false;
+            //show the scan and action buttons
+            ScanButton.Visibility = Visibility.Visible;
+            ActionButton.Visibility = Visibility.Visible;
+            //show the bottom row of buttons
             ButtonsStackPanel.Visibility = Visibility.Visible;
-            ProgressTextStackPanel.Visibility = Visibility.Collapsed;
-            ProgressBarStackPanel.Visibility = Visibility.Collapsed;
+            //hide the cancel button and progress bar
+            CancelButton.Visibility = Visibility.Hidden;
+            ProgressTextStackPanel.Visibility = Visibility.Hidden;
+            ProgressBarStackPanel.Visibility = Visibility.Hidden;
             if (scannedEpisodes.Count > 0)
             {
                 ActionButton.IsEnabled = true;
@@ -205,6 +237,8 @@ namespace SimpleRenamer
 
         private async void ScanButton_Click(object sender, RoutedEventArgs e)
         {
+            scannedEpisodes = new ObservableCollection<MatchedFile>();
+            ShowsListBox.ItemsSource = scannedEpisodes;
             cts = new CancellationTokenSource();
             DisableUi();
             try
@@ -213,7 +247,8 @@ namespace SimpleRenamer
                 FileMoveProgressBar.IsIndeterminate = true;
 
                 logger.TraceMessage(string.Format("Starting"));
-                scannedEpisodes = new ObservableCollection<MatchedFile>(await scanForShows.Scan(cts.Token));
+                var ep = await scanForShows.Scan(cts.Token);
+                scannedEpisodes = new ObservableCollection<MatchedFile>(ep);
                 logger.TraceMessage($"Grabbed {scannedEpisodes.Count} episodes");
                 ShowsListBox.ItemsSource = scannedEpisodes;
                 logger.TraceMessage($"Populated listbox with the scanned episodes");
@@ -302,40 +337,42 @@ namespace SimpleRenamer
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
                 FileType fileType = temp.FileType;
+                MediaTypePath = temp.FilePath;
+                MediaTypeShowName = temp.ShowName;
                 if (fileType == FileType.Unknown)
                 {
                     //IF UNKNOWN then we have to show a dialog here and ask whether movie or TV
-                    MessageBoxResult result = CustomMessageBox.ShowYesNoCancel($"Is the file at path: {temp.FilePath} a TV show or a movie?", $"TV or Movie", "TV Show", "Movie", "Cancel");
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        fileType = FileType.TvShow;
-                    }
-                    else if (result == MessageBoxResult.No)
-                    {
-                        fileType = FileType.Movie;
-                    }
-                }
-
-                List<ShowView> possibleMatches;
-                string title;
-                //call the correct methods depending on the filetype
-                if (fileType == FileType.TvShow)
-                {
-                    possibleMatches = await tvShowMatcher.GetPossibleShowsForEpisode(temp.ShowName, cts.Token);
-                    title = "TV";
+                    MediaTypeFlyout.IsOpen = true;
                 }
                 else
                 {
-                    possibleMatches = await movieMatcher.GetPossibleMoviesForFile(temp.ShowName, cts.Token);
-                    title = "Movie";
+                    //otherwise open the show search window
+                    OpenSelectShowWindow(fileType);
                 }
-                selectShowWindow.SetView(possibleMatches, $"Simple Renamer - {title} - Select Show for file {Path.GetFileName(temp.FilePath)}", temp.ShowName, fileType);
-                selectShowWindow.ShowDialog();
             }
             catch (Exception ex)
             {
                 logger.TraceException(ex);
             }
+        }
+
+        private void OpenSelectShowWindow(FileType fileType)
+        {
+            string title = fileType == FileType.TvShow ? "TV" : "Movie";
+            selectShowWindow.SearchForMatches($"Simple Renamer - {title} - Select Show For File {Path.GetFileName(MediaTypePath)}", MediaTypeShowName, fileType);
+            selectShowWindow.ShowDialog();
+        }
+
+        private void MediaTypeTv_Click(object sender, RoutedEventArgs e)
+        {
+            MediaTypeFlyout.IsOpen = false;
+            OpenSelectShowWindow(FileType.TvShow);
+        }
+
+        private void MediaTypeMovie_Click(object sender, RoutedEventArgs e)
+        {
+            MediaTypeFlyout.IsOpen = false;
+            OpenSelectShowWindow(FileType.Movie);
         }
 
         private async void SelectShowWindow_RaiseSelectShowWindowEvent(object sender, SelectShowEventArgs e)
@@ -354,7 +391,7 @@ namespace SimpleRenamer
                     updatedFile = await movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp, cts.Token);
                 }
 
-                //if selection was skipped then we can't enable actioning
+                //if selection wasn't skipped then update the selected item
                 if (updatedFile.SkippedExactSelection == false)
                 {
                     ShowsListBox.SelectedItem = updatedFile;
@@ -370,17 +407,26 @@ namespace SimpleRenamer
         {
             try
             {
-                MessageBoxResult mbr = MessageBox.Show("Are you sure?", "Ignore this?", MessageBoxButton.OKCancel);
-                if (mbr == MessageBoxResult.OK)
+                IgnoreFlyout.IsOpen = true;
+            }
+            catch (Exception ex)
+            {
+                logger.TraceException(ex);
+            }
+        }
+
+        private void IgnoreFlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                IgnoreFlyout.IsOpen = false;
+                MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
+                IgnoreList ignoreList = configurationManager.IgnoredFiles;
+                if (!ignoreList.IgnoreFiles.Contains(tempEp.FilePath))
                 {
-                    MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
-                    IgnoreList ignoreList = configurationManager.IgnoredFiles;
-                    if (!ignoreList.IgnoreFiles.Contains(tempEp.FilePath))
-                    {
-                        ignoreList.IgnoreFiles.Add(tempEp.FilePath);
-                        scannedEpisodes.Remove(tempEp);
-                        configurationManager.IgnoredFiles = ignoreList;
-                    }
+                    ignoreList.IgnoreFiles.Add(tempEp.FilePath);
+                    scannedEpisodes.Remove(tempEp);
+                    configurationManager.IgnoredFiles = ignoreList;
                 }
             }
             catch (Exception ex)
@@ -487,9 +533,12 @@ namespace SimpleRenamer
         {
             try
             {
-                //set the edit show window to the selected episode and show dialog
-                editShowWindow.SetCurrentShow(tempEp, mapping);
-                editShowWindow.ShowDialog();
+                string folderPath = Path.Combine(settings.DestinationFolderTV, string.IsNullOrEmpty(mapping.CustomFolderName) ? mapping.TVDBShowName : mapping.CustomFolderName);
+                EditShowCurrentFolder = mapping.CustomFolderName;
+                EditShowTvdbShowName = tempEp.ShowName;
+                EditShowTvdbId = tempEp.TVDBShowId;
+                EditShowFolderTextBox.Text = folderPath;
+                EditFlyout.IsOpen = true;
             }
             catch (Exception ex)
             {
@@ -497,66 +546,62 @@ namespace SimpleRenamer
             }
         }
 
-        public void EditShowWindowClosedEvent(object sender, EditShowEventArgs e)
+        private void EditShowCloseBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            try
+            EditFlyout.IsOpen = false;
+            bool updateMapping = false;
+            string currentText = EditShowFolderTextBox.Text;
+
+            if (EditShowCurrentFolder.Equals(currentText))
             {
-                if (e.Mapping != null)
+                //if the custom folder name hasn't changed then don't do anything
+            }
+            else if (EditShowTvdbShowName.Equals(currentText) && string.IsNullOrEmpty(EditShowCurrentFolder))
+            {
+                //if the new folder name equals the tvshowname and no customfolder name then dont do anything
+            }
+            else if (EditShowTvdbShowName.Equals(currentText) && !string.IsNullOrEmpty(EditShowCurrentFolder))
+            {
+                //if the new folder name equals the tvshowname and there is a customfoldername already then reset customfoldername to blank
+                currentText = string.Empty;
+                updateMapping = true;
+            }
+            else
+            {
+                //else we have a new custom folder to set
+                updateMapping = true;
+            }
+
+            if (updateMapping)
+            {
+                ShowNameMapping snm = configurationManager.ShowNameMappings;
+                if (snm != null && snm.Mappings.Count > 0)
                 {
-                    ShowNameMapping snm = configurationManager.ShowNameMappings;
-                    if (snm != null && snm.Mappings.Count > 0)
+                    Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(EditShowTvdbId)).FirstOrDefault();
+                    if (mapping != null)
                     {
-                        Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(e.Mapping.TVDBShowID)).FirstOrDefault();
-                        if (mapping != null)
-                        {
-                            mapping.CustomFolderName = e.NewFolder;
-                            configurationManager.ShowNameMappings = snm;
-                        }
+                        mapping.CustomFolderName = currentText;
+                        configurationManager.ShowNameMappings = snm;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.TraceException(ex);
             }
         }
 
-        private void EditOkButton_Click(object sender, RoutedEventArgs e)
+        private void EditShowCloseBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            try
-            {
-                MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
-                string oldTitle = tempEp.ShowName;
-                string newTitle = ShowNameTextBox.Text;
+            e.CanExecute = true;
+        }
 
-                if (!newTitle.Equals(oldTitle))
-                {
-                    MessageBoxResult mbr = MessageBox.Show("Are you sure you want to change this shows name?", "Confirmation", MessageBoxButton.OKCancel);
-                    if (mbr == MessageBoxResult.OK)
-                    {
-                        foreach (MatchedFile tve in scannedEpisodes)
-                        {
-                            if (tve.ShowName.Equals(oldTitle))
-                            {
-                                tve.ShowName = newTitle;
-                            }
-                        }
-                    }
-                }
+        private void EditShowFolderTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            string currentText = EditShowFolderTextBox.Text;
+            EditShowFolderTextBox.Text = currentText.Replace(settings.DestinationFolderTV + @"\", "");
+        }
 
-                ShowsListBox.IsEnabled = true;
-                IgnoreShowButton.IsEnabled = true;
-                MatchShowButton.IsEnabled = true;
-                DetailButton.IsEnabled = true;
-                EditButton.IsEnabled = true;
-                ShowNameTextBox.Text = "";
-                ShowNameTextBox.Visibility = Visibility.Hidden;
-                EditOkButton.Visibility = Visibility.Hidden;
-            }
-            catch (Exception ex)
-            {
-                logger.TraceException(ex);
-            }
+        private void EditShowFolderTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            string currentText = EditShowFolderTextBox.Text;
+            EditShowFolderTextBox.Text = Path.Combine(settings.DestinationFolderTV, currentText);
         }
     }
 }

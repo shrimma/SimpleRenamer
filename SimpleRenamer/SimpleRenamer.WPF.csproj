@@ -39,7 +39,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>tv.ico</ApplicationIcon>
+    <ApplicationIcon>Icons\tv.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
@@ -48,6 +48,10 @@
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.3.0.0, Culture=neutral, PublicKeyToken=f4fb5a3c4d1e5b4f, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.3.0\lib\net45\MahApps.Metro.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MahApps.Metro.IconPacks.Material, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MahApps.Metro.IconPacks.Material.1.6.0\lib\net46\MahApps.Metro.IconPacks.Material.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -73,10 +77,6 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="WPFCustomMessageBox, Version=1.0.7.39267, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\WPFCustomMessageBox.1.0.7\lib\WPFCustomMessageBox.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -84,18 +84,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="EventArguments\SelectShowEventArgs.cs" />
-    <Compile Include="ValueConverters\IconBooleanConverter.cs" />
+    <Compile Include="ValueConverters\IconFileTypeConverter.cs" />
     <Compile Include="Views\AddExtensionsWindow.xaml.cs">
       <DependentUpon>AddExtensionsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EventArguments\EditShowEventArgs.cs" />
     <Compile Include="EventArguments\ExtensionEventArgs.cs" />
     <Compile Include="ValueConverters\InverseBooleanConverter.cs" />
     <Compile Include="Views\RegexExpressionsWindow.xaml.cs">
       <DependentUpon>RegexExpressionsWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\EditShowWindow.xaml.cs">
-      <DependentUpon>EditShowWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SelectShowWindow.xaml.cs">
       <DependentUpon>SelectShowWindow.xaml</DependentUpon>
@@ -109,14 +105,6 @@
     <Compile Include="Views\ShowDetailsWindow.xaml.cs">
       <DependentUpon>ShowDetailsWindow.xaml</DependentUpon>
     </Compile>
-    <Page Include="Resources\Icons.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Resources\IconsNonShared.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Views\AddExtensionsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -136,10 +124,6 @@
     <Page Include="Views\RegexExpressionsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\EditShowWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\SelectShowWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -176,13 +160,14 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <Resource Include="Resources\Entypo.ttf" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -200,21 +185,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="tv.ico" />
+    <Resource Include="Icons\tv.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Views\tv.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\movie.png" />
-    <Resource Include="Images\tv.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\WindowsIcons-license.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Entypo-license.txt" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

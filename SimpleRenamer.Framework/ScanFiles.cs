@@ -57,6 +57,7 @@ namespace SimpleRenamer.Framework
             fileWatcher.RaiseProgressEvent += RaiseProgress;
             fileMatcher.RaiseProgressEvent += RaiseProgress;
             tvShowMatcher.RaiseProgressEvent += RaiseProgress;
+            movieMatcher.RaiseProgressEvent += RaiseProgress;
         }
 
         private void RaiseProgress(object sender, ProgressTextEventArgs e)
@@ -66,34 +67,37 @@ namespace SimpleRenamer.Framework
 
         public async Task<List<MatchedFile>> Scan(CancellationToken ct)
         {
-            //search folders for a list of video file paths
-            List<string> videoFiles = await fileWatcher.SearchTheseFoldersAsync(ct);
-            //use regex to attempt to figure out some details about the files ie showname, episode number, etc
-            List<MatchedFile> matchedFiles = await SearchFileNames(videoFiles, ct);
-
-            //try and match the tv shows with TVDB
-            List<MatchedFile> scannedEpisodes = await MatchTVShows(matchedFiles.Where(x => x.FileType == FileType.TvShow).ToList(), ct);
-            //try and match movies with TMDB
-            List<MatchedFile> scannedMovies = await MatchMovies(matchedFiles.Where(x => x.FileType == FileType.Movie).ToList(), ct);
-            //check there aren't any completely unmatched files (due to undecypherable filenames)
-            List<MatchedFile> otherVideoFiles = matchedFiles.Where(x => x.FileType == FileType.Unknown).ToList();
-
-            //add the tv shows and movies to the same list and return this
-            List<MatchedFile> scannedFiles = new List<MatchedFile>();
-            if (scannedEpisodes != null && scannedEpisodes.Count > 0)
+            return await Task.Run(async () =>
             {
-                scannedFiles.AddRange(scannedEpisodes);
-            }
-            if (scannedMovies != null && scannedMovies.Count > 0)
-            {
-                scannedFiles.AddRange(scannedMovies);
-            }
-            if (otherVideoFiles != null & otherVideoFiles.Count > 0)
-            {
-                scannedFiles.AddRange(otherVideoFiles);
-            }
+                //search folders for a list of video file paths
+                List<string> videoFiles = await fileWatcher.SearchTheseFoldersAsync(ct);
+                //use regex to attempt to figure out some details about the files ie showname, episode number, etc
+                List<MatchedFile> matchedFiles = await SearchFileNames(videoFiles, ct);
 
-            return scannedFiles;
+                //try and match the tv shows with TVDB
+                List<MatchedFile> scannedEpisodes = await MatchTVShows(matchedFiles.Where(x => x.FileType == FileType.TvShow).ToList(), ct);
+                //try and match movies with TMDB
+                List<MatchedFile> scannedMovies = await MatchMovies(matchedFiles.Where(x => x.FileType == FileType.Movie).ToList(), ct);
+                //check there aren't any completely unmatched files (due to undecypherable filenames)
+                List<MatchedFile> otherVideoFiles = matchedFiles.Where(x => x.FileType == FileType.Unknown).ToList();
+
+                //add the tv shows and movies to the same list and return this
+                List<MatchedFile> scannedFiles = new List<MatchedFile>();
+                if (scannedEpisodes != null && scannedEpisodes.Count > 0)
+                {
+                    scannedFiles.AddRange(scannedEpisodes);
+                }
+                if (scannedMovies != null && scannedMovies.Count > 0)
+                {
+                    scannedFiles.AddRange(scannedMovies);
+                }
+                if (otherVideoFiles != null & otherVideoFiles.Count > 0)
+                {
+                    scannedFiles.AddRange(otherVideoFiles);
+                }
+
+                return scannedFiles;
+            });
         }
 
         private async Task<List<MatchedFile>> SearchFileNames(List<string> videoFiles, CancellationToken ct)

@@ -48,6 +48,12 @@ namespace SimpleRenamer.Views
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             e.Cancel = true;
+            //clear the UI
+            ShowDescriptionTextBox.Text = string.Empty;
+            ActorsListBox.ItemsSource = null;
+            EpisodesListBox.ItemsSource = null;
+            BannerImage.Source = null;
+
             this.Hide();
         }
 
@@ -76,6 +82,7 @@ namespace SimpleRenamer.Views
         public async Task GetSeriesInfo(string showId)
         {
             logger.TraceMessage("GetSeriesInfo - Start");
+            LoadingProgress.IsActive = true;
 
             SeriesWithBanner series = await getShowDetails.GetShowWithBannerAsync(showId);
 

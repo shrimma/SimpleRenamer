@@ -33,17 +33,18 @@ namespace SimpleRenamer.Framework
             logger.TraceMessage("GetSeriesInfo - Start");
             CompleteSeries matchedSeries = await tvdbManager.GetSeriesByIdAsync(showId);
             BitmapImage bannerImage = new BitmapImage();
-            bannerImage.BeginInit();
             if (matchedSeries.SeriesBanners != null && matchedSeries.SeriesBanners.Count > 0)
             {
+                bannerImage.BeginInit();
                 bannerImage.UriSource = new Uri(tvdbManager.GetBannerUri(matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName));
+                bannerImage.EndInit();
             }
             else
             {
-                //TODO add a no banner found image
+                //TODO create a no image found banner
             }
-            bannerImage.EndInit();
 
+            logger.TraceMessage("GetSeriesInfo - End");
             return new SeriesWithBanner(matchedSeries, bannerImage);
         }
     }

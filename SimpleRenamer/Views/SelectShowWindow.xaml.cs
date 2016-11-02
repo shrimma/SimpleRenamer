@@ -4,6 +4,7 @@ using SimpleRenamer.Framework.Interface;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -85,12 +86,14 @@ namespace SimpleRenamer.Views
         {
             SelectButton.IsEnabled = true;
             ViewButton.IsEnabled = true;
+            ShowListBox.Visibility = Visibility.Visible;
         }
 
         private void DisableUi()
         {
             SelectButton.IsEnabled = false;
             ViewButton.IsEnabled = false;
+            ShowListBox.Visibility = Visibility.Hidden;
         }
 
         void SelectShowWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -102,21 +105,28 @@ namespace SimpleRenamer.Views
             this.Hide();
         }
 
-        public void SetView(List<ShowView> showViews, string title, string searchString, FileType fileType)
+        public async Task SearchForMatches(string title, string searchString, FileType fileType)
         {
+            //set the initial UI
+            DisableUi();
+            this.SearchTextBox.Text = searchString;
+            this.Title = title;
             currentFileType = fileType;
-            if (showViews != null && showViews.Count > 0)
+
+            //grab possible matches
+            List<ShowView> possibleMatches = await GetMatches(searchString, fileType);
+
+            //if we have matches then enable UI elements
+            if (possibleMatches != null && possibleMatches.Count > 0)
             {
-                ShowListBox.ItemsSource = showViews;
+                ShowListBox.ItemsSource = possibleMatches;
                 EnableUi();
             }
             else
             {
-                DisableUi();
+                //even if no matches we show the listbox to hide the progressspinner
+                ShowListBox.Visibility = Visibility.Visible;
             }
-
-            this.SearchTextBox.Text = searchString;
-            this.Title = title;
         }
 
         private void SelectButton_Click(object sender, RoutedEventArgs e)
@@ -124,15 +134,23 @@ namespace SimpleRenamer.Views
             ShowView current = (ShowView)ShowListBox.SelectedItem;
             if (current != null)
             {
-                MessageBoxResult r = MessageBox.Show("Are you sure?", "Confirmation", MessageBoxButton.OKCancel);
-                if (r == MessageBoxResult.OK)
-                {
-                    RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(current.Id, currentFileType));
-                    //clear the item list
-                    this.ShowListBox.ItemsSource = null;
-                    this.Hide();
-                }
+                ConfirmationFlyout.IsOpen = true;
             }
+        }
+
+        private void OkFlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.ConfirmationFlyout.IsOpen = false;
+            ShowView current = (ShowView)ShowListBox.SelectedItem;
+            RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(current.Id, currentFileType));
+            //clear the item list
+            this.ShowListBox.ItemsSource = null;
+            this.Hide();
+        }
+
+        private void CancelFlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.ConfirmationFlyout.IsOpen = false;
         }
 
         private void SkipButton_Click(object sender, RoutedEventArgs e)
@@ -161,10 +179,9 @@ namespace SimpleRenamer.Views
             }
         }
 
-        private async void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        private async Task<List<ShowView>> GetMatches(string searchText, FileType fileType)
         {
             CancellationTokenSource cts = new CancellationTokenSource();
-            string searchText = e.Parameter.ToString();
             List<ShowView> possibleMatches;
             if (currentFileType == FileType.TvShow)
             {
@@ -174,7 +191,15 @@ namespace SimpleRenamer.Views
             {
                 possibleMatches = await movieMatcher.GetPossibleMoviesForFile(searchText, cts.Token);
             }
-            SetView(possibleMatches, this.Title, searchText, currentFileType);
+
+            return possibleMatches;
+        }
+
+        private async void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            CancellationTokenSource cts = new CancellationTokenSource();
+            string searchText = e.Parameter.ToString();
+            await SearchForMatches(this.Title, searchText, currentFileType);
         }
 
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)

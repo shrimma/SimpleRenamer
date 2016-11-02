@@ -2,16 +2,13 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-        Title="Simple Renamer - Settings" Height="345" Width="675" MinHeight="345" MinWidth="675" Icon="tv.ico">
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        Title="Simple Renamer - Settings" Height="345" Width="675" MinHeight="345" MinWidth="675" Icon="..\Icons\tv.ico">
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands>
             <Button Name="SaveButton" Click="SaveButton_Click">
                 <StackPanel Orientation="Horizontal">
-                    <Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                        <Rectangle.OpacityMask>
-                            <VisualBrush Stretch="Fill" Visual="{StaticResource appbar_save}" />
-                        </Rectangle.OpacityMask>
-                    </Rectangle>
+                    <iconPacks:PackIconMaterial Kind="ContentSave" />
                 </StackPanel>
             </Button>
         </Controls:WindowCommands>
@@ -33,11 +30,16 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Controls:ToggleSwitch Grid.Row="0" Name="SubdirToggle" Margin="5,0" OnLabel="Scan Subdirectory" OffLabel="Scan Root Only" IsChecked="{Binding Path=SubDirectories}" />
-            <StackPanel Grid.Row="1" Orientation="Horizontal">
-                <Label>Watch Folder(s)</Label>
-                <Button Style="{DynamicResource SquareButtonStyle}" Name="AddFolderButton" Content="Add" HorizontalAlignment="Left" Margin="5,5,5,0" Height="20" VerticalAlignment="Top" Width="50" Click="AddFolderButton_Click"/>
-                <Button Style="{DynamicResource SquareButtonStyle}" Name="DeleteFolderButton" Content="Del" HorizontalAlignment="Left" Margin="5,5,5,0" Height="20" VerticalAlignment="Top" Width="50" Click="DeleteFolderButton_Click"/>
-            </StackPanel>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Margin="5,0,2.5,0">Watch Folder(s)</Label>
+                <Button Grid.Column="1" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="AddFolderButton" Content="ADD" HorizontalAlignment="Stretch" Margin="2.5,5,2.5,0" Height="20" VerticalAlignment="Top" Click="AddFolderButton_Click"/>
+                <Button Grid.Column="2" Style="{DynamicResource SquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="DeleteFolderButton" Content="DELETE" HorizontalAlignment="Stretch" Margin="2.5,5,5,0" Height="20" VerticalAlignment="Top" Click="DeleteFolderButton_Click"/>
+            </Grid>
             <ListBox Grid.Row="2" Name="WatchListBox" Margin="5,0,5,5" HorizontalContentAlignment="Stretch">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -50,11 +52,16 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <StackPanel Grid.Row="3" Orientation="Horizontal">
-                <Label Margin="5,0,5,0">File Extension</Label>
-                <Button Style="{DynamicResource SquareButtonStyle}" Name="AddExtensionButton" Content="Add" HorizontalAlignment="Left" Margin="5,5,5,0" Height="20" VerticalAlignment="Top" Width="50" Click="AddExtensionButton_Click"/>
-                <Button Style="{DynamicResource SquareButtonStyle}" Name="DeleteExtensionButton" Content="Del" HorizontalAlignment="Left" Margin="5,5,5,0" Height="20" VerticalAlignment="Top" Width="50" Click="DeleteExtensionButton_Click"/>
-            </StackPanel>
+            <Grid Grid.Row="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Margin="5,0,2.5,0">File Extension(s)</Label>
+                <Button Grid.Column="1" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="AddExtensionButton" Content="ADD" HorizontalAlignment="Stretch" Margin="2.5,5,2.5,0" Height="20" VerticalAlignment="Top" Click="AddExtensionButton_Click"/>
+                <Button Grid.Column="2" Style="{DynamicResource SquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="DeleteExtensionButton" Content="DELETE" HorizontalAlignment="Stretch" Margin="2.5,5,5,0" Height="20" VerticalAlignment="Top" Click="DeleteExtensionButton_Click"/>
+            </Grid>
             <ListBox Grid.Row="4" Name="ExtensionsListBox" Margin="5,5,5,5" HorizontalContentAlignment="Stretch">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -80,13 +87,9 @@
                     <ColumnDefinition Width="30" />
                 </Grid.ColumnDefinitions>
                 <TextBox Grid.Column="0" Name="DestinationTextBox" Margin="5" Text="{Binding Path=DestinationFolderTV, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <Button Grid.Column="1" Style="{DynamicResource SquareButtonStyle}" Name="BrowseDestinationButton" Click="BrowseDestinationButton_Click">
+                <Button Grid.Column="1" Margin="0,0,5,0" Style="{DynamicResource SquareButtonStyle}" Name="BrowseDestinationButton" Click="BrowseDestinationButton_Click">
                     <StackPanel Orientation="Horizontal">
-                        <Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                            <Rectangle.OpacityMask>
-                                <VisualBrush Stretch="Fill" Visual="{StaticResource appbar_folder_ellipsis}" />
-                            </Rectangle.OpacityMask>
-                        </Rectangle>
+                        <iconPacks:PackIconMaterial Kind="Folder" />
                     </StackPanel>
                 </Button>
             </Grid>
@@ -97,17 +100,13 @@
                     <ColumnDefinition Width="30" />
                 </Grid.ColumnDefinitions>
                 <TextBox Grid.Column="0" Name="DestinationMovieTextBox" Margin="5" Text="{Binding Path=DestinationFolderMovie, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <Button Grid.Column="1" Style="{DynamicResource SquareButtonStyle}" Name="BrowseDestinationMovieButton" Click="BrowseDestinationMovieButton_Click">
+                <Button Grid.Column="1" Margin="0,0,5,0" Style="{DynamicResource SquareButtonStyle}" Name="BrowseDestinationMovieButton" Click="BrowseDestinationMovieButton_Click">
                     <StackPanel Orientation="Horizontal">
-                        <Rectangle Width="20" Height="20" Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                            <Rectangle.OpacityMask>
-                                <VisualBrush Stretch="Fill" Visual="{StaticResource appbar_folder_ellipsis}" />
-                            </Rectangle.OpacityMask>
-                        </Rectangle>
+                        <iconPacks:PackIconMaterial Kind="Folder" />
                     </StackPanel>
                 </Button>
             </Grid>
-            <Button Width="Auto" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Style="{DynamicResource SquareButtonStyle}" Name="RegexExpressionButton" Content="Regex Expressions" Margin="5" VerticalAlignment="Top" Click="RegexExpressionButton_Click"/>
+            <Button Width="Auto" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="RegexExpressionButton" Content="REGEX EXPRESSIONS" Margin="5" VerticalAlignment="Top" Click="RegexExpressionButton_Click"/>
         </StackPanel>
     </Grid>
 </Controls:MetroWindow>
