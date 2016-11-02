@@ -1,6 +1,8 @@
 ﻿using SimpleRenamer.Framework.Interface;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace SimpleRenamer.Framework
 {
@@ -26,6 +28,11 @@ namespace SimpleRenamer.Framework
                 answer = false;
             }
             return answer;
+        }
+
+        public bool AreListsEqual<T>(List<T> listOne, List<T> listTwo)
+        {
+            return (listOne.Count == listTwo.Count) && !listOne.Except(listTwo).Any();
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace SimpleRenamer.Framework.Interface
+﻿using System.Collections.Generic;
+
+namespace SimpleRenamer.Framework.Interface
 {
     public interface IHelper
     {
@@ -8,5 +10,7 @@
         /// <param name="fExt">The file extension to process</param>
         /// <returns>True if a valid file extension</returns>
         bool IsFileExtensionValid(string fExt);
+
+        bool AreListsEqual<T>(List<T> listOne, List<T> listTwo);
     }
 }
