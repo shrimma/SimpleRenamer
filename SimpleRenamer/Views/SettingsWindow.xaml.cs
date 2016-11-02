@@ -15,7 +15,7 @@ namespace SimpleRenamer.Views
     /// </summary>
     public partial class SettingsWindow
     {
-        private Settings currentSettings;
+        private Settings originalSettings;
         private ObservableCollection<string> watchFolders;
         private ObservableCollection<string> validExtensions;
         private IConfigurationManager configurationManager;
@@ -53,41 +53,157 @@ namespace SimpleRenamer.Views
             //create new event handler for extensions window
             addExtensionsWindow.RaiseCustomEvent += new EventHandler<ExtensionEventArgs>(ExtensionWindowClosedEvent);
 
-            //grab the current settings from the factory and populate our UI
-            currentSettings = configurationManager.Settings;
-            this.DataContext = currentSettings;
-            watchFolders = new ObservableCollection<string>(currentSettings.WatchFolders);
-            WatchListBox.ItemsSource = watchFolders;
-            validExtensions = new ObservableCollection<string>(currentSettings.ValidExtensions);
-            ExtensionsListBox.ItemsSource = validExtensions;
+            //grab settings and display
+            SetupView();
 
             this.Closing += Window_Closing;
         }
 
+
+        private void SetupView()
+        {
+            //grab the current settings from the factory and populate our UI            
+            originalSettings = new Settings();
+            originalSettings.CopyFiles = configurationManager.Settings.CopyFiles;
+            originalSettings.DestinationFolderMovie = configurationManager.Settings.DestinationFolderMovie;
+            originalSettings.DestinationFolderTV = configurationManager.Settings.DestinationFolderTV;
+            originalSettings.NewFileNameFormat = configurationManager.Settings.NewFileNameFormat;
+            originalSettings.RenameFiles = configurationManager.Settings.RenameFiles;
+            originalSettings.SubDirectories = configurationManager.Settings.SubDirectories;
+            originalSettings.ValidExtensions = configurationManager.Settings.ValidExtensions;
+            originalSettings.WatchFolders = configurationManager.Settings.WatchFolders;
+
+
+            this.DataContext = configurationManager.Settings;
+            watchFolders = new ObservableCollection<string>(configurationManager.Settings.WatchFolders);
+            WatchListBox.ItemsSource = watchFolders;
+            validExtensions = new ObservableCollection<string>(configurationManager.Settings.ValidExtensions);
+            ExtensionsListBox.ItemsSource = validExtensions;
+        }
+
         void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            currentSettings.ValidExtensions = new List<string>(validExtensions);
-            currentSettings.WatchFolders = new List<string>(watchFolders);
-
-            if (configurationManager.Settings != currentSettings)
-            {
-                //TODO popup
-            }
-
+            //stop the window actually closing
             e.Cancel = true;
+
+            //check if settings have been changed without saving
+            var currentExtensions = new List<string>(validExtensions);
+            if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, currentExtensions) == false)
+            {
+                configurationManager.Settings.ValidExtensions = currentExtensions;
+            }
+            var currentWatchFolders = new List<string>(watchFolders);
+            if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, currentWatchFolders) == false)
+            {
+                configurationManager.Settings.WatchFolders = currentWatchFolders;
+            }
+            if (HaveSettingsChanged() == true)
+            {
+                //if settings have been changed and not saved then prompt user
+                ConfirmationFlyout.IsOpen = true;
+            }
+            else
+            {
+                SetupView();
+                this.Hide();
+            }
+        }
+
+        private bool HaveSettingsChanged()
+        {
+            if (configurationManager.Settings.CopyFiles != originalSettings.CopyFiles)
+            {
+                return true;
+            }
+            if (configurationManager.Settings.DestinationFolderMovie != originalSettings.DestinationFolderMovie)
+            {
+                return true;
+            }
+            if (configurationManager.Settings.DestinationFolderTV != originalSettings.DestinationFolderTV)
+            {
+                return true;
+            }
+            if (configurationManager.Settings.NewFileNameFormat != originalSettings.NewFileNameFormat)
+            {
+                return true;
+            }
+            if (configurationManager.Settings.RenameFiles != originalSettings.RenameFiles)
+            {
+                return true;
+            }
+            if (configurationManager.Settings.SubDirectories != originalSettings.SubDirectories)
+            {
+                return true;
+            }
+            if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, originalSettings.ValidExtensions) == false)
+            {
+                return true;
+            }
+            if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, originalSettings.WatchFolders) == false)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private void OkFlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            ConfirmationFlyout.IsOpen = false;
+            if (configurationManager.Settings.CopyFiles != originalSettings.CopyFiles)
+            {
+                configurationManager.Settings.CopyFiles = originalSettings.CopyFiles;
+            }
+            if (configurationManager.Settings.DestinationFolderMovie != originalSettings.DestinationFolderMovie)
+            {
+                configurationManager.Settings.DestinationFolderMovie = originalSettings.DestinationFolderMovie;
+            }
+            if (configurationManager.Settings.DestinationFolderTV != originalSettings.DestinationFolderTV)
+            {
+                configurationManager.Settings.DestinationFolderTV = originalSettings.DestinationFolderTV;
+            }
+            if (configurationManager.Settings.NewFileNameFormat != originalSettings.NewFileNameFormat)
+            {
+                configurationManager.Settings.NewFileNameFormat = originalSettings.NewFileNameFormat;
+            }
+            if (configurationManager.Settings.RenameFiles != originalSettings.RenameFiles)
+            {
+                configurationManager.Settings.RenameFiles = originalSettings.RenameFiles;
+            }
+            if (configurationManager.Settings.SubDirectories != originalSettings.SubDirectories)
+            {
+                configurationManager.Settings.SubDirectories = originalSettings.SubDirectories;
+            }
+            if (configurationManager.Settings.ValidExtensions != originalSettings.ValidExtensions)
+            {
+                configurationManager.Settings.ValidExtensions = originalSettings.ValidExtensions;
+            }
+            if (configurationManager.Settings.WatchFolders != originalSettings.WatchFolders)
+            {
+                configurationManager.Settings.WatchFolders = originalSettings.WatchFolders;
+            }
+            SetupView();
             this.Hide();
+        }
+
+        private void CancelFlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            ConfirmationFlyout.IsOpen = false;
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            currentSettings.ValidExtensions = new List<string>(validExtensions);
-            currentSettings.WatchFolders = new List<string>(watchFolders);
-            configurationManager.Settings = currentSettings;
-            this.Hide();
-        }
-
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
+            //check if settings have been changed without saving
+            var currentExtensions = new List<string>(validExtensions);
+            if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, currentExtensions) == false)
+            {
+                configurationManager.Settings.ValidExtensions = currentExtensions;
+            }
+            var currentWatchFolders = new List<string>(watchFolders);
+            if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, currentWatchFolders) == false)
+            {
+                configurationManager.Settings.WatchFolders = currentWatchFolders;
+            }
+            SetupView();
             this.Hide();
         }
 
@@ -127,7 +243,7 @@ namespace SimpleRenamer.Views
             DialogResult result = dialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                currentSettings.DestinationFolderTV = Path.GetFullPath(dialog.SelectedPath);
+                configurationManager.Settings.DestinationFolderTV = Path.GetFullPath(dialog.SelectedPath);
             }
         }
 
@@ -137,7 +253,7 @@ namespace SimpleRenamer.Views
             DialogResult result = dialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                currentSettings.DestinationFolderMovie = Path.GetFullPath(dialog.SelectedPath);
+                configurationManager.Settings.DestinationFolderMovie = Path.GetFullPath(dialog.SelectedPath);
             }
         }
 

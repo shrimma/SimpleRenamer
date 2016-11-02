@@ -102,12 +102,28 @@ namespace SimpleRenamer
                 performActionsOnShows.RaiseFilePreProcessedEvent += PerformActionsOnShows_RaiseFilePreProcessedEvent;
                 performActionsOnShows.RaiseProgressEvent += ProgressTextEvent;
                 scanForShows.RaiseProgressEvent += ProgressTextEvent;
-
+                ScanButton.IsEnabled = IsScanEnabled();
                 this.Closing += MainWindow_Closing;
             }
             catch (Exception ex)
             {
                 logger.TraceException(ex);
+            }
+        }
+
+        private bool IsScanEnabled()
+        {
+            if (string.IsNullOrEmpty(settings.DestinationFolderMovie) && string.IsNullOrEmpty(settings.DestinationFolderTV))
+            {
+                return false;
+            }
+            else if (settings.WatchFolders.Count < 1)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
@@ -174,11 +190,7 @@ namespace SimpleRenamer
             try
             {
                 logger.TraceMessage("Closing");
-                if (ScanButton.IsEnabled == false)
-                {
-                    e.Cancel = true;
-                }
-                else if (ActionButton.IsEnabled == false)
+                if (CancelButton.Visibility == Visibility.Visible)
                 {
                     e.Cancel = true;
                 }
@@ -215,7 +227,7 @@ namespace SimpleRenamer
         private void EnableUi()
         {
             //enable all action buttons
-            ScanButton.IsEnabled = true;
+            ScanButton.IsEnabled = IsScanEnabled();
             SettingsButton.IsEnabled = true;
             ShowsListBox.IsEnabled = true;
             //disable the cancel button
@@ -292,6 +304,8 @@ namespace SimpleRenamer
             {
                 //show the settings window
                 settingsWindow.ShowDialog();
+                settings = configurationManager.Settings;
+                ScanButton.IsEnabled = IsScanEnabled();
             }
             catch (Exception ex)
             {
@@ -330,7 +344,7 @@ namespace SimpleRenamer
             }
         }
 
-        private async void MatchShowButton_Click(object sender, RoutedEventArgs e)
+        private void MatchShowButton_Click(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
             try
