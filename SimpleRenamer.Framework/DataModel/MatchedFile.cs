@@ -2,7 +2,7 @@
 
 namespace SimpleRenamer.Framework.DataModel
 {
-    public class TVEpisode : INotifyPropertyChanged
+    public class MatchedFile : INotifyPropertyChanged
     {
         #region INotifyPropertyChanged implementation
         public event PropertyChangedEventHandler PropertyChanged;
@@ -40,6 +40,20 @@ namespace SimpleRenamer.Framework.DataModel
                 {
                     tvdbShowId = value;
                     Notify("TVDBShowId");
+                }
+            }
+        }
+
+        private int tmdbShowId;
+        public int TMDBShowId
+        {
+            get { return tmdbShowId; }
+            set
+            {
+                if (value != tmdbShowId)
+                {
+                    tmdbShowId = value;
+                    Notify("TMDBShowId");
                 }
             }
         }
@@ -170,23 +184,61 @@ namespace SimpleRenamer.Framework.DataModel
             }
         }
 
-        public TVEpisode(string filePath, string showName, string season, string episode)
+        private FileType fileType;
+        public FileType FileType
+        {
+            get { return fileType; }
+            set
+            {
+                if (value != fileType)
+                {
+                    fileType = value;
+                    Notify("FileType");
+                }
+            }
+        }
+
+        private int year;
+        public int Year
+        {
+            get { return year; }
+            set
+            {
+                if (value != year)
+                {
+                    year = value;
+                    Notify("Year");
+                }
+            }
+        }
+
+        public MatchedFile(string filePath)
+        {
+            FilePath = filePath;
+            ShowName = filePath;
+            FileType = FileType.Unknown;
+            SkippedExactSelection = true;
+            ActionThis = false;
+        }
+
+        public MatchedFile(string filePath, string showName, string season, string episode)
         {
             FilePath = filePath;
             ShowName = showName;
             Season = season;
             Episode = episode;
+            FileType = FileType.TvShow;
             SkippedExactSelection = false;
             ActionThis = true;
         }
 
-        public TVEpisode(string filePath, string showName, string season, string episode, string episodeName)
+        public MatchedFile(string filePath, string movieTitle, int year)
         {
             FilePath = filePath;
-            ShowName = showName;
-            Season = season;
-            Episode = episode;
-            EpisodeName = episodeName;
+            ShowName = movieTitle;
+            Year = year;
+            Season = year.ToString();
+            FileType = FileType.Movie;
             SkippedExactSelection = false;
             ActionThis = true;
         }

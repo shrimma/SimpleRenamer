@@ -10,7 +10,7 @@ namespace SimpleRenamer.Views
     /// <summary>
     /// Interaction logic for RegexExpressions.xaml
     /// </summary>
-    public partial class RegexExpressionsWindow : Window
+    public partial class RegexExpressionsWindow
     {
         public ObservableCollection<RegexExpression> regExp;
         private IConfigurationManager configurationManager;
@@ -25,11 +25,18 @@ namespace SimpleRenamer.Views
             InitializeComponent();
             regExp = new ObservableCollection<RegexExpression>(configurationManager.RegexExpressions.RegexExpressions);
             ExpressionsListBox.ItemsSource = regExp;
+            this.Closing += Window_Closing;
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
+            this.Hide();
         }
 
         private void AddExpressionButton_Click(object sender, RoutedEventArgs e)
         {
-            regExp.Add(new RegexExpression("", false));
+            regExp.Add(new RegexExpression("", false, true));
         }
 
         private void DeleteExpressionButton_Click(object sender, RoutedEventArgs e)

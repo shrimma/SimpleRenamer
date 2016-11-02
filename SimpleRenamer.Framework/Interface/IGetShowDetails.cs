@@ -10,6 +10,6 @@ namespace SimpleRenamer.Framework.Interface
         /// </summary>
         /// <param name="showId">The TVDB show ID to grab banner for</param>
         /// <returns>Populated SeriesWithBanner object</returns>
-        Task<SeriesWithBanner> GetShowWithBanner(string showId);
+        Task<SeriesWithBanner> GetShowWithBannerAsync(string showId);
     }
 }

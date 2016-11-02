@@ -1,0 +1,70 @@
+﻿<Controls:MetroWindow x:Class="SimpleRenamer.Views.MovieDetailsWindow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+             Title="Simple Renamer - Movie - Details" Height="523" Width="800" MinHeight="523" MinWidth="800" Icon="tv.ico">
+    <Window.Resources>
+        <Style TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="4*" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="4*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="322" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Image HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Grid.RowSpan="6" Name="BannerImage" Height="513" Width="322" Margin="5" />
+        <TextBlock Grid.Row="0" Grid.Column="1" Name="MovieTagLineTextBox" Margin="5" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True"/>
+        <TextBlock Grid.Row="1" Grid.Column="1"  Name="MovieDescriptionTextBox" Margin="5,0,5,0" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True" />
+        <Label Grid.Row="2" Grid.Column="1" Margin="5,0,5,0" Height="25">Cast</Label>
+        <ListView Grid.Row="3" Grid.Column="1" Margin="5" Name="ActorsListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Character" Width="Auto" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Character}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Name" Width="Auto" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Label Grid.Row="4" Grid.Column="1" Margin="5,0,5,0" Height="25">Crew</Label>
+        <ListView Grid.Row="5" Grid.Column="1" Margin="5" Name="CrewListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Job" Width="Auto">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                                <TextBlock Text="{Binding Job}" TextAlignment="Right" />
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Name" Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</Controls:MetroWindow>

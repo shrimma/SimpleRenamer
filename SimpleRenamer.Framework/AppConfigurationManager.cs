@@ -20,7 +20,7 @@ namespace SimpleRenamer.Framework
             {
                 if (ignoredFiles == null)
                 {
-                    //READ THE FILE
+                    ignoredFiles = ReadIgnoreList();
                 }
                 return ignoredFiles;
             }
@@ -154,9 +154,14 @@ namespace SimpleRenamer.Framework
             mySettings.RenameFiles = bool.Parse(configuration.AppSettings.Settings["RenameFiles"].Value);
             mySettings.CopyFiles = bool.Parse(configuration.AppSettings.Settings["CopyFiles"].Value);
             mySettings.NewFileNameFormat = configuration.AppSettings.Settings["NewFileNameFormat"].Value;
-            mySettings.ValidExtensions = new List<string>(configuration.AppSettings.Settings["ValidExtensions"].Value.Split(new char[] { ';' }));
-            mySettings.WatchFolders = new List<string>(configuration.AppSettings.Settings["WatchFolders"].Value.Split(new char[] { ';' }));
-            mySettings.DestinationFolder = configuration.AppSettings.Settings["DestinationFolder"].Value;
+            List<string> extensions = new List<string>(configuration.AppSettings.Settings["ValidExtensions"].Value.Split(';'));
+            extensions.Remove("");
+            mySettings.ValidExtensions = extensions;
+            List<string> folders = new List<string>(configuration.AppSettings.Settings["WatchFolders"].Value.Split(';'));
+            folders.Remove("");
+            mySettings.WatchFolders = folders;
+            mySettings.DestinationFolderTV = configuration.AppSettings.Settings["DestinationFolderTV"].Value;
+            mySettings.DestinationFolderMovie = configuration.AppSettings.Settings["DestinationFolderMovie"].Value;
 
             return mySettings;
         }
@@ -245,7 +250,8 @@ namespace SimpleRenamer.Framework
                 watchFolders += folder + ";";
             }
             configuration.AppSettings.Settings["WatchFolders"].Value = watchFolders.TrimEnd(';');
-            configuration.AppSettings.Settings["DestinationFolder"].Value = settings.DestinationFolder;
+            configuration.AppSettings.Settings["DestinationFolderTV"].Value = settings.DestinationFolderTV;
+            configuration.AppSettings.Settings["DestinationFolderMovie"].Value = settings.DestinationFolderMovie;
             configuration.Save(ConfigurationSaveMode.Modified);
         }
 
@@ -254,6 +260,38 @@ namespace SimpleRenamer.Framework
             get
             {
                 return "820147144A5BB54E";
+            }
+        }
+
+        public string TmDbApiKey
+        {
+            get
+            {
+                return "e9b955f1140da97e65df7e1bce1780bc";
+            }
+        }
+
+        public string OneTrueErrorUrl
+        {
+            get
+            {
+                return "https://jsote.uksouth.cloudapp.azure.com/OneTrueError/";
+            }
+        }
+
+        public string OneTrueErrorApplicationKey
+        {
+            get
+            {
+                return "d574b9a210704b1ba1d75bb70442e173";
+            }
+        }
+
+        public string OneTrueErrorSharedSecret
+        {
+            get
+            {
+                return "696c4b84e8d04a8c99cbc17570b1cc05";
             }
         }
     }

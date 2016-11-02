@@ -1,4 +1,5 @@
 ﻿using SimpleRenamer.Framework.DataModel;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework.Interface
@@ -11,7 +12,7 @@ namespace SimpleRenamer.Framework.Interface
         /// <param name="episode">The file to move</param>
         /// <param name="destinationFilePath">The destination path for the file</param>
         /// <returns></returns>
-        Task<bool> MoveFileAsync(TVEpisode episode, string destinationFilePath);
+        Task<bool> MoveFileAsync(MatchedFile episode, string destinationFilePath);
 
         /// <summary>
         /// Create the series/season folder structure and downloads banners if configured
@@ -20,6 +21,6 @@ namespace SimpleRenamer.Framework.Interface
         /// <param name="mapping">The mapping of the file to TVDB</param>
         /// <param name="downloadBanner">Whether to download a banner</param>
         /// <returns></returns>
-        Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(TVEpisode episode, Mapping mapping, bool downloadBanner);
+        Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner, CancellationToken ct);
     }
 }

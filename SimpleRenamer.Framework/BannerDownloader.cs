@@ -1,51 +1,43 @@
 ﻿using SimpleRenamer.Framework.Interface;
 using System;
 using System.IO;
+using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
-using TheTVDBSharp;
 
 namespace SimpleRenamer.Framework
 {
     public class BannerDownloader : IBannerDownloader
     {
-        private string apiKey;
         private ILogger logger;
-        private TheTvdbManager tvdbManager;
+        private ITvdbManager tvdbManager;
 
-        public BannerDownloader(IConfigurationManager configurationManager, ILogger log)
+        public BannerDownloader(ILogger log, ITvdbManager tvdb)
         {
-            if (configurationManager == null)
-            {
-                throw new ArgumentNullException(nameof(configurationManager));
-            }
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
             }
-            //grab our API key and init a new tvdb manager
-            apiKey = configurationManager.TvDbApiKey;
-            tvdbManager = new TheTvdbManager(apiKey);
+            if (tvdb == null)
+            {
+                throw new ArgumentNullException(nameof(tvdb));
+            }
 
-            //init our logger
             logger = log;
+            tvdbManager = tvdb;
         }
 
-        /// <inheritdoc/>        
-        public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder)
+        /// <inheritdoc/>
+        public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder, CancellationToken ct)
         {
             logger.TraceMessage("SaveBannerAsync - Start");
             string fullBannerPath = Path.Combine(destinationFolder, "Folder.jpg");
             if (!File.Exists(fullBannerPath))
             {
-                using (Stream stream = await tvdbManager.GetBanner(tvdbBannerPath))
+
+                using (WebClient client = new WebClient())
                 {
-                    using (FileStream fileStream = File.Create(fullBannerPath, (int)stream.Length))
-                    {
-                        byte[] bytesInStream = new byte[stream.Length];
-                        stream.Read(bytesInStream, 0, bytesInStream.Length);
-                        // Use write method to write to the file specified above
-                        await fileStream.WriteAsync(bytesInStream, 0, bytesInStream.Length);
-                    }
+                    client.DownloadFileAsync(new Uri(tvdbManager.GetBannerUri(tvdbBannerPath)), fullBannerPath);
                 }
             }
 

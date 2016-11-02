@@ -1,16 +1,16 @@
-﻿using System.Windows.Media.Imaging;
-using TheTVDBSharp.Models;
+﻿using SimpleRenamer.Framework.TvdbModel;
+using System.Windows.Media.Imaging;
 
 namespace SimpleRenamer.Framework.DataModel
 {
     public class SeriesWithBanner
     {
-        public SeriesWithBanner(Series series, BitmapImage banner)
+        public SeriesWithBanner(CompleteSeries series, BitmapImage banner)
         {
             Series = series;
             BannerImage = banner;
         }
-        public Series Series { get; set; }
+        public CompleteSeries Series { get; set; }
         public BitmapImage BannerImage { get; set; }
     }
 }

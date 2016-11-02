@@ -1,6 +1,8 @@
 ﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -11,6 +13,7 @@ namespace SimpleRenamer.Framework
     {
         private RegexFile regexExpressions;
         private ILogger logger;
+        public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
         public FileMatcher(ILogger log, IConfigurationManager configManager)
         {
@@ -22,12 +25,46 @@ namespace SimpleRenamer.Framework
             regexExpressions = configManager.RegexExpressions;
         }
 
-        public async Task<TVEpisode> SearchFileNameAsync(string fileName)
+        public async Task<List<MatchedFile>> SearchFilesAsync(List<string> files)
+        {
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Parsing file names for show or movie details"));
+            object lockList = new object();
+            List<MatchedFile> episodes = new List<MatchedFile>();
+            Parallel.ForEach(files, (file) =>
+            {
+                MatchedFile episode = SearchFileNameAsync(file).GetAwaiter().GetResult();
+                if (episode != null)
+                {
+                    logger.TraceMessage(string.Format("Matched {0}", episode.FilePath));
+                    lock (lockList)
+                    {
+                        episodes.Add(episode);
+                    }
+                }
+                else
+                {
+                    logger.TraceMessage(string.Format("Couldn't find a match!"));
+                    episode = new MatchedFile(file);
+                    lock (lockList)
+                    {
+                        episodes.Add(episode);
+                    }
+                }
+            });
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Grabbed show or movie details from file names"));
+
+            return episodes;
+        }
+
+        private async Task<MatchedFile> SearchFileNameAsync(string fileName)
         {
             logger.TraceMessage("SearchFileNameAsync - Start");
             string showname = null;
             string season = null;
             string episode = null;
+            string movieTitle = null;
+            string yearString = null;
+            int year = 0;
 
             try
             {
@@ -38,14 +75,32 @@ namespace SimpleRenamer.Framework
                         //process the file name
                         Regex regexStandard = new Regex(exp.Expression, RegexOptions.IgnoreCase);
                         Match tvshow = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
-                        showname = GetTrueShowName(tvshow.Groups["series_name"].Value);
-                        season = tvshow.Groups["season_num"].Value;
-                        episode = tvshow.Groups["ep_num"].Value;
 
-                        if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
+                        //match for tv show regexp
+                        if (exp.IsForTvShow)
                         {
-                            logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
-                            return new TVEpisode(fileName, showname, season, episode);
+                            showname = GetTrueShowName(tvshow.Groups["series_name"].Value);
+                            season = tvshow.Groups["season_num"].Value;
+                            episode = tvshow.Groups["ep_num"].Value;
+
+                            if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
+                            {
+                                logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
+                                return new MatchedFile(fileName, showname, season, episode);
+                            }
+                        }
+                        //else match for movie regexp
+                        else
+                        {
+                            movieTitle = GetTrueShowName(tvshow.Groups["movie_title"].Value);
+                            yearString = tvshow.Groups["movie_year"].Value;
+                            int.TryParse(yearString, out year);
+
+                            if (!string.IsNullOrEmpty(movieTitle))
+                            {
+                                logger.TraceMessage("SearchFileNameAsync - Found movietitle, and year in file name");
+                                return new MatchedFile(fileName, movieTitle, year);
+                            }
                         }
                     }
                 }

@@ -13,7 +13,7 @@ namespace SimpleRenamer.Views
     /// <summary>
     /// Interaction logic for SettingsWindow.xaml
     /// </summary>
-    public partial class SettingsWindow : Window
+    public partial class SettingsWindow
     {
         private Settings currentSettings;
         private ObservableCollection<string> watchFolders;
@@ -60,6 +60,22 @@ namespace SimpleRenamer.Views
             WatchListBox.ItemsSource = watchFolders;
             validExtensions = new ObservableCollection<string>(currentSettings.ValidExtensions);
             ExtensionsListBox.ItemsSource = validExtensions;
+
+            this.Closing += Window_Closing;
+        }
+
+        void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            currentSettings.ValidExtensions = new List<string>(validExtensions);
+            currentSettings.WatchFolders = new List<string>(watchFolders);
+
+            if (configurationManager.Settings != currentSettings)
+            {
+                //TODO popup
+            }
+
+            e.Cancel = true;
+            this.Hide();
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -111,7 +127,17 @@ namespace SimpleRenamer.Views
             DialogResult result = dialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                currentSettings.DestinationFolder = Path.GetFullPath(dialog.SelectedPath);
+                currentSettings.DestinationFolderTV = Path.GetFullPath(dialog.SelectedPath);
+            }
+        }
+
+        private void BrowseDestinationMovieButton_Click(object sender, RoutedEventArgs e)
+        {
+            FolderBrowserDialog dialog = new FolderBrowserDialog();
+            DialogResult result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                currentSettings.DestinationFolderMovie = Path.GetFullPath(dialog.SelectedPath);
             }
         }
 

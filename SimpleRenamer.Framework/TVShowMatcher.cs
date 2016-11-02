@@ -1,29 +1,35 @@
 ﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
+using SimpleRenamer.Framework.TvdbModel;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
-using TheTVDBSharp;
-using TheTVDBSharp.Models;
 
 namespace SimpleRenamer.Framework
 {
     public class TVShowMatcher : ITVShowMatcher
     {
-        private string apiKey;
         private ILogger logger;
         private Settings settings;
-        private TheTvdbManager tvdbManager;
+        private ITvdbManager tvdbManager;
         private IConfigurationManager configurationManager;
+        public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public TVShowMatcher(IConfigurationManager configManager, ILogger log)
+        public TVShowMatcher(IConfigurationManager configManager, ITvdbManager tvdb, ILogger log)
         {
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
+            }
+            if (tvdb == null)
+            {
+                throw new ArgumentNullException(nameof(tvdb));
             }
             if (log == null)
             {
@@ -31,8 +37,7 @@ namespace SimpleRenamer.Framework
             }
 
             configurationManager = configManager;
-            apiKey = configurationManager.TvDbApiKey;
-            tvdbManager = new TheTvdbManager(apiKey);
+            tvdbManager = tvdb;
             logger = log;
             settings = configurationManager.Settings;
         }
@@ -41,18 +46,18 @@ namespace SimpleRenamer.Framework
         /// Scrape the TVDB and use the results for a better file name
         /// </summary>
         /// <param name="episode"></param>
-        /// <param name="settings"></param>
         /// <returns></returns>
-        public async Task<TVEpisodeScrape> ScrapeDetailsAsync(TVEpisode episode)
+        public async Task<TVEpisodeScrape> ScrapeDetailsAsync(MatchedFile episode, CancellationToken ct)
         {
             logger.TraceMessage("ScrapeDetailsAsync - Start");
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {episode.FilePath}"));
             //read the mapping file and try and find any already selected matches
             episode = FixMismatchTitles(episode);
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
             //scrape the episode name - if we haven't already got the show ID then search for it
             if (string.IsNullOrEmpty(episode.TVDBShowId))
             {
-                episodeScrape = await ScrapeShowAsync(episode);
+                episodeScrape = await ScrapeShowAsync(episode, ct);
             }
             else
             {
@@ -70,9 +75,8 @@ namespace SimpleRenamer.Framework
         /// If user has selected a specific show in the past then lets find and automatically use this
         /// </summary>
         /// <param name="episode"></param>
-        /// <param name="settings"></param>
         /// <returns></returns>
-        private TVEpisode FixMismatchTitles(TVEpisode episode)
+        private MatchedFile FixMismatchTitles(MatchedFile episode)
         {
             ShowNameMapping showNameMapping = configurationManager.ShowNameMappings;
             logger.TraceMessage("FixMismatchTitles - Start");
@@ -103,17 +107,15 @@ namespace SimpleRenamer.Framework
         /// Scrape the show details from the given showname, season and episode number
         /// </summary>
         /// <param name="episode">The episode to scrape</param>
-        /// <param name="settings">Our current settings</param>
         /// <returns></returns>
-        private async Task<TVEpisodeScrape> ScrapeShowAsync(TVEpisode episode)
+        private async Task<TVEpisodeScrape> ScrapeShowAsync(MatchedFile episode, CancellationToken ct)
         {
             logger.TraceMessage("ScrapeShowAsync - Start");
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
-            var series = await tvdbManager.SearchSeries(episode.ShowName, Language.English);
-            var seriesList = series.GetEnumerator();
+            var series = await tvdbManager.SearchSeriesByNameAsync(episode.ShowName);
             string seriesId = string.Empty;
-            //IF we have more than 1 result then popup the selection form so user can choose the exact match
-            if (series.Count > 1)
+            //IF we have no results or more than 1 result then flag the file to be manually matched
+            if (series == null || series.Count > 1)
             {
                 episode.ActionThis = false;
                 episode.SkippedExactSelection = true;
@@ -121,87 +123,76 @@ namespace SimpleRenamer.Framework
             }
             else if (series.Count == 1)
             {
-                //if theres only one match then it is easy
-                seriesList.MoveNext();
-                seriesId = seriesList.Current.Id.ToString();
-                //if seriesID is populated then grab the episode name (it's possible to be null if user skipped the selection
-                if (!string.IsNullOrEmpty(seriesId))
-                {
-                    episodeScrape = await ScrapeSpecificShow(episode, seriesId, true);
-                }
-                else
-                {
-                    episode.ActionThis = false;
-                    episode.SkippedExactSelection = true;
-                    episodeScrape.tvep = episode;
-                }
+                //if theres only one match then scape the specific show
+                seriesId = series[0].Id.ToString();
+                episodeScrape = await ScrapeSpecificShow(episode, seriesId, true);
             }
 
             logger.TraceMessage("ScrapeShowAsync - End");
             return episodeScrape;
         }
 
-        private async Task<TVEpisodeScrape> ScrapeSpecificShow(TVEpisode episode, string seriesId, bool newMatch)
+        private async Task<TVEpisodeScrape> ScrapeSpecificShow(MatchedFile episode, string seriesId, bool newMatch)
         {
             logger.TraceMessage("ScrapeSpecificShow - Start");
             uint season = 0;
             uint.TryParse(episode.Season, out season);
             int episodeNumber = 0;
             int.TryParse(episode.Episode, out episodeNumber);
-            uint serId = 0;
-            uint.TryParse(seriesId, out serId);
-            Series matchedSeries = await tvdbManager.GetSeries(serId, Language.English);
+            CompleteSeries matchedSeries = await tvdbManager.GetSeriesByIdAsync(seriesId);
             episode.TVDBShowId = seriesId;
-            episode.ShowName = matchedSeries.Title;
-            episode.EpisodeName = matchedSeries.Episodes.Where(s => s.SeasonNumber.Value == season && s.Number == episodeNumber).FirstOrDefault().Title;
-            List<SeasonBanner> seasonBanners = matchedSeries.Banners.OfType<SeasonBanner>().Where(s => s.Season.Value == season && s.IsWide == false && s.Language == Language.English).ToList();
-            List<PosterBanner> seriesBanners = matchedSeries.Banners.OfType<PosterBanner>().Where(s => s.Language == Language.English).ToList();
+            episode.ShowName = matchedSeries.Series.SeriesName;
+            episode.EpisodeName = matchedSeries.Episodes.Where(s => s.AiredSeason.Value == season && s.AiredEpisodeNumber == episodeNumber).FirstOrDefault().EpisodeName;
+            List<SeriesImageQueryResult> seasonBanners = matchedSeries.SeasonPosters.Where(s => s.SubKey.Equals(episode.Season)).ToList();
             if (seasonBanners != null && seasonBanners.Count > 0)
             {
-                episode.SeasonImage = seasonBanners.OrderByDescending(s => s.Rating).FirstOrDefault().RemotePath;
+                episode.SeasonImage = seasonBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName;
             }
-            if (seriesBanners != null && seriesBanners.Count > 0)
+            if (matchedSeries.Posters != null && matchedSeries.Posters.Count > 0)
             {
-                episode.ShowImage = seriesBanners.OrderByDescending(s => s.Rating).FirstOrDefault().RemotePath;
+                episode.ShowImage = matchedSeries.Posters.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName;
             }
 
             logger.TraceMessage("ScrapeSpecificShow - End");
             return new TVEpisodeScrape(episode, matchedSeries);
         }
 
-        public async Task<List<ShowView>> GetPossibleShowsForEpisode(TVEpisode episode)
+        public async Task<List<ShowView>> GetPossibleShowsForEpisode(string showName, CancellationToken ct)
         {
             logger.TraceMessage("GetPossibleShowsForEpisode - Start");
-            uint season = 0;
-            uint.TryParse(episode.Season, out season);
-            int episodeNumber = 0;
-            int.TryParse(episode.Episode, out episodeNumber);
-
-            var series = await tvdbManager.SearchSeries(episode.ShowName, Language.English);
-
+            var series = await tvdbManager.SearchSeriesByNameAsync(showName);
+            DateTime dt = new DateTime();
+            string airedDate;
             List<ShowView> shows = new List<ShowView>();
-            foreach (var s in series)
+            if (series != null)
             {
-                string desc = string.Empty;
-                if (!string.IsNullOrEmpty(s.Description))
+                foreach (SeriesSearchData s in series)
                 {
-                    if (s.Description.Length > 50)
+                    string desc = string.Empty;
+                    if (!string.IsNullOrEmpty(s.Overview))
                     {
-                        desc = string.Format("{0}...", s.Description.Substring(0, 50));
+                        if (s.Overview.Length > 50)
+                        {
+                            desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                        }
+                        else
+                        {
+                            desc = s.Overview;
+                        }
                     }
-                    else
-                    {
-                        desc = s.Description;
-                    }
+
+                    bool parsed = DateTime.TryParseExact(s.FirstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt);
+                    airedDate = parsed ? dt.Year.ToString() : "";
+                    shows.Add(new ShowView(s.Id.ToString(), s.SeriesName, airedDate, desc));
                 }
-                shows.Add(new ShowView(s.Id.ToString(), s.Title, s.FirstAired.Value.Year.ToString(), desc));
             }
+
 
             logger.TraceMessage("SelectShowFromListGetPossibleShowsForEpisode - End");
             return shows;
         }
 
-        public async Task<TVEpisode> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, TVEpisode episode)
+        public async Task<MatchedFile> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, MatchedFile episode, CancellationToken ct)
         {
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
             //if user selected a match then scrape the details
@@ -217,7 +208,7 @@ namespace SimpleRenamer.Framework
                 if (episodeScrape.series != null)
                 {
                     ShowNameMapping showNameMapping = configurationManager.ShowNameMappings;
-                    Mapping map = new Mapping(episodeScrape.tvep.ShowName, episodeScrape.series.Title, episodeScrape.series.Id.ToString());
+                    Mapping map = new Mapping(episodeScrape.tvep.ShowName, episodeScrape.series.Series.SeriesName, episodeScrape.series.Series.Id.ToString());
                     if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                     {
                         showNameMapping.Mappings.Add(map);
@@ -241,7 +232,7 @@ namespace SimpleRenamer.Framework
         /// <param name="episode">The episode to rename</param>
         /// <param name="settings">Our current settings</param>
         /// <returns></returns>
-        private TVEpisode GenerateFileName(TVEpisode episode)
+        private MatchedFile GenerateFileName(MatchedFile episode)
         {
             logger.TraceMessage("GenerateFileName - Start");
 

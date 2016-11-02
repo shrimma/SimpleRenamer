@@ -1,4 +1,6 @@
-﻿using SimpleRenamer.Framework.DataModel;
+﻿using OneTrueError.Client;
+using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.Interface;
 using System;
 namespace SimpleRenamer.Framework
 {
@@ -6,10 +8,39 @@ namespace SimpleRenamer.Framework
     {
         private log4net.ILog log { get; set; }
 
-        public Logger()
+        public Logger(IConfigurationManager configManager)
         {
+            if (configManager == null)
+            {
+                throw new ArgumentNullException(nameof(configManager));
+            }
             log = log4net.LogManager.GetLogger(typeof(Logger));
             log4net.Config.XmlConfigurator.Configure();
+
+            //ignore the certificate issue with OTE server
+            IgnoreBadCertificate();
+            OneTrue.Configuration.Credentials(new Uri(configManager.OneTrueErrorUrl), configManager.OneTrueErrorApplicationKey, configManager.OneTrueErrorSharedSecret);
+            OneTrue.Configuration.CatchLog4NetExceptions();
+        }
+
+        private static void IgnoreBadCertificate()
+        {
+            System.Net.ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(AcceptAllCertifications);
+        }
+
+        private static bool AcceptAllCertifications(object sender, System.Security.Cryptography.X509Certificates.X509Certificate certification, System.Security.Cryptography.X509Certificates.X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
+        {
+            ////ignore certificate errors for the OTE server
+            //if (certification.Issuer.Equals("CN=onetrueerror-vm"))
+            //{
+            //    return true;
+            //}
+            //else
+            //{
+            //    return false;
+            //}
+
+            return true;
         }
 
         public void TraceMessage(string message = "", LogType logType = LogType.Info,
@@ -56,7 +87,7 @@ namespace SimpleRenamer.Framework
 
             string innerEx = ex.InnerException == null ? "" : ex.InnerException.Message;
             string logthis = string.Format("Message: {0}, Caller Member: {1}, Source File Path: {2}, Source Line Number: {3}, Exception: {4}, Message: {5}, Inner Exception: {6}", message, memberName, sourceFilePath, sourceLineNumber.ToString(), ex.ToString(), ex.Message, innerEx);
-            log.Fatal(logthis);
+            log.Fatal(logthis, ex);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using SimpleRenamer.Framework.DataModel;
+using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace SimpleRenamer.Framework
         private ILogger logger;
         private IConfigurationManager configurationManager;
         private Settings settings;
+        public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
         public FileWatcher(ILogger log, IConfigurationManager configManager)
         {
@@ -28,6 +30,7 @@ namespace SimpleRenamer.Framework
             configurationManager = configManager;
             settings = configurationManager.Settings;
         }
+
         public async Task<List<string>> SearchTheseFoldersAsync(CancellationToken ct)
         {
             logger.TraceMessage("SearchTheseFoldersAsync - Start");
@@ -37,6 +40,7 @@ namespace SimpleRenamer.Framework
             //FOR EACH WATCH FOLDER
             foreach (string folder in settings.WatchFolders)
             {
+                RaiseProgressEvent(this, new ProgressTextEventArgs($"Searching watch folder for video files: {folder}"));
                 //if the directory exists and contains at least 1 file (search sub directories if settings allow) -- limitation of searchPattern means we can't filter video extensions here
                 if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
                 {
@@ -52,6 +56,7 @@ namespace SimpleRenamer.Framework
                 ct.ThrowIfCancellationRequested();
             }
 
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Searched all watch folders for video files"));
             logger.TraceMessage("SearchTheseFoldersAsync - End");
             return foundFiles;
         }
@@ -68,7 +73,8 @@ namespace SimpleRenamer.Framework
             List<string> foundFiles = new List<string>();
             foreach (string file in Directory.GetFiles(dir, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
-                if (IsValidExtension(Path.GetExtension(file)) && !ignoreList.IgnoreFiles.Contains(file))
+                //is a valid extension, is not ignored and isn't a sample
+                if (IsValidExtension(Path.GetExtension(file)) && !ignoreList.IgnoreFiles.Contains(file) && !Path.GetFileName(file).Contains("*.sample.*") && !Path.GetFileName(file).Contains("*.Sample.*"))
                 {
                     foundFiles.Add(file);
                 }

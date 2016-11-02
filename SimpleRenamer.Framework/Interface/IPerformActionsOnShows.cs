@@ -20,11 +20,16 @@ namespace SimpleRenamer.Framework.Interface
         event EventHandler<FileMovedEventArgs> RaiseFileMovedEvent;
 
         /// <summary>
+        /// Fired whenever some noticeable progress is made
+        /// </summary>
+        event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
+
+        /// <summary>
         /// Performs preprocessor actions and then moves a list of scanned and matched episodes
         /// </summary>
         /// <param name="scannedEpisodes">The episodes to action</param>
         /// <param name="ct">CancellationToken</param>
         /// <returns></returns>
-        Task Action(ObservableCollection<TVEpisode> scannedEpisodes, CancellationToken ct);
+        Task Action(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct);
     }
 }
