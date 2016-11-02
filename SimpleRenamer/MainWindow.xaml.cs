@@ -373,6 +373,7 @@ namespace SimpleRenamer
         private void OpenSelectShowWindow(FileType fileType)
         {
             string title = fileType == FileType.TvShow ? "TV" : "Movie";
+            DisableUi();
             selectShowWindow.SearchForMatches($"Simple Renamer - {title} - Select Show For File {Path.GetFileName(MediaTypePath)}", MediaTypeShowName, fileType);
             selectShowWindow.ShowDialog();
         }
@@ -410,6 +411,8 @@ namespace SimpleRenamer
                 {
                     ShowsListBox.SelectedItem = updatedFile;
                 }
+
+                EnableUi();
             }
             catch (Exception ex)
             {
