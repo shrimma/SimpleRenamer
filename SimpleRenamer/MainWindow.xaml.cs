@@ -5,7 +5,6 @@ using SimpleRenamer.Framework.EventArguments;
 using SimpleRenamer.Framework.Interface;
 using SimpleRenamer.Views;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -15,7 +14,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using WPFCustomMessageBox;
 
 namespace SimpleRenamer
 {
@@ -43,6 +41,8 @@ namespace SimpleRenamer
         private string EditShowCurrentFolder;
         private string EditShowTvdbShowName;
         private string EditShowTvdbId;
+        private string MediaTypePath;
+        private string MediaTypeShowName;
 
         public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, IMovieMatcher movieMatch, IDependencyInjectionContext injection, IPerformActionsOnShows performActions, IScanForShows scanShows, IConfigurationManager configManager)
         {
@@ -192,27 +192,43 @@ namespace SimpleRenamer
 
         private void DisableUi()
         {
+            //disable all action buttons
             ScanButton.IsEnabled = false;
             SettingsButton.IsEnabled = false;
             ActionButton.IsEnabled = false;
             MatchShowButton.IsEnabled = false;
             IgnoreShowButton.IsEnabled = false;
-            CancelButton.IsEnabled = true;
             ShowsListBox.IsEnabled = false;
-            ButtonsStackPanel.Visibility = Visibility.Collapsed;
+            //enable the cancel button
+            CancelButton.IsEnabled = true;
+            //hide the scan and action buttons
+            ScanButton.Visibility = Visibility.Hidden;
+            ActionButton.Visibility = Visibility.Hidden;
+            //hide the bottom row of buttons
+            ButtonsStackPanel.Visibility = Visibility.Hidden;
+            //show the cancel button and progress bar
+            CancelButton.Visibility = Visibility.Visible;
             ProgressTextStackPanel.Visibility = Visibility.Visible;
             ProgressBarStackPanel.Visibility = Visibility.Visible;
         }
 
         private void EnableUi()
         {
+            //enable all action buttons
             ScanButton.IsEnabled = true;
             SettingsButton.IsEnabled = true;
-            CancelButton.IsEnabled = false;
             ShowsListBox.IsEnabled = true;
+            //disable the cancel button
+            CancelButton.IsEnabled = false;
+            //show the scan and action buttons
+            ScanButton.Visibility = Visibility.Visible;
+            ActionButton.Visibility = Visibility.Visible;
+            //show the bottom row of buttons
             ButtonsStackPanel.Visibility = Visibility.Visible;
-            ProgressTextStackPanel.Visibility = Visibility.Collapsed;
-            ProgressBarStackPanel.Visibility = Visibility.Collapsed;
+            //hide the cancel button and progress bar
+            CancelButton.Visibility = Visibility.Hidden;
+            ProgressTextStackPanel.Visibility = Visibility.Hidden;
+            ProgressBarStackPanel.Visibility = Visibility.Hidden;
             if (scannedEpisodes.Count > 0)
             {
                 ActionButton.IsEnabled = true;
@@ -321,29 +337,42 @@ namespace SimpleRenamer
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
                 FileType fileType = temp.FileType;
+                MediaTypePath = temp.FilePath;
+                MediaTypeShowName = temp.ShowName;
                 if (fileType == FileType.Unknown)
                 {
                     //IF UNKNOWN then we have to show a dialog here and ask whether movie or TV
-                    MessageBoxResult result = CustomMessageBox.ShowYesNoCancel($"Is the file at path: {temp.FilePath} a TV show or a movie?", $"TV or Movie", "TV Show", "Movie", "Cancel");
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        fileType = FileType.TvShow;
-                    }
-                    else if (result == MessageBoxResult.No)
-                    {
-                        fileType = FileType.Movie;
-                    }
+                    MediaTypeFlyout.IsOpen = true;
                 }
-
-                List<ShowView> possibleMatches;
-                string title = fileType == FileType.TvShow ? "TV" : "Movie";
-                selectShowWindow.SearchForMatches($"Simple Renamer - {title} - Select Show for file {Path.GetFileName(temp.FilePath)}", temp.ShowName, fileType);
-                selectShowWindow.ShowDialog();
+                else
+                {
+                    //otherwise open the show search window
+                    OpenSelectShowWindow(fileType);
+                }
             }
             catch (Exception ex)
             {
                 logger.TraceException(ex);
             }
+        }
+
+        private void OpenSelectShowWindow(FileType fileType)
+        {
+            string title = fileType == FileType.TvShow ? "TV" : "Movie";
+            selectShowWindow.SearchForMatches($"Simple Renamer - {title} - Select Show For File {Path.GetFileName(MediaTypePath)}", MediaTypeShowName, fileType);
+            selectShowWindow.ShowDialog();
+        }
+
+        private void MediaTypeTv_Click(object sender, RoutedEventArgs e)
+        {
+            MediaTypeFlyout.IsOpen = false;
+            OpenSelectShowWindow(FileType.TvShow);
+        }
+
+        private void MediaTypeMovie_Click(object sender, RoutedEventArgs e)
+        {
+            MediaTypeFlyout.IsOpen = false;
+            OpenSelectShowWindow(FileType.Movie);
         }
 
         private async void SelectShowWindow_RaiseSelectShowWindowEvent(object sender, SelectShowEventArgs e)
@@ -362,7 +391,7 @@ namespace SimpleRenamer
                     updatedFile = await movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp, cts.Token);
                 }
 
-                //if selection was skipped then we can't enable actioning
+                //if selection wasn't skipped then update the selected item
                 if (updatedFile.SkippedExactSelection == false)
                 {
                     ShowsListBox.SelectedItem = updatedFile;
@@ -378,17 +407,26 @@ namespace SimpleRenamer
         {
             try
             {
-                MessageBoxResult mbr = CustomMessageBox.Show("Are you sure?", "Ignore this?", MessageBoxButton.OKCancel);
-                if (mbr == MessageBoxResult.OK)
+                IgnoreFlyout.IsOpen = true;
+            }
+            catch (Exception ex)
+            {
+                logger.TraceException(ex);
+            }
+        }
+
+        private void IgnoreFlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                IgnoreFlyout.IsOpen = false;
+                MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
+                IgnoreList ignoreList = configurationManager.IgnoredFiles;
+                if (!ignoreList.IgnoreFiles.Contains(tempEp.FilePath))
                 {
-                    MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
-                    IgnoreList ignoreList = configurationManager.IgnoredFiles;
-                    if (!ignoreList.IgnoreFiles.Contains(tempEp.FilePath))
-                    {
-                        ignoreList.IgnoreFiles.Add(tempEp.FilePath);
-                        scannedEpisodes.Remove(tempEp);
-                        configurationManager.IgnoredFiles = ignoreList;
-                    }
+                    ignoreList.IgnoreFiles.Add(tempEp.FilePath);
+                    scannedEpisodes.Remove(tempEp);
+                    configurationManager.IgnoredFiles = ignoreList;
                 }
             }
             catch (Exception ex)

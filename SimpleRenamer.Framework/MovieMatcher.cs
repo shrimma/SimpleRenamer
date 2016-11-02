@@ -95,6 +95,7 @@ namespace SimpleRenamer.Framework
                     matchedFile.ShowName = searchedMovie.Title;
                     matchedFile.TMDBShowId = searchedMovie.Id;
                     matchedFile.ShowImage = searchedMovie.PosterPath;
+                    matchedFile.FileType = FileType.Movie;
                 }
                 else
                 {
@@ -102,7 +103,7 @@ namespace SimpleRenamer.Framework
                     matchedFile.SkippedExactSelection = true;
                 }
 
-                logger.TraceMessage("ScrapeDetailsAsync - End");
+                logger.TraceMessage("UpdateFileWithMatchedMovie - End");
                 return matchedFile;
             });
         }

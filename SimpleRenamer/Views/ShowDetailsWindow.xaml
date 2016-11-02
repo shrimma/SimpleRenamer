@@ -18,7 +18,7 @@
             <ColumnDefinition Width="1*" />
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
-        <Controls:ProgressRing Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Foreground="White" Name="LoadingProgress" IsActive="True" />
+        <Controls:ProgressRing Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Foreground="Black" Name="LoadingProgress" IsActive="True" />
         <Image HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Name="BannerImage"/>
         <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Name="ShowDescriptionTextBox" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" />
         <ListView Grid.Row="2" Grid.Column="0" Margin="5" Name="ActorsListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">

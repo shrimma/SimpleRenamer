@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using WPFCustomMessageBox;
 
 namespace SimpleRenamer.Views
 {
@@ -135,15 +134,23 @@ namespace SimpleRenamer.Views
             ShowView current = (ShowView)ShowListBox.SelectedItem;
             if (current != null)
             {
-                MessageBoxResult r = CustomMessageBox.Show("Are you sure?", "Confirmation", MessageBoxButton.OKCancel);
-                if (r == MessageBoxResult.OK)
-                {
-                    RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(current.Id, currentFileType));
-                    //clear the item list
-                    this.ShowListBox.ItemsSource = null;
-                    this.Hide();
-                }
+                ConfirmationFlyout.IsOpen = true;
             }
+        }
+
+        private void OkFlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.ConfirmationFlyout.IsOpen = false;
+            ShowView current = (ShowView)ShowListBox.SelectedItem;
+            RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(current.Id, currentFileType));
+            //clear the item list
+            this.ShowListBox.ItemsSource = null;
+            this.Hide();
+        }
+
+        private void CancelFlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.ConfirmationFlyout.IsOpen = false;
         }
 
         private void SkipButton_Click(object sender, RoutedEventArgs e)

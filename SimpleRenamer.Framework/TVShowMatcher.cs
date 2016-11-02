@@ -219,6 +219,7 @@ namespace SimpleRenamer.Framework
                         }
                         configurationManager.ShowNameMappings = showNameMapping;
                     }
+                    episodeScrape.tvep.FileType = FileType.TvShow;
                 }
                 else
                 {
