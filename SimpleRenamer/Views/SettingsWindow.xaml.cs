@@ -1,12 +1,15 @@
-﻿using SimpleRenamer.EventArguments;
+﻿using MahApps.Metro;
+using SimpleRenamer.EventArguments;
 using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Media;
 
 namespace SimpleRenamer.Views
 {
@@ -22,6 +25,7 @@ namespace SimpleRenamer.Views
         private IHelper helper;
         private AddExtensionsWindow addExtensionsWindow;
         private RegexExpressionsWindow regexExpressionsWindow;
+        private Tuple<AppTheme, Accent> currentTheme;
 
         public SettingsWindow(IConfigurationManager configManager, IHelper help, AddExtensionsWindow extWindow, RegexExpressionsWindow expWindow)
         {
@@ -50,6 +54,8 @@ namespace SimpleRenamer.Views
             configurationManager = configManager;
             helper = help;
 
+            ChangeThemeCombo.ItemsSource = typeof(Colors).GetProperties();
+
             //create new event handler for extensions window
             addExtensionsWindow.RaiseCustomEvent += new EventHandler<ExtensionEventArgs>(ExtensionWindowClosedEvent);
 
@@ -62,7 +68,9 @@ namespace SimpleRenamer.Views
 
         private void SetupView()
         {
-            //grab the current settings from the factory and populate our UI            
+            //grab the current theme
+            currentTheme = ThemeManager.DetectAppStyle(System.Windows.Application.Current);
+            //grab the current settings from the factory and populate our UI
             originalSettings = new Settings();
             originalSettings.CopyFiles = configurationManager.Settings.CopyFiles;
             originalSettings.DestinationFolderMovie = configurationManager.Settings.DestinationFolderMovie;
@@ -270,6 +278,19 @@ namespace SimpleRenamer.Views
         private void RegexExpressionButton_Click(object sender, RoutedEventArgs e)
         {
             regexExpressionsWindow.ShowDialog();
+        }
+
+        private void ChangeThemeCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            try
+            {
+                Color selectedColor = (Color)(ChangeThemeCombo.SelectedItem as PropertyInfo).GetValue(null, null);
+                ThemeManagerHelper.ThemeManagerHelper.CreateAppStyleBy(selectedColor, true);
+            }
+            catch (Exception ex)
+            {
+                //TODO log this!
+            }
         }
     }
 }
