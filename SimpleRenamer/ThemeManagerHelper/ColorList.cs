@@ -1,16 +1,18 @@
-﻿using System.Windows.Media;
+﻿using MahApps.Metro;
 
 namespace SimpleRenamer.ThemeManagerHelper
 {
-    public class ColorItem
+    public class AccentItem
     {
-        public string ColorName { get; set; }
-        public Color ColorValue { get; set; }
+        public string AccentName { get; set; }
+        public string AccentBaseColor { get; set; }
+        public Accent Accent { get; set; }
 
-        public ColorItem(string colorName, Color value)
+        public AccentItem(string accentName, string accentBaseColor, Accent accent)
         {
-            ColorName = colorName;
-            ColorValue = value;
+            AccentName = accentName;
+            AccentBaseColor = accentBaseColor;
+            Accent = accent;
         }
     }
 }

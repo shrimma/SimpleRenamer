@@ -2,14 +2,13 @@
 using SimpleRenamer.EventArguments;
 using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
+using SimpleRenamer.ThemeManagerHelper;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Media;
 
 namespace SimpleRenamer.Views
 {
@@ -54,7 +53,13 @@ namespace SimpleRenamer.Views
             configurationManager = configManager;
             helper = help;
 
-            ChangeThemeCombo.ItemsSource = typeof(Colors).GetProperties();
+            List<AccentItem> accentItems = new List<AccentItem>();
+            var mahAppsAccents = ThemeManager.Accents;
+            foreach (var accent in mahAppsAccents)
+            {
+                accentItems.Add(new AccentItem(accent.Name, accent.Resources["AccentBaseColor"].ToString(), accent));
+            }
+            ChangeThemeCombo.ItemsSource = accentItems;
 
             //create new event handler for extensions window
             addExtensionsWindow.RaiseCustomEvent += new EventHandler<ExtensionEventArgs>(ExtensionWindowClosedEvent);
@@ -68,8 +73,10 @@ namespace SimpleRenamer.Views
 
         private void SetupView()
         {
-            //grab the current theme
+            //grab the current theme            
             currentTheme = ThemeManager.DetectAppStyle(System.Windows.Application.Current);
+            AccentItem accentItem = new AccentItem(currentTheme.Item2.Name, currentTheme.Item2.Resources["AccentBaseColor"].ToString(), currentTheme.Item2);
+            ChangeThemeCombo.SelectedItem = accentItem;
             //grab the current settings from the factory and populate our UI
             originalSettings = new Settings();
             originalSettings.CopyFiles = configurationManager.Settings.CopyFiles;
@@ -284,8 +291,8 @@ namespace SimpleRenamer.Views
         {
             try
             {
-                Color selectedColor = (Color)(ChangeThemeCombo.SelectedItem as PropertyInfo).GetValue(null, null);
-                ThemeManagerHelper.ThemeManagerHelper.CreateAppStyleBy(selectedColor, true);
+                AccentItem selectedColor = (AccentItem)ChangeThemeCombo.SelectedItem;
+                ThemeManager.ChangeAppStyle(System.Windows.Application.Current, selectedColor.Accent, currentTheme.Item1);
             }
             catch (Exception ex)
             {

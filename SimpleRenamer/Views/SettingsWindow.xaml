@@ -16,8 +16,8 @@
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <Rectangle Fill="{Binding Name}" Width="16" Height="16" Margin="0,2,5,2" />
-                            <TextBlock Text="{Binding Name}" />
+                            <Rectangle Fill="{Binding AccentBaseColor, Mode=Default}" Width="16" Height="16" Margin="0,2,5,2" />
+                            <TextBlock Text="{Binding AccentName}" />
                         </StackPanel>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
