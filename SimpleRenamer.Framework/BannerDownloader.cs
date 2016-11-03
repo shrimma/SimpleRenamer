@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework
@@ -28,7 +27,7 @@ namespace SimpleRenamer.Framework
         }
 
         /// <inheritdoc/>
-        public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder, CancellationToken ct)
+        public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder)
         {
             logger.TraceMessage("SaveBannerAsync - Start");
             string fullBannerPath = Path.Combine(destinationFolder, "Folder.jpg");

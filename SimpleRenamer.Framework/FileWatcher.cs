@@ -14,6 +14,7 @@ namespace SimpleRenamer.Framework
         private ILogger logger;
         private IConfigurationManager configurationManager;
         private Settings settings;
+        private IgnoreList ignoreList;
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
         public FileWatcher(ILogger log, IConfigurationManager configManager)
@@ -35,8 +36,9 @@ namespace SimpleRenamer.Framework
         {
             logger.TraceMessage("SearchTheseFoldersAsync - Start");
             List<string> foundFiles = new List<string>();
-            IgnoreList ignoreList = configurationManager.IgnoredFiles;
+            //grab the list of ignored files
 
+            ignoreList = configurationManager.IgnoredFiles;
             //FOR EACH WATCH FOLDER
             foreach (string folder in settings.WatchFolders)
             {
@@ -45,7 +47,7 @@ namespace SimpleRenamer.Framework
                 if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
                 {
                     //search the folder for files with video extensions
-                    List<string> temp = SearchThisFolder(folder, ignoreList);
+                    List<string> temp = SearchThisFolder(folder, ct);
                     //if we find any files here add to the global list
                     if (temp.Count > 0)
                     {
@@ -58,6 +60,7 @@ namespace SimpleRenamer.Framework
 
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Searched all watch folders for video files"));
             logger.TraceMessage("SearchTheseFoldersAsync - End");
+
             return foundFiles;
         }
 
@@ -67,7 +70,7 @@ namespace SimpleRenamer.Framework
         /// <param name="dir">The folder to search</param>
         /// <param name="settings">Our current settings</param>
         /// <returns></returns>
-        private List<string> SearchThisFolder(string dir, IgnoreList ignoreList)
+        private List<string> SearchThisFolder(string dir, CancellationToken ct)
         {
             logger.TraceMessage("SearchThisFolder - Start");
             List<string> foundFiles = new List<string>();
@@ -78,6 +81,7 @@ namespace SimpleRenamer.Framework
                 {
                     foundFiles.Add(file);
                 }
+                ct.ThrowIfCancellationRequested();
             }
 
             logger.TraceMessage("SearchThisFolder - End");

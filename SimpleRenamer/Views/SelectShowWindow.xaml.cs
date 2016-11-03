@@ -181,15 +181,14 @@ namespace SimpleRenamer.Views
 
         private async Task<List<ShowView>> GetMatches(string searchText, FileType fileType)
         {
-            CancellationTokenSource cts = new CancellationTokenSource();
             List<ShowView> possibleMatches;
             if (currentFileType == FileType.TvShow)
             {
-                possibleMatches = await showMatcher.GetPossibleShowsForEpisode(searchText, cts.Token);
+                possibleMatches = await showMatcher.GetPossibleShowsForEpisode(searchText);
             }
             else
             {
-                possibleMatches = await movieMatcher.GetPossibleMoviesForFile(searchText, cts.Token);
+                possibleMatches = await movieMatcher.GetPossibleMoviesForFile(searchText);
             }
 
             return possibleMatches;

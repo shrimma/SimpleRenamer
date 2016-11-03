@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework.Interface
 {
@@ -11,6 +10,6 @@ namespace SimpleRenamer.Framework.Interface
         /// <param name="tvdbBannerPath">The remote TVDB banner path</param>
         /// <param name="destinationFolder">The destination folder to save the banner</param>
         /// <returns></returns>
-        Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder, CancellationToken ct);
+        Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder);
     }
 }

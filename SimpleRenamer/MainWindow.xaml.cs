@@ -346,7 +346,6 @@ namespace SimpleRenamer
 
         private void MatchShowButton_Click(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
             try
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
@@ -392,18 +391,17 @@ namespace SimpleRenamer
 
         private async void SelectShowWindow_RaiseSelectShowWindowEvent(object sender, SelectShowEventArgs e)
         {
-            cts = new CancellationTokenSource();
             try
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
                 MatchedFile updatedFile;
                 if (e.Type == FileType.TvShow)
                 {
-                    updatedFile = await tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp, cts.Token);
+                    updatedFile = await tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp);
                 }
                 else
                 {
-                    updatedFile = await movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp, cts.Token);
+                    updatedFile = await movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp);
                 }
 
                 //if selection wasn't skipped then update the selected item
@@ -535,10 +533,6 @@ namespace SimpleRenamer
                         }
                     }
                 }
-                else if (tempEp.FileType == FileType.Movie)
-                {
-
-                }
             }
             catch (Exception ex)
             {
@@ -565,42 +559,49 @@ namespace SimpleRenamer
 
         private void EditShowCloseBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            EditFlyout.IsOpen = false;
-            bool updateMapping = false;
-            string currentText = EditShowFolderTextBox.Text;
+            try
+            {
+                EditFlyout.IsOpen = false;
+                bool updateMapping = false;
+                string currentText = EditShowFolderTextBox.Text;
 
-            if (EditShowCurrentFolder.Equals(currentText))
-            {
-                //if the custom folder name hasn't changed then don't do anything
-            }
-            else if (EditShowTvdbShowName.Equals(currentText) && string.IsNullOrEmpty(EditShowCurrentFolder))
-            {
-                //if the new folder name equals the tvshowname and no customfolder name then dont do anything
-            }
-            else if (EditShowTvdbShowName.Equals(currentText) && !string.IsNullOrEmpty(EditShowCurrentFolder))
-            {
-                //if the new folder name equals the tvshowname and there is a customfoldername already then reset customfoldername to blank
-                currentText = string.Empty;
-                updateMapping = true;
-            }
-            else
-            {
-                //else we have a new custom folder to set
-                updateMapping = true;
-            }
-
-            if (updateMapping)
-            {
-                ShowNameMapping snm = configurationManager.ShowNameMappings;
-                if (snm != null && snm.Mappings.Count > 0)
+                if (EditShowCurrentFolder.Equals(currentText))
                 {
-                    Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(EditShowTvdbId)).FirstOrDefault();
-                    if (mapping != null)
+                    //if the custom folder name hasn't changed then don't do anything
+                }
+                else if (EditShowTvdbShowName.Equals(currentText) && string.IsNullOrEmpty(EditShowCurrentFolder))
+                {
+                    //if the new folder name equals the tvshowname and no customfolder name then dont do anything
+                }
+                else if (EditShowTvdbShowName.Equals(currentText) && !string.IsNullOrEmpty(EditShowCurrentFolder))
+                {
+                    //if the new folder name equals the tvshowname and there is a customfoldername already then reset customfoldername to blank
+                    currentText = string.Empty;
+                    updateMapping = true;
+                }
+                else
+                {
+                    //else we have a new custom folder to set
+                    updateMapping = true;
+                }
+
+                if (updateMapping)
+                {
+                    ShowNameMapping snm = configurationManager.ShowNameMappings;
+                    if (snm != null && snm.Mappings.Count > 0)
                     {
-                        mapping.CustomFolderName = currentText;
-                        configurationManager.ShowNameMappings = snm;
+                        Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(EditShowTvdbId)).FirstOrDefault();
+                        if (mapping != null)
+                        {
+                            mapping.CustomFolderName = currentText;
+                            configurationManager.ShowNameMappings = snm;
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                logger.TraceException(ex);
             }
         }
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework
@@ -25,16 +26,20 @@ namespace SimpleRenamer.Framework
             regexExpressions = configManager.RegexExpressions;
         }
 
-        public async Task<List<MatchedFile>> SearchFilesAsync(List<string> files)
+        public async Task<List<MatchedFile>> SearchFilesAsync(List<string> files, CancellationToken ct)
         {
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Parsing file names for show or movie details"));
             object lockList = new object();
             List<MatchedFile> episodes = new List<MatchedFile>();
-            Parallel.ForEach(files, (file) =>
+            //for each file in the list search the filename and determine if it is a TV or Movie
+            ParallelOptions po = new ParallelOptions();
+            po.CancellationToken = ct;
+            Parallel.ForEach(files, po, (file) =>
             {
-                MatchedFile episode = SearchFileNameAsync(file).GetAwaiter().GetResult();
+                MatchedFile episode = SearchFileNameAsync(file, ct).GetAwaiter().GetResult();
                 if (episode != null)
                 {
+                    //if episode is not null then we matched so add to the output list
                     logger.TraceMessage(string.Format("Matched {0}", episode.FilePath));
                     lock (lockList)
                     {
@@ -43,8 +48,9 @@ namespace SimpleRenamer.Framework
                 }
                 else
                 {
+                    //else we couldn't match the file so add a file with just filepath so user can manually match
                     logger.TraceMessage(string.Format("Couldn't find a match!"));
-                    episode = new MatchedFile(file);
+                    episode = new MatchedFile(file, Path.GetFileNameWithoutExtension(file));
                     lock (lockList)
                     {
                         episodes.Add(episode);
@@ -56,7 +62,7 @@ namespace SimpleRenamer.Framework
             return episodes;
         }
 
-        private async Task<MatchedFile> SearchFileNameAsync(string fileName)
+        private async Task<MatchedFile> SearchFileNameAsync(string fileName, CancellationToken ct)
         {
             logger.TraceMessage("SearchFileNameAsync - Start");
             string showname = null;
@@ -66,13 +72,13 @@ namespace SimpleRenamer.Framework
             string yearString = null;
             int year = 0;
 
-            try
+            foreach (RegexExpression exp in regexExpressions.RegexExpressions)
             {
-                foreach (RegexExpression exp in regexExpressions.RegexExpressions)
+                try
                 {
                     if (exp.IsEnabled)
                     {
-                        //process the file name
+                        //if this expression is enabled then match against the filename
                         Regex regexStandard = new Regex(exp.Expression, RegexOptions.IgnoreCase);
                         Match tvshow = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
 
@@ -85,6 +91,7 @@ namespace SimpleRenamer.Framework
 
                             if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
                             {
+                                //if we found a showname, season, and episode in the filename then this is a match
                                 logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
                                 return new MatchedFile(fileName, showname, season, episode);
                             }
@@ -96,22 +103,24 @@ namespace SimpleRenamer.Framework
                             yearString = tvshow.Groups["movie_year"].Value;
                             int.TryParse(yearString, out year);
 
-                            if (!string.IsNullOrEmpty(movieTitle))
+                            if (!string.IsNullOrEmpty(movieTitle) && !string.IsNullOrEmpty(yearString))
                             {
+                                //if we found a movie title and year then this is a match
                                 logger.TraceMessage("SearchFileNameAsync - Found movietitle, and year in file name");
                                 return new MatchedFile(fileName, movieTitle, year);
                             }
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.TraceException(ex);
-                return null;
+                catch (Exception ex)
+                {
+                    //we don't really care if one of the regex fails so swallow this exception
+                    logger.TraceException(ex, $"The REGEXP {exp.Expression} failed on {fileName}");
+                }
+                ct.ThrowIfCancellationRequested();
             }
 
-            logger.TraceMessage("SearchFileNameAsync - End NULL");
+            logger.TraceMessage("SearchFileNameAsync - No regex could match the file - End");
             return null;
         }
 
@@ -123,7 +132,6 @@ namespace SimpleRenamer.Framework
             int i = 1;
             foreach (string word in words)
             {
-
                 if (IsJoiningWord(word.ToLowerInvariant()) && i > 1)
                 {
                     output += word + " ";

@@ -4,7 +4,6 @@ using SimpleRenamer.Framework.Interface;
 using SimpleRenamer.Framework.TmdbModel;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework
@@ -31,7 +30,7 @@ namespace SimpleRenamer.Framework
             tmdbManager = tmdbMan;
         }
 
-        public async Task<List<ShowView>> GetPossibleMoviesForFile(string movieName, CancellationToken ct)
+        public async Task<List<ShowView>> GetPossibleMoviesForFile(string movieName)
         {
             return await Task.Run(async () =>
             {
@@ -58,7 +57,7 @@ namespace SimpleRenamer.Framework
             });
         }
 
-        public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie, CancellationToken ct)
+        public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie)
         {
             logger.TraceMessage("ScrapeDetailsAsync - Start");
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.FilePath}"));
@@ -81,7 +80,7 @@ namespace SimpleRenamer.Framework
             return movie;
         }
 
-        public async Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile, CancellationToken ct)
+        public async Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile)
         {
             return await Task.Run(async () =>
             {
