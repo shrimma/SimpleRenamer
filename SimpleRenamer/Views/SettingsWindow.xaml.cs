@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Forms;
 
@@ -25,6 +26,7 @@ namespace SimpleRenamer.Views
         private AddExtensionsWindow addExtensionsWindow;
         private RegexExpressionsWindow regexExpressionsWindow;
         private Tuple<AppTheme, Accent> currentTheme;
+        private List<AccentItem> accentItems;
 
         public SettingsWindow(IConfigurationManager configManager, IHelper help, AddExtensionsWindow extWindow, RegexExpressionsWindow expWindow)
         {
@@ -53,7 +55,7 @@ namespace SimpleRenamer.Views
             configurationManager = configManager;
             helper = help;
 
-            List<AccentItem> accentItems = new List<AccentItem>();
+            accentItems = new List<AccentItem>();
             var mahAppsAccents = ThemeManager.Accents;
             foreach (var accent in mahAppsAccents)
             {
@@ -73,10 +75,10 @@ namespace SimpleRenamer.Views
 
         private void SetupView()
         {
-            //grab the current theme            
+            //grab the current theme
             currentTheme = ThemeManager.DetectAppStyle(System.Windows.Application.Current);
-            AccentItem accentItem = new AccentItem(currentTheme.Item2.Name, currentTheme.Item2.Resources["AccentBaseColor"].ToString(), currentTheme.Item2);
-            ChangeThemeCombo.SelectedItem = accentItem;
+            AccentItem currentAccentItem = accentItems.Where(x => x.AccentName.Equals(currentTheme.Item2.Name)).FirstOrDefault();
+            ChangeThemeCombo.SelectedItem = currentAccentItem;
             //grab the current settings from the factory and populate our UI
             originalSettings = new Settings();
             originalSettings.CopyFiles = configurationManager.Settings.CopyFiles;
