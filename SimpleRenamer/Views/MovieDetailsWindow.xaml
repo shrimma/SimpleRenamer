@@ -12,9 +12,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
             <RowDefinition Height="2*" />
-            <RowDefinition Height="30" />
             <RowDefinition Height="4*" />
-            <RowDefinition Height="30" />
             <RowDefinition Height="4*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -23,10 +21,9 @@
         </Grid.ColumnDefinitions>
         <Controls:ProgressRing Grid.Row="0" Grid.RowSpan="6" Grid.Column="0" Foreground="Black" Name="LoadingProgress" IsActive="True" />
         <Image HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Grid.RowSpan="6" Name="BannerImage" Height="513" Width="322" Margin="5" />
-        <TextBlock Grid.Row="0" Grid.Column="1" Name="MovieTagLineTextBox" Margin="5" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True"/>
+        <TextBlock FontFamily="Segoe UI Semibold" Grid.Row="0" Grid.Column="1" Name="MovieTagLineTextBox" Margin="5" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True"/>
         <TextBlock Grid.Row="1" Grid.Column="1"  Name="MovieDescriptionTextBox" Margin="5,0,5,0" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True" />
-        <Label Grid.Row="2" Grid.Column="1" Margin="5,0,5,0" Height="25">Cast</Label>
-        <ListView Grid.Row="3" Grid.Column="1" Margin="5" Name="ActorsListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListView Grid.Row="2" Grid.Column="1" Margin="5" Name="ActorsListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Character" Width="Auto">
@@ -46,8 +43,7 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Label Grid.Row="4" Grid.Column="1" Margin="5,0,5,0" Height="25">Crew</Label>
-        <ListView Grid.Row="5" Grid.Column="1" Margin="5" Name="CrewListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListView Grid.Row="3" Grid.Column="1" Margin="5" Name="CrewListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Job" Width="Auto">

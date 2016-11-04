@@ -127,6 +127,7 @@ namespace SimpleRenamer.Views
                 //even if no matches we show the listbox to hide the progressspinner
                 ShowListBox.Visibility = Visibility.Visible;
             }
+            SearchTextBox.Focus();
         }
 
         private void SelectButton_Click(object sender, RoutedEventArgs e)

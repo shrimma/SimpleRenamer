@@ -26,6 +26,7 @@ namespace SimpleRenamer.Views
             helper = help;
             InitializeComponent();
             flyoutEnabled = true;
+            ExtensionTextBox.Focus();
             this.Closing += AddExtensionsWindow_Closing;
         }
 
@@ -34,6 +35,7 @@ namespace SimpleRenamer.Views
             RaiseCustomEvent(this, new ExtensionEventArgs(null));
             e.Cancel = true;
             this.ExtensionTextBox.Text = string.Empty;
+            ExtensionTextBox.Focus();
             this.Hide();
         }
 
@@ -42,7 +44,6 @@ namespace SimpleRenamer.Views
         private void OKButton_Click(object sender, RoutedEventArgs e)
         {
             SaveInputExtension(ExtensionTextBox.Text);
-
         }
 
         private void SaveInputExtension(string extension)
@@ -51,6 +52,7 @@ namespace SimpleRenamer.Views
             {
                 RaiseCustomEvent(this, new ExtensionEventArgs(ExtensionTextBox.Text));
                 this.ExtensionTextBox.Text = string.Empty;
+                this.ExtensionTextBox.Focus();
                 this.Hide();
             }
             else
@@ -90,6 +92,7 @@ namespace SimpleRenamer.Views
             RaiseCustomEvent(this, new ExtensionEventArgs(null));
             //clear the text
             this.ExtensionTextBox.Text = string.Empty;
+            this.ExtensionTextBox.Focus();
             this.Hide();
         }
     }

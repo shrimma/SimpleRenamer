@@ -49,5 +49,18 @@ namespace SimpleRenamer.Views
             configurationManager.RegexExpressions.RegexExpressions = new List<RegexExpression>(regExp);
             this.Hide();
         }
+
+        private void ExpressionsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            RegexExpression value = (RegexExpression)ExpressionsListBox.SelectedItem;
+            if (value != null)
+            {
+                this.DeleteExpressionButton.IsEnabled = true;
+            }
+            else
+            {
+                this.DeleteExpressionButton.IsEnabled = false;
+            }
+        }
     }
 }

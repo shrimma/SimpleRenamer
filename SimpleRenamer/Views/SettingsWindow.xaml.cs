@@ -301,5 +301,31 @@ namespace SimpleRenamer.Views
                 //TODO log this!
             }
         }
+
+        private void WatchListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            string value = (string)WatchListBox.SelectedItem;
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                this.DeleteFolderButton.IsEnabled = true;
+            }
+            else
+            {
+                this.DeleteFolderButton.IsEnabled = false;
+            }
+        }
+
+        private void ExtensionsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            string value = (string)ExtensionsListBox.SelectedItem;
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                this.DeleteExtensionButton.IsEnabled = true;
+            }
+            else
+            {
+                this.DeleteExtensionButton.IsEnabled = false;
+            }
+        }
     }
 }
