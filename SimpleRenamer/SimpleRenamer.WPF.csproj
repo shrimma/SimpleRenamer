@@ -84,7 +84,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="EventArguments\SelectShowEventArgs.cs" />
-    <Compile Include="ThemeManagerHelper\ColorList.cs" />
+    <Compile Include="ThemeManagerHelper\AccentItem.cs" />
     <Compile Include="ValueConverters\IconFileTypeConverter.cs" />
     <Compile Include="Views\AddExtensionsWindow.xaml.cs">
       <DependentUpon>AddExtensionsWindow.xaml</DependentUpon>

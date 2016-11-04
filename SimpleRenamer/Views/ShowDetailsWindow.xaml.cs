@@ -87,7 +87,7 @@ namespace SimpleRenamer.Views
             SeriesWithBanner series = await getShowDetails.GetShowWithBannerAsync(showId);
 
             //set the title, show description, rating and firstaired values
-            this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.Series.SeriesName, string.IsNullOrEmpty(series.Series.Series.Rating.ToString()) ? "0.0" : series.Series.Series.Rating.ToString(), string.IsNullOrEmpty(series.Series.Series.FirstAired.ToString()) ? "1900" : series.Series.Series.FirstAired.ToString());
+            this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.Series.SeriesName, string.IsNullOrEmpty(series.Series.Series.SiteRating.ToString()) ? "0.0" : series.Series.Series.SiteRating.ToString(), string.IsNullOrEmpty(series.Series.Series.FirstAired.ToString()) ? "1900" : series.Series.Series.FirstAired.ToString());
             ShowDescriptionTextBox.Text = series.Series.Series.Overview;
 
             //set the actor listbox

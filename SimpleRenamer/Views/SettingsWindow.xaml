@@ -4,6 +4,15 @@
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         Title="Simple Renamer - Settings" Height="345" Width="675" MinHeight="345" MinWidth="675" Icon="..\Icons\tv.ico">
+    <Window.Resources>
+        <Style TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+        <Style TargetType="Label">
+            <Setter Property="FontFamily" Value="Segoe UI Semibold" />
+            <Setter Property="FontSize" Value="14.667" />
+        </Style>
+    </Window.Resources>
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands>
             <Grid>
@@ -60,59 +69,139 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="30" />
                 <RowDefinition Height="30" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="1*" />
                 <RowDefinition Height="30" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="2*" />
             </Grid.RowDefinitions>
             <Controls:ToggleSwitch Grid.Row="0" Name="SubdirToggle" Margin="5,0" OnLabel="Scan Subdirectory" OffLabel="Scan Root Only" IsChecked="{Binding Path=SubDirectories}" />
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Margin="5,0,2.5,0">Watch Folder(s)</Label>
-                <Button Grid.Column="1" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="AddFolderButton" Content="ADD" HorizontalAlignment="Stretch" Margin="2.5,5,2.5,0" Height="20" VerticalAlignment="Top" Click="AddFolderButton_Click"/>
-                <Button Grid.Column="2" Style="{DynamicResource SquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="DeleteFolderButton" Content="DELETE" HorizontalAlignment="Stretch" Margin="2.5,5,5,0" Height="20" VerticalAlignment="Top" Click="DeleteFolderButton_Click"/>
+                <Button Grid.Column="0" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="AddFolderButton" Content="ADD" HorizontalAlignment="Stretch" Margin="5,5,2.5,0" Height="20" VerticalAlignment="Top" Click="AddFolderButton_Click"/>
+                <Button Grid.Column="1" Style="{DynamicResource SquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="DeleteFolderButton" Content="DELETE" HorizontalAlignment="Stretch" Margin="2.5,5,5,0" Height="20" VerticalAlignment="Top" Click="DeleteFolderButton_Click" IsEnabled="False"/>
             </Grid>
-            <ListBox Grid.Row="2" Name="WatchListBox" Margin="5,0,5,5" HorizontalContentAlignment="Stretch">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{Binding}" />
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <ListView Grid.Row="2" Margin="5" Name="WatchListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="WatchListBox_SelectionChanged">
+                <ListView.Resources>
+                    <ControlTemplate x:Key="SelectedTemplate" TargetType="ListViewItem">
+                        <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                            <ContentControl Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                    </ControlTemplate>
+                    <Style TargetType="ListViewItem">
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource AccentColorBrush2}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource AccentColorBrush3}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource GrayBrush7}" />
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsEnabled" Value="False" />
+                                    <Condition Property="IsSelected" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Background" Value="{DynamicResource GrayBrush7}" />
+                            </MultiTrigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True" />
+                                    <Condition Property="Selector.IsSelectionActive" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Background" Value="{DynamicResource AccentColorBrush}" />
+                            </MultiTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListView.Resources>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Watch Folder">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" TextAlignment="Left" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
             <Grid Grid.Row="3">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Margin="5,0,2.5,0">File Extension(s)</Label>
-                <Button Grid.Column="1" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="AddExtensionButton" Content="ADD" HorizontalAlignment="Stretch" Margin="2.5,5,2.5,0" Height="20" VerticalAlignment="Top" Click="AddExtensionButton_Click"/>
-                <Button Grid.Column="2" Style="{DynamicResource SquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="DeleteExtensionButton" Content="DELETE" HorizontalAlignment="Stretch" Margin="2.5,5,5,0" Height="20" VerticalAlignment="Top" Click="DeleteExtensionButton_Click"/>
+                <Button Grid.Column="0" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="AddExtensionButton" Content="ADD" HorizontalAlignment="Stretch" Margin="5,5,2.5,0" Height="20" VerticalAlignment="Top" Click="AddExtensionButton_Click"/>
+                <Button Grid.Column="1" Style="{DynamicResource SquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="DeleteExtensionButton" Content="DELETE" HorizontalAlignment="Stretch" Margin="2.5,5,5,0" Height="20" VerticalAlignment="Top" Click="DeleteExtensionButton_Click" IsEnabled="False"/>
             </Grid>
-            <ListBox Grid.Row="4" Name="ExtensionsListBox" Margin="5,5,5,5" HorizontalContentAlignment="Stretch">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{Binding}" />
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <ListView Grid.Row="4" Margin="5" Name="ExtensionsListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ExtensionsListBox_SelectionChanged">
+                <ListView.Resources>
+                    <ControlTemplate x:Key="SelectedTemplate" TargetType="ListViewItem">
+                        <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                            <ContentControl Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                    </ControlTemplate>
+                    <Style TargetType="ListViewItem">
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource AccentColorBrush2}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource AccentColorBrush3}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource GrayBrush7}" />
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsEnabled" Value="False" />
+                                    <Condition Property="IsSelected" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Background" Value="{DynamicResource GrayBrush7}" />
+                            </MultiTrigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True" />
+                                    <Condition Property="Selector.IsSelectionActive" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Background" Value="{DynamicResource AccentColorBrush}" />
+                            </MultiTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListView.Resources>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="File Extension">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" TextAlignment="Left" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </Grid>
         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" >
-            <Controls:ToggleSwitch Name="RenameToggle" Margin="0" OnLabel="Rename Files" OffLabel="Keep Original" IsChecked="{Binding Path=RenameFiles}" />
-            <Controls:ToggleSwitch Name="CopyToggle" Margin="0" OnLabel="Copy Files" OffLabel="Move Files" IsChecked="{Binding Path=CopyFiles}" />
+            <Controls:ToggleSwitch Name="RenameToggle" Margin="5,0" OnLabel="Rename Files" OffLabel="Keep Original" IsChecked="{Binding Path=RenameFiles}" />
+            <Controls:ToggleSwitch Name="CopyToggle" Margin="5,0" OnLabel="Copy Files" OffLabel="Move Files" IsChecked="{Binding Path=CopyFiles}" />
             <Label>File Name Format</Label>
             <TextBox Name="FileFormatTextBox" Margin="5" Text="{Binding Path=NewFileNameFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
             <Label>Destination Root Folder (TV)</Label>

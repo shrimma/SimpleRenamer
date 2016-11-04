@@ -19,14 +19,16 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
-        <TextBox Grid.Row="0" Name="ExtensionTextBox" Margin="5" Text="" Controls:TextBoxHelper.ClearTextButton="True" Controls:TextBoxHelper.ButtonCommand="{Binding TextBoxButtonCmd, Mode=OneWay}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Name="ExtensionTextBox" Margin="5" Text="" Controls:TextBoxHelper.ClearTextButton="True" Controls:TextBoxHelper.ButtonCommand="{Binding TextBoxButtonCmd, Mode=OneWay}">
             <TextBox.InputBindings>
                 <KeyBinding Key="Return" Command="ApplicationCommands.Save" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=TextBox}, Path=Text, Mode=OneWay}" />
             </TextBox.InputBindings>
         </TextBox>
-        <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <Button Name="OKButton" Content="OK" HorizontalAlignment="Left" Margin="5,0,5,5" VerticalAlignment="Top" Width="75" Click="OKButton_Click"/>
-            <Button Name="CancelButton" Content="Cancel" HorizontalAlignment="Left" Margin="5,0,5,5" VerticalAlignment="Top" Width="75" Click="CancelButton_Click"/>
-        </StackPanel>
+        <Button Grid.Row="1" Grid.Column="0" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="OKButton" Content="OK" HorizontalAlignment="Stretch" Margin="5,0,2.5,5" VerticalAlignment="Top" Click="OKButton_Click"/>
+        <Button Grid.Row="1" Grid.Column="1" Style="{DynamicResource SquareButtonStyle}" Name="CancelButton" Controls:ButtonHelper.PreserveTextCase="True" Content="CANCEL" HorizontalAlignment="Stretch" Margin="2.5,0,5,5" VerticalAlignment="Top" Click="CancelButton_Click"/>
     </Grid>
 </Controls:MetroWindow>

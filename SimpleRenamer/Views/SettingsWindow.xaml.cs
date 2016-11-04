@@ -190,11 +190,11 @@ namespace SimpleRenamer.Views
             {
                 configurationManager.Settings.SubDirectories = originalSettings.SubDirectories;
             }
-            if (configurationManager.Settings.ValidExtensions != originalSettings.ValidExtensions)
+            if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, originalSettings.ValidExtensions) == false)
             {
                 configurationManager.Settings.ValidExtensions = originalSettings.ValidExtensions;
             }
-            if (configurationManager.Settings.WatchFolders != originalSettings.WatchFolders)
+            if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, originalSettings.WatchFolders) == false)
             {
                 configurationManager.Settings.WatchFolders = originalSettings.WatchFolders;
             }
@@ -299,6 +299,32 @@ namespace SimpleRenamer.Views
             catch (Exception ex)
             {
                 //TODO log this!
+            }
+        }
+
+        private void WatchListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            string value = (string)WatchListBox.SelectedItem;
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                this.DeleteFolderButton.IsEnabled = true;
+            }
+            else
+            {
+                this.DeleteFolderButton.IsEnabled = false;
+            }
+        }
+
+        private void ExtensionsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            string value = (string)ExtensionsListBox.SelectedItem;
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                this.DeleteExtensionButton.IsEnabled = true;
+            }
+            else
+            {
+                this.DeleteExtensionButton.IsEnabled = false;
             }
         }
     }
