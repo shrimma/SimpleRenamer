@@ -8,7 +8,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework
@@ -47,7 +46,7 @@ namespace SimpleRenamer.Framework
         /// </summary>
         /// <param name="episode"></param>
         /// <returns></returns>
-        public async Task<TVEpisodeScrape> ScrapeDetailsAsync(MatchedFile episode, CancellationToken ct)
+        public async Task<TVEpisodeScrape> ScrapeDetailsAsync(MatchedFile episode)
         {
             logger.TraceMessage("ScrapeDetailsAsync - Start");
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {episode.FilePath}"));
@@ -57,7 +56,7 @@ namespace SimpleRenamer.Framework
             //scrape the episode name - if we haven't already got the show ID then search for it
             if (string.IsNullOrEmpty(episode.TVDBShowId))
             {
-                episodeScrape = await ScrapeShowAsync(episode, ct);
+                episodeScrape = await ScrapeShowAsync(episode);
             }
             else
             {
@@ -108,7 +107,7 @@ namespace SimpleRenamer.Framework
         /// </summary>
         /// <param name="episode">The episode to scrape</param>
         /// <returns></returns>
-        private async Task<TVEpisodeScrape> ScrapeShowAsync(MatchedFile episode, CancellationToken ct)
+        private async Task<TVEpisodeScrape> ScrapeShowAsync(MatchedFile episode)
         {
             logger.TraceMessage("ScrapeShowAsync - Start");
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
@@ -157,7 +156,7 @@ namespace SimpleRenamer.Framework
             return new TVEpisodeScrape(episode, matchedSeries);
         }
 
-        public async Task<List<ShowView>> GetPossibleShowsForEpisode(string showName, CancellationToken ct)
+        public async Task<List<ShowView>> GetPossibleShowsForEpisode(string showName)
         {
             return await Task.Run(async () =>
             {
@@ -194,7 +193,7 @@ namespace SimpleRenamer.Framework
             });
         }
 
-        public async Task<MatchedFile> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, MatchedFile episode, CancellationToken ct)
+        public async Task<MatchedFile> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, MatchedFile episode)
         {
             return await Task.Run(async () =>
             {

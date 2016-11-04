@@ -1,10 +1,13 @@
-﻿using SimpleRenamer.EventArguments;
+﻿using MahApps.Metro;
+using SimpleRenamer.EventArguments;
 using SimpleRenamer.Framework.DataModel;
 using SimpleRenamer.Framework.Interface;
+using SimpleRenamer.ThemeManagerHelper;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Forms;
 
@@ -22,6 +25,8 @@ namespace SimpleRenamer.Views
         private IHelper helper;
         private AddExtensionsWindow addExtensionsWindow;
         private RegexExpressionsWindow regexExpressionsWindow;
+        private Tuple<AppTheme, Accent> currentTheme;
+        private List<AccentItem> accentItems;
 
         public SettingsWindow(IConfigurationManager configManager, IHelper help, AddExtensionsWindow extWindow, RegexExpressionsWindow expWindow)
         {
@@ -50,6 +55,14 @@ namespace SimpleRenamer.Views
             configurationManager = configManager;
             helper = help;
 
+            accentItems = new List<AccentItem>();
+            var mahAppsAccents = ThemeManager.Accents;
+            foreach (var accent in mahAppsAccents)
+            {
+                accentItems.Add(new AccentItem(accent.Name, accent.Resources["AccentBaseColor"].ToString(), accent));
+            }
+            ChangeThemeCombo.ItemsSource = accentItems;
+
             //create new event handler for extensions window
             addExtensionsWindow.RaiseCustomEvent += new EventHandler<ExtensionEventArgs>(ExtensionWindowClosedEvent);
 
@@ -62,7 +75,11 @@ namespace SimpleRenamer.Views
 
         private void SetupView()
         {
-            //grab the current settings from the factory and populate our UI            
+            //grab the current theme
+            currentTheme = ThemeManager.DetectAppStyle(System.Windows.Application.Current);
+            AccentItem currentAccentItem = accentItems.Where(x => x.AccentName.Equals(currentTheme.Item2.Name)).FirstOrDefault();
+            ChangeThemeCombo.SelectedItem = currentAccentItem;
+            //grab the current settings from the factory and populate our UI
             originalSettings = new Settings();
             originalSettings.CopyFiles = configurationManager.Settings.CopyFiles;
             originalSettings.DestinationFolderMovie = configurationManager.Settings.DestinationFolderMovie;
@@ -270,6 +287,19 @@ namespace SimpleRenamer.Views
         private void RegexExpressionButton_Click(object sender, RoutedEventArgs e)
         {
             regexExpressionsWindow.ShowDialog();
+        }
+
+        private void ChangeThemeCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            try
+            {
+                AccentItem selectedColor = (AccentItem)ChangeThemeCombo.SelectedItem;
+                ThemeManager.ChangeAppStyle(System.Windows.Application.Current, selectedColor.Accent, currentTheme.Item1);
+            }
+            catch (Exception ex)
+            {
+                //TODO log this!
+            }
         }
     }
 }

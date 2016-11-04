@@ -212,10 +212,10 @@ namespace SimpleRenamer.Framework.DataModel
             }
         }
 
-        public MatchedFile(string filePath)
+        public MatchedFile(string filePath, string fileName)
         {
             FilePath = filePath;
-            ShowName = filePath;
+            ShowName = fileName;
             FileType = FileType.Unknown;
             SkippedExactSelection = true;
             ActionThis = false;
