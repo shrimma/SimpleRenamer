@@ -190,11 +190,11 @@ namespace SimpleRenamer.Views
             {
                 configurationManager.Settings.SubDirectories = originalSettings.SubDirectories;
             }
-            if (configurationManager.Settings.ValidExtensions != originalSettings.ValidExtensions)
+            if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, originalSettings.ValidExtensions) == false)
             {
                 configurationManager.Settings.ValidExtensions = originalSettings.ValidExtensions;
             }
-            if (configurationManager.Settings.WatchFolders != originalSettings.WatchFolders)
+            if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, originalSettings.WatchFolders) == false)
             {
                 configurationManager.Settings.WatchFolders = originalSettings.WatchFolders;
             }

@@ -14,24 +14,80 @@ namespace SimpleRenamer.Views
     {
         public ObservableCollection<RegexExpression> regExp;
         private IConfigurationManager configurationManager;
-        public RegexExpressionsWindow(IConfigurationManager configManager)
+        private IHelper helper;
+        private RegexFile originalExpressions;
+        public RegexExpressionsWindow(IConfigurationManager configManager, IHelper help)
         {
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
+            if (help == null)
+            {
+                throw new ArgumentNullException(nameof(help));
+            }
             configurationManager = configManager;
+            helper = help;
 
             InitializeComponent();
+            //grab settings and display
+            SetupView();
+            this.Closing += Window_Closing;
+        }
+
+        private void SetupView()
+        {
             regExp = new ObservableCollection<RegexExpression>(configurationManager.RegexExpressions.RegexExpressions);
             ExpressionsListBox.ItemsSource = regExp;
-            this.Closing += Window_Closing;
+            originalExpressions = new RegexFile();
+            originalExpressions.RegexExpressions = configurationManager.RegexExpressions.RegexExpressions;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            //stop the window actually closing
             e.Cancel = true;
+            //check if settings have been changed without saving
+            var currentExpressions = new List<RegexExpression>(regExp);
+            if (helper.AreListsEqual(configurationManager.RegexExpressions.RegexExpressions, currentExpressions) == false)
+            {
+                configurationManager.RegexExpressions.RegexExpressions = currentExpressions;
+            }
+            if (HaveSettingsChanged() == true)
+            {
+                //if settings have been changed and not saved then prompt user
+                ConfirmationFlyout.IsOpen = true;
+            }
+            else
+            {
+                SetupView();
+                this.Hide();
+            }
+        }
+
+        private bool HaveSettingsChanged()
+        {
+            if (helper.AreListsEqual(configurationManager.RegexExpressions.RegexExpressions, originalExpressions.RegexExpressions) == false)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private void OkFlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            ConfirmationFlyout.IsOpen = false;
+            if (helper.AreListsEqual(configurationManager.RegexExpressions.RegexExpressions, originalExpressions.RegexExpressions) == false)
+            {
+                configurationManager.RegexExpressions.RegexExpressions = originalExpressions.RegexExpressions;
+            }
+            SetupView();
             this.Hide();
+        }
+
+        private void CancelFlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            ConfirmationFlyout.IsOpen = false;
         }
 
         private void AddExpressionButton_Click(object sender, RoutedEventArgs e)
@@ -46,7 +102,12 @@ namespace SimpleRenamer.Views
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            configurationManager.RegexExpressions.RegexExpressions = new List<RegexExpression>(regExp);
+            var currentExpressions = new List<RegexExpression>(regExp);
+            if (helper.AreListsEqual(configurationManager.RegexExpressions.RegexExpressions, currentExpressions) == false)
+            {
+                configurationManager.RegexExpressions.RegexExpressions = currentExpressions;
+            }
+            SetupView();
             this.Hide();
         }
 
