@@ -41,8 +41,16 @@ namespace SimpleRenamer.Framework
             request.AddParameter("application/json", auth.ToJson(), ParameterType.RequestBody);
             IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
 
-            Token token = JsonConvert.DeserializeObject<Token>(response.Content);
-            jwtToken = token._Token;
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                Token token = JsonConvert.DeserializeObject<Token>(response.Content);
+                jwtToken = token._Token;
+            }
+            else
+            {
+                //should we throw here?
+            }
+
         }
 
         public string GetBannerUri(string bannerPath)
@@ -57,13 +65,27 @@ namespace SimpleRenamer.Framework
                 await Login();
             }
 
+            SeriesData series = null;
+            SeriesActors actors = null;
+            SeriesEpisodes episodes = null;
+            SeriesImageQueryResults posters = null;
+            SeriesImageQueryResults seasonPosters = null;
+            SeriesImageQueryResults seriesBanners = null;
+
             //get general series data
             RestClient client = new RestClient($"{baseUri}/series/{tmdbId}");
             var request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            SeriesData series = JsonConvert.DeserializeObject<SeriesData>(response.Content);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                series = JsonConvert.DeserializeObject<SeriesData>(response.Content);
+            }
+            else
+            {
+                //TODO what to do if login rejected
+            }
 
             //get actors
             client = new RestClient($"{baseUri}/series/{tmdbId}/actors");
@@ -71,7 +93,14 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            SeriesActors actors = JsonConvert.DeserializeObject<SeriesActors>(response.Content);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                actors = JsonConvert.DeserializeObject<SeriesActors>(response.Content);
+            }
+            else
+            {
+                //TODO
+            }
 
             //get episodes
             client = new RestClient($"{baseUri}/series/{tmdbId}/episodes");
@@ -79,7 +108,14 @@ namespace SimpleRenamer.Framework
             request.AddHeader("content-type", "application/json");
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            SeriesEpisodes episodes = JsonConvert.DeserializeObject<SeriesEpisodes>(response.Content);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                episodes = JsonConvert.DeserializeObject<SeriesEpisodes>(response.Content);
+            }
+            else
+            {
+                //TODO
+            }
 
             //get series posters
             client = new RestClient($"{baseUri}/series/{tmdbId}/images/query");
@@ -88,7 +124,14 @@ namespace SimpleRenamer.Framework
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("keyType", "poster", ParameterType.QueryString);
             response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
+            }
+            else
+            {
+                //TODO
+            }
 
             //get season specific posters
             client = new RestClient($"{baseUri}/series/{tmdbId}/images/query");
@@ -97,7 +140,14 @@ namespace SimpleRenamer.Framework
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("keyType", "season", ParameterType.QueryString);
             response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            SeriesImageQueryResults seasonPosters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                seasonPosters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
+            }
+            else
+            {
+                //TODO
+            }
 
             //get series banners
             client = new RestClient($"{baseUri}/series/{tmdbId}/images/query");
@@ -106,9 +156,24 @@ namespace SimpleRenamer.Framework
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("keyType", "series", ParameterType.QueryString);
             response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            SeriesImageQueryResults seriesBanners = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                seriesBanners = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
+            }
+            else
+            {
+                //TODO
+            }
 
-            return new CompleteSeries(series.Data, actors.Data, episodes.Data, posters.Data, seasonPosters.Data, seriesBanners.Data);
+            if (series != null && actors != null && episodes != null && posters != null && seasonPosters != null && seriesBanners != null)
+            {
+                return new CompleteSeries(series.Data, actors.Data, episodes.Data, posters.Data, seasonPosters.Data, seriesBanners.Data);
+            }
+            else
+            {
+                //TODO this should throw
+                return null;
+            }
         }
 
         public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName)
@@ -124,8 +189,16 @@ namespace SimpleRenamer.Framework
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("name", seriesName, ParameterType.QueryString);
             IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            SearchData data = JsonConvert.DeserializeObject<SearchData>(response.Content);
-            return data.Series;
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                SearchData data = JsonConvert.DeserializeObject<SearchData>(response.Content);
+                return data.Series;
+            }
+            else
+            {
+                //TODO throw
+                return null;
+            }
         }
     }
 }

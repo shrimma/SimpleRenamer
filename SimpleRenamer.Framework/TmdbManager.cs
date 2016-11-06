@@ -46,26 +46,54 @@ namespace SimpleRenamer.Framework
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
             IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
 
-            return JsonConvert.DeserializeObject<SearchContainer<SearchMovie>>(response.Content);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return JsonConvert.DeserializeObject<SearchContainer<SearchMovie>>(response.Content);
+            }
+            else
+            {
+                //TODO throw
+                return null;
+            }
         }
 
         public async Task<MovieCredits> GetMovieAsync(string movieId)
         {
+            Movie movie = null;
+            Credits credits = null;
             var client = new RestClient($"https://api.themoviedb.org/3/movie/{movieId}?api_key={apiKey}");
             var request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
             IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            Movie movie = JsonConvert.DeserializeObject<Movie>(response.Content);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                movie = JsonConvert.DeserializeObject<Movie>(response.Content);
+            }
+            else
+            {
+                //TODO THROW
+            }
 
             client = new RestClient($"https://api.themoviedb.org/3/movie/{movieId}/credits?api_key={apiKey}");
             request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
             response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            Credits credits = JsonConvert.DeserializeObject<Credits>(response.Content);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                credits = JsonConvert.DeserializeObject<Credits>(response.Content);
+            }
 
-            return new MovieCredits(movie, credits);
+            if (movie != null && credits != null)
+            {
+                return new MovieCredits(movie, credits);
+            }
+            else
+            {
+                //TODO THROW
+                return null;
+            }
         }
 
         public async Task<SearchMovie> SearchMovieByIdAsync(string movieId)
@@ -76,7 +104,15 @@ namespace SimpleRenamer.Framework
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
             IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
 
-            return JsonConvert.DeserializeObject<SearchMovie>(response.Content);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return JsonConvert.DeserializeObject<SearchMovie>(response.Content);
+            }
+            else
+            {
+                //TODO THROW
+                return null;
+            }
         }
 
         public async Task<string> GetPosterUriAsync(string posterPath)
@@ -90,8 +126,15 @@ namespace SimpleRenamer.Framework
                 request.AddParameter("application/json", "{}", ParameterType.RequestBody);
                 IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
 
-                TMDbConfig tmdbConfig = JsonConvert.DeserializeObject<TMDbConfig>(response.Content);
-                baseUri = tmdbConfig.Images.BaseUrl;
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    TMDbConfig tmdbConfig = JsonConvert.DeserializeObject<TMDbConfig>(response.Content);
+                    baseUri = tmdbConfig.Images.BaseUrl;
+                }
+                else
+                {
+                    //TODO THROW
+                }
             }
 
             return $"{baseUri}w342{posterPath}";

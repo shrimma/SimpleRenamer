@@ -21,7 +21,7 @@
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
             </Grid>
-            <ComboBox Grid.Row="0" Name="ChangeThemeCombo" SelectionChanged="ChangeThemeCombo_SelectionChanged" SelectedValuePath="Content">
+            <ComboBox Grid.Row="0" Name="ChangeThemeCombo" SelectionChanged="ChangeThemeCombo_SelectionChanged">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
