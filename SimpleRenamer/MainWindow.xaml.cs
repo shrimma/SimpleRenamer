@@ -1,8 +1,10 @@
 ﻿using MahApps.Metro.Controls;
+using SimpleRenamer.Common.EventArguments;
+using SimpleRenamer.Common.Interface;
+using SimpleRenamer.Common.Model;
+using SimpleRenamer.Common.Movie.Interface;
+using SimpleRenamer.Common.TV.Interface;
 using SimpleRenamer.EventArguments;
-using SimpleRenamer.Framework.DataModel;
-using SimpleRenamer.Framework.EventArguments;
-using SimpleRenamer.Framework.Interface;
 using SimpleRenamer.Views;
 using System;
 using System.Collections.ObjectModel;
@@ -31,7 +33,7 @@ namespace SimpleRenamer
         private IMovieMatcher movieMatcher;
         private IDependencyInjectionContext injectionContext;
         private IScanForShows scanForShows;
-        private IPerformActionsOnShows performActionsOnShows;
+        private IActionMatchedFiles performActionsOnShows;
         private IConfigurationManager configurationManager;
         private SelectShowWindow selectShowWindow;
         private ShowDetailsWindow showDetailsWindow;
@@ -44,7 +46,7 @@ namespace SimpleRenamer
         private string MediaTypePath;
         private string MediaTypeShowName;
 
-        public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, IMovieMatcher movieMatch, IDependencyInjectionContext injection, IPerformActionsOnShows performActions, IScanForShows scanShows, IConfigurationManager configManager)
+        public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, IMovieMatcher movieMatch, IDependencyInjectionContext injection, IActionMatchedFiles performActions, IScanForShows scanShows, IConfigurationManager configManager)
         {
             if (log == null)
             {

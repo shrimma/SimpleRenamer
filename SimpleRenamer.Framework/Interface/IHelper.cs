@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SimpleRenamer.Framework.Interface
+namespace SimpleRenamer.Common.Interface
 {
     public interface IHelper
     {

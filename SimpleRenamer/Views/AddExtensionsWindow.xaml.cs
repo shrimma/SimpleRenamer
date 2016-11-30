@@ -1,6 +1,6 @@
 ﻿
+using SimpleRenamer.Common.Interface;
 using SimpleRenamer.EventArguments;
-using SimpleRenamer.Framework.Interface;
 using System;
 using System.Windows;
 using System.Windows.Input;

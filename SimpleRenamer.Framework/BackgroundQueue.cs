@@ -1,9 +1,9 @@
-﻿using SimpleRenamer.Framework.Interface;
+﻿using SimpleRenamer.Common.Interface;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleRenamer.Framework
+namespace SimpleRenamer.Common
 {
     public class BackgroundQueue : IBackgroundQueue
     {

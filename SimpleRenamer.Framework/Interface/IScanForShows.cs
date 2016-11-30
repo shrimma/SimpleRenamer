@@ -1,11 +1,11 @@
-﻿using SimpleRenamer.Framework.DataModel;
-using SimpleRenamer.Framework.EventArguments;
+﻿using SimpleRenamer.Common.EventArguments;
+using SimpleRenamer.Common.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleRenamer.Framework.Interface
+namespace SimpleRenamer.Common.Interface
 {
     public interface IScanForShows
     {

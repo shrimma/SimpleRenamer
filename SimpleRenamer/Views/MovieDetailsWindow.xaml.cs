@@ -1,5 +1,6 @@
-﻿using SimpleRenamer.Framework.DataModel;
-using SimpleRenamer.Framework.Interface;
+﻿using SimpleRenamer.Common.Interface;
+using SimpleRenamer.Common.Movie.Interface;
+using SimpleRenamer.Common.Movie.Model;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

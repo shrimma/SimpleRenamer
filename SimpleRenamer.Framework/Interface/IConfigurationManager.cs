@@ -1,6 +1,6 @@
-﻿using SimpleRenamer.Framework.DataModel;
+﻿using SimpleRenamer.Common.Model;
 
-namespace SimpleRenamer.Framework.Interface
+namespace SimpleRenamer.Common.Interface
 {
     public interface IConfigurationManager
     {

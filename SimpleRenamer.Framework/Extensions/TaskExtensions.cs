@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleRenamer.Framework.Extensions
+namespace SimpleRenamer.Common.Extensions
 {
     public static class TaskExtensions
     {

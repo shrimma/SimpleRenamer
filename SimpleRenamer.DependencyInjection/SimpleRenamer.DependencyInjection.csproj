@@ -60,9 +60,33 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SimpleRenamer.Framework\SimpleRenamer.Framework.csproj">
+    <ProjectReference Include="..\SimpleRenamer.Common.Movie\SimpleRenamer.Common.Movie.csproj">
+      <Project>{3429D31C-DADA-4947-A04B-D3B798601491}</Project>
+      <Name>SimpleRenamer.Common.Movie</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleRenamer.Common.TV\SimpleRenamer.Common.TV.csproj">
+      <Project>{A164E72C-8022-4D61-96EE-1754FC5A7D9F}</Project>
+      <Name>SimpleRenamer.Common.TV</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleRenamer.Framework.General\SimpleRenamer.Framework.Core.csproj">
+      <Project>{516CB8CC-0124-454B-9398-6FFAAAEC7027}</Project>
+      <Name>SimpleRenamer.Framework.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleRenamer.Framework.Logging\SimpleRenamer.Logging.csproj">
+      <Project>{455fd77b-4e1b-498b-9d46-518e1e59cdba}</Project>
+      <Name>SimpleRenamer.Logging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleRenamer.Framework.Movie\SimpleRenamer.Framework.Movie.csproj">
+      <Project>{853155d9-e9be-4fa5-a728-62a911070094}</Project>
+      <Name>SimpleRenamer.Framework.Movie</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleRenamer.Framework.TV\SimpleRenamer.Framework.TV.csproj">
+      <Project>{43dbafde-2f6e-4e31-85e1-b86262952b3f}</Project>
+      <Name>SimpleRenamer.Framework.TV</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleRenamer.Framework\SimpleRenamer.Common.csproj">
       <Project>{632054A4-2CFC-4E57-BAEE-FD4DDB8F9CD4}</Project>
-      <Name>SimpleRenamer.Framework</Name>
+      <Name>SimpleRenamer.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

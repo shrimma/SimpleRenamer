@@ -1,6 +1,8 @@
 ﻿using Ninject.Modules;
+using SimpleRenamer.Common;
+using SimpleRenamer.Common.Interface;
 using SimpleRenamer.Framework;
-using SimpleRenamer.Framework.Interface;
+using SimpleRenamer.Framework.Core;
 
 namespace SimpleRenamer.DependencyInjection.Modules
 {

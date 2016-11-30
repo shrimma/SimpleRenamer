@@ -1,8 +1,8 @@
-﻿using SimpleRenamer.Framework.DataModel;
+﻿using SimpleRenamer.Common.Model;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleRenamer.Framework.Interface
+namespace SimpleRenamer.Common.Interface
 {
     public interface IFileMover
     {

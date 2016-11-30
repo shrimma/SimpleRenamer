@@ -1,5 +1,5 @@
-﻿using SimpleRenamer.DependencyInjection;
-using SimpleRenamer.Framework.Interface;
+﻿using SimpleRenamer.Common.Interface;
+using SimpleRenamer.DependencyInjection;
 using System.Windows;
 
 namespace SimpleRenamer

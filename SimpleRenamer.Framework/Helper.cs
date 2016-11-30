@@ -1,10 +1,10 @@
-﻿using SimpleRenamer.Framework.Interface;
+﻿using SimpleRenamer.Common.Interface;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace SimpleRenamer.Framework
+namespace SimpleRenamer.Common
 {
     public class Helper : IHelper
     {

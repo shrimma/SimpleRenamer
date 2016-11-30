@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SimpleRenamer.Framework.EventArguments
+namespace SimpleRenamer.Common.EventArguments
 {
     public class ProgressTextEventArgs : EventArgs
     {

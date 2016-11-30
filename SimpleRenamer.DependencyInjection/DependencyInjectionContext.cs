@@ -1,6 +1,6 @@
 ﻿using Ninject;
 using Ninject.Parameters;
-using SimpleRenamer.Framework.Interface;
+using SimpleRenamer.Common.Interface;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

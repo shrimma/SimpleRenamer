@@ -1,4 +1,4 @@
-﻿using SimpleRenamer.Framework.DataModel;
+﻿using SimpleRenamer.Common.Model;
 using System;
 using System.Windows.Data;
 

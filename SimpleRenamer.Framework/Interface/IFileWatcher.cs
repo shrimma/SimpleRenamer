@@ -1,10 +1,10 @@
-﻿using SimpleRenamer.Framework.EventArguments;
+﻿using SimpleRenamer.Common.EventArguments;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleRenamer.Framework.Interface
+namespace SimpleRenamer.Common.Interface
 {
     public interface IFileWatcher
     {

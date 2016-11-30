@@ -1,7 +1,7 @@
-﻿using SimpleRenamer.Framework.DataModel;
+﻿using SimpleRenamer.Common.Model;
 using System;
 
-namespace SimpleRenamer.Framework.EventArguments
+namespace SimpleRenamer.Common.EventArguments
 {
     public class FileMovedEventArgs : EventArgs
     {

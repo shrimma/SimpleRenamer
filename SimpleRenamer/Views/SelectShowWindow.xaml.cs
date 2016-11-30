@@ -1,6 +1,8 @@
-﻿using SimpleRenamer.EventArguments;
-using SimpleRenamer.Framework.DataModel;
-using SimpleRenamer.Framework.Interface;
+﻿using SimpleRenamer.Common.Interface;
+using SimpleRenamer.Common.Model;
+using SimpleRenamer.Common.Movie.Interface;
+using SimpleRenamer.Common.TV.Interface;
+using SimpleRenamer.EventArguments;
 using System;
 using System.Collections.Generic;
 using System.Threading;

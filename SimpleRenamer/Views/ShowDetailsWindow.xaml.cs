@@ -1,5 +1,6 @@
-﻿using SimpleRenamer.Framework.DataModel;
-using SimpleRenamer.Framework.Interface;
+﻿using SimpleRenamer.Common.Interface;
+using SimpleRenamer.Common.TV.Interface;
+using SimpleRenamer.Common.TV.Model;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

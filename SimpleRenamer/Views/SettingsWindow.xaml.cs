@@ -1,7 +1,7 @@
 ﻿using MahApps.Metro;
+using SimpleRenamer.Common.Interface;
+using SimpleRenamer.Common.Model;
 using SimpleRenamer.EventArguments;
-using SimpleRenamer.Framework.DataModel;
-using SimpleRenamer.Framework.Interface;
 using SimpleRenamer.ThemeManagerHelper;
 using System;
 using System.Collections.Generic;

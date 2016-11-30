@@ -1,5 +1,5 @@
-﻿using SimpleRenamer.Framework.DataModel;
-using SimpleRenamer.Framework.Interface;
+﻿using SimpleRenamer.Common.Interface;
+using SimpleRenamer.Common.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

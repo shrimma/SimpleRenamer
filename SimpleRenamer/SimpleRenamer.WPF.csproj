@@ -176,13 +176,21 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SimpleRenamer.Common.Movie\SimpleRenamer.Common.Movie.csproj">
+      <Project>{3429D31C-DADA-4947-A04B-D3B798601491}</Project>
+      <Name>SimpleRenamer.Common.Movie</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleRenamer.Common.TV\SimpleRenamer.Common.TV.csproj">
+      <Project>{A164E72C-8022-4D61-96EE-1754FC5A7D9F}</Project>
+      <Name>SimpleRenamer.Common.TV</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SimpleRenamer.DependencyInjection\SimpleRenamer.DependencyInjection.csproj">
       <Project>{332b44b6-606c-4330-b5e7-90268dbb6e1f}</Project>
       <Name>SimpleRenamer.DependencyInjection</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SimpleRenamer.Framework\SimpleRenamer.Framework.csproj">
+    <ProjectReference Include="..\SimpleRenamer.Framework\SimpleRenamer.Common.csproj">
       <Project>{632054a4-2cfc-4e57-baee-fd4ddb8f9cd4}</Project>
-      <Name>SimpleRenamer.Framework</Name>
+      <Name>SimpleRenamer.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

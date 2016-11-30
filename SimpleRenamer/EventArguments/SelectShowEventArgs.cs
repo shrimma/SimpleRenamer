@@ -1,4 +1,4 @@
-﻿using SimpleRenamer.Framework.DataModel;
+﻿using SimpleRenamer.Common.Model;
 using System;
 
 namespace SimpleRenamer.EventArguments

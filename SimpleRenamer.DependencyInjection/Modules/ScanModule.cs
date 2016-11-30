@@ -1,6 +1,10 @@
 ﻿using Ninject.Modules;
-using SimpleRenamer.Framework;
-using SimpleRenamer.Framework.Interface;
+using SimpleRenamer.Common.Interface;
+using SimpleRenamer.Common.Movie.Interface;
+using SimpleRenamer.Common.TV.Interface;
+using SimpleRenamer.Framework.Core;
+using SimpleRenamer.Framework.Movie;
+using SimpleRenamer.Framework.TV;
 
 namespace SimpleRenamer.DependencyInjection.Modules
 {
