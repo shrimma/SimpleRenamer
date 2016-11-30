@@ -32,7 +32,7 @@ namespace SimpleRenamer
         private ITVShowMatcher tvShowMatcher;
         private IMovieMatcher movieMatcher;
         private IDependencyInjectionContext injectionContext;
-        private IScanForShows scanForShows;
+        private IScanFiles scanForShows;
         private IActionMatchedFiles performActionsOnShows;
         private IConfigurationManager configurationManager;
         private SelectShowWindow selectShowWindow;
@@ -46,7 +46,7 @@ namespace SimpleRenamer
         private string MediaTypePath;
         private string MediaTypeShowName;
 
-        public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, IMovieMatcher movieMatch, IDependencyInjectionContext injection, IActionMatchedFiles performActions, IScanForShows scanShows, IConfigurationManager configManager)
+        public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, IMovieMatcher movieMatch, IDependencyInjectionContext injection, IActionMatchedFiles performActions, IScanFiles scanShows, IConfigurationManager configManager)
         {
             if (log == null)
             {

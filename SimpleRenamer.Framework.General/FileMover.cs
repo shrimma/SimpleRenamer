@@ -1,5 +1,6 @@
 ﻿using SimpleRenamer.Common.Interface;
 using SimpleRenamer.Common.Model;
+using SimpleRenamer.Common.TV.Interface;
 using System;
 using System.IO;
 using System.Threading;

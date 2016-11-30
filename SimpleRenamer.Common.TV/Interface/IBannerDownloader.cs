@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace SimpleRenamer.Common.Interface
+namespace SimpleRenamer.Common.TV.Interface
 {
     public interface IBannerDownloader
     {

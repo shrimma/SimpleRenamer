@@ -16,7 +16,7 @@ namespace SimpleRenamer.DependencyInjection.Modules
             Bind<IFileWatcher>().To<FileWatcher>().InSingletonScope();
             Bind<ITVShowMatcher>().To<TVShowMatcher>().InSingletonScope();
             Bind<IMovieMatcher>().To<MovieMatcher>().InSingletonScope();
-            Bind<IScanForShows>().To<ScanFiles>().InSingletonScope();
+            Bind<IScanFiles>().To<ScanFiles>().InSingletonScope();
             Bind<ITmdbManager>().To<TmdbManager>().InSingletonScope();
             Bind<ITvdbManager>().To<TvdbManager>().InSingletonScope();
         }

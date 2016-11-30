@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SimpleRenamer.Common.Interface
 {
-    public interface IScanForShows
+    public interface IScanFiles
     {
         /// <summary>
         /// Scans the watch folders and matches files against TVDB shows

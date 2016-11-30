@@ -18,7 +18,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRenamer.DependencyInj
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{8B656D9A-9561-482E-A2A4-8B5009FEBA6E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRenamer.Framework.L0", "SimpleRenamer.Framework.L0\SimpleRenamer.Framework.L0.csproj", "{999C300F-0630-4E7E-BA73-A6FF44ABE258}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRenamer.Framework.Core.L0", "SimpleRenamer.Framework.L0\SimpleRenamer.Framework.Core.L0.csproj", "{999C300F-0630-4E7E-BA73-A6FF44ABE258}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRenamer.Logging", "SimpleRenamer.Framework.Logging\SimpleRenamer.Logging.csproj", "{455FD77B-4E1B-498B-9D46-518E1E59CDBA}"
 EndProject
@@ -31,6 +31,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRenamer.Framework.TV", "SimpleRenamer.Framework.TV\SimpleRenamer.Framework.TV.csproj", "{43DBAFDE-2F6E-4E31-85E1-B86262952B3F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRenamer.Framework.Movie", "SimpleRenamer.Framework.Movie\SimpleRenamer.Framework.Movie.csproj", "{853155D9-E9BE-4FA5-A728-62A911070094}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRenamer.Framework.Movie.L0", "SimpleRenamer.Framework.Movie.L0\SimpleRenamer.Framework.Movie.L0.csproj", "{0E45B8F8-A6ED-4965-82C8-701E86175942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRenamer.Framework.TV.L0", "SimpleRenamer.Framework.TV.L0\SimpleRenamer.Framework.TV.L0.csproj", "{352F8246-2E71-4315-AC08-13384439AE43}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRenamer.Common.L0", "SimpleRenamer.Common.L0\SimpleRenamer.Common.L0.csproj", "{E26ABDEF-457F-4D45-AB48-D1A6757753B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRenamer.Logger.L0", "SimpleRenamer.Logger.L0\SimpleRenamer.Logger.L0.csproj", "{16A69EC2-6BF7-45C9-83F6-0300009B4B52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRenamer.L0", "SimpleRenamer.L0\SimpleRenamer.L0.csproj", "{475D9248-137A-48F1-B72A-3BAA70555AC8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,11 +88,36 @@ Global
 		{853155D9-E9BE-4FA5-A728-62A911070094}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{853155D9-E9BE-4FA5-A728-62A911070094}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{853155D9-E9BE-4FA5-A728-62A911070094}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E45B8F8-A6ED-4965-82C8-701E86175942}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E45B8F8-A6ED-4965-82C8-701E86175942}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E45B8F8-A6ED-4965-82C8-701E86175942}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E45B8F8-A6ED-4965-82C8-701E86175942}.Release|Any CPU.Build.0 = Release|Any CPU
+		{352F8246-2E71-4315-AC08-13384439AE43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{352F8246-2E71-4315-AC08-13384439AE43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{352F8246-2E71-4315-AC08-13384439AE43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{352F8246-2E71-4315-AC08-13384439AE43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E26ABDEF-457F-4D45-AB48-D1A6757753B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E26ABDEF-457F-4D45-AB48-D1A6757753B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E26ABDEF-457F-4D45-AB48-D1A6757753B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E26ABDEF-457F-4D45-AB48-D1A6757753B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16A69EC2-6BF7-45C9-83F6-0300009B4B52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16A69EC2-6BF7-45C9-83F6-0300009B4B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16A69EC2-6BF7-45C9-83F6-0300009B4B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16A69EC2-6BF7-45C9-83F6-0300009B4B52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{475D9248-137A-48F1-B72A-3BAA70555AC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{475D9248-137A-48F1-B72A-3BAA70555AC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{475D9248-137A-48F1-B72A-3BAA70555AC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{475D9248-137A-48F1-B72A-3BAA70555AC8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{999C300F-0630-4E7E-BA73-A6FF44ABE258} = {8B656D9A-9561-482E-A2A4-8B5009FEBA6E}
+		{0E45B8F8-A6ED-4965-82C8-701E86175942} = {8B656D9A-9561-482E-A2A4-8B5009FEBA6E}
+		{352F8246-2E71-4315-AC08-13384439AE43} = {8B656D9A-9561-482E-A2A4-8B5009FEBA6E}
+		{E26ABDEF-457F-4D45-AB48-D1A6757753B1} = {8B656D9A-9561-482E-A2A4-8B5009FEBA6E}
+		{16A69EC2-6BF7-45C9-83F6-0300009B4B52} = {8B656D9A-9561-482E-A2A4-8B5009FEBA6E}
+		{475D9248-137A-48F1-B72A-3BAA70555AC8} = {8B656D9A-9561-482E-A2A4-8B5009FEBA6E}
 	EndGlobalSection
 EndGlobal

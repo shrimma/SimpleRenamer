@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SimpleRenamer.Framework.Core
 {
-    public class ScanFiles : IScanForShows
+    public class ScanFiles : IScanFiles
     {
         private ILogger logger;
         private IFileWatcher fileWatcher;

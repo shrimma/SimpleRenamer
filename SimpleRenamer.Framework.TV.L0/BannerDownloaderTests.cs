@@ -2,11 +2,11 @@
 using Moq;
 using SimpleRenamer.Common.Interface;
 using SimpleRenamer.Common.TV.Interface;
-using SimpleRenamer.Framework.TV;
+using SimpleRenamer.L0;
 using System;
 using System.Threading.Tasks;
 
-namespace SimpleRenamer.Framework.L0
+namespace SimpleRenamer.Framework.TV.L0
 {
     [TestClass]
     public class BannerDownloaderTest

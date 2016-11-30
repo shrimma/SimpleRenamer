@@ -5,14 +5,14 @@ using SimpleRenamer.L0;
 namespace SimpleRenamer.Framework.Core.L0
 {
     [TestClass]
-    public class ScanFilesTests
+    public class FileWatcherTests
     {
         [TestMethod]
         [TestCategory(TestCategories.Core)]
-        public void ScanFilesCtor_Success()
+        public void FileWatcherCtor_Success()
         {
-            IScanFiles scanFiles = new ScanFiles(null, null, null, null, null, null);
-            Assert.IsNotNull(scanFiles);
+            IFileWatcher fileWatcher = new FileWatcher(null, null);
+            Assert.IsNotNull(fileWatcher);
         }
     }
 }

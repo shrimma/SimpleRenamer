@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{999C300F-0630-4E7E-BA73-A6FF44ABE258}</ProjectGuid>
+    <ProjectGuid>{16A69EC2-6BF7-45C9-83F6-0300009B4B52}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SimpleRenamer.Framework.L0</RootNamespace>
-    <AssemblyName>SimpleRenamer.Framework.L0</AssemblyName>
+    <RootNamespace>SimpleRenamer.Logger.L0</RootNamespace>
+    <AssemblyName>SimpleRenamer.Logger.L0</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -58,52 +58,24 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="ActionMatchedFilesTests.cs" />
-    <Compile Include="General\AppConfigurationManagerTests.cs" />
-    <Compile Include="TV\BannerDownloaderTest.cs" />
-    <Compile Include="General\FileMatcherTests.cs" />
-    <Compile Include="General\FileMoverTests.cs" />
-    <Compile Include="General\FileWatcherTests.cs" />
-    <Compile Include="Movie\GetMovieDetailsTests.cs" />
-    <Compile Include="TV\GetShowDetailsTests.cs" />
-    <Compile Include="General\HelperTests.cs" />
     <Compile Include="LoggerTests.cs" />
-    <Compile Include="MovieMatcherTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RetryHelperTests.cs" />
-    <Compile Include="ScanFilesTests.cs" />
-    <Compile Include="TestCategories.cs" />
-    <Compile Include="TmdbManagerTests.cs" />
-    <Compile Include="TvdbManagerTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SimpleRenamer.Common.Movie\SimpleRenamer.Common.Movie.csproj">
-      <Project>{3429d31c-dada-4947-a04b-d3b798601491}</Project>
-      <Name>SimpleRenamer.Common.Movie</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SimpleRenamer.Common.TV\SimpleRenamer.Common.TV.csproj">
-      <Project>{a164e72c-8022-4d61-96ee-1754fc5a7d9f}</Project>
-      <Name>SimpleRenamer.Common.TV</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SimpleRenamer.Framework.General\SimpleRenamer.Framework.Core.csproj">
-      <Project>{516CB8CC-0124-454B-9398-6FFAAAEC7027}</Project>
-      <Name>SimpleRenamer.Framework.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SimpleRenamer.Framework.Movie\SimpleRenamer.Framework.Movie.csproj">
-      <Project>{853155d9-e9be-4fa5-a728-62a911070094}</Project>
-      <Name>SimpleRenamer.Framework.Movie</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SimpleRenamer.Framework.TV\SimpleRenamer.Framework.TV.csproj">
-      <Project>{43DBAFDE-2F6E-4E31-85E1-B86262952B3F}</Project>
-      <Name>SimpleRenamer.Framework.TV</Name>
+    <ProjectReference Include="..\SimpleRenamer.Framework.Logging\SimpleRenamer.Logging.csproj">
+      <Project>{455FD77B-4E1B-498B-9D46-518E1E59CDBA}</Project>
+      <Name>SimpleRenamer.Logging</Name>
     </ProjectReference>
     <ProjectReference Include="..\SimpleRenamer.Framework\SimpleRenamer.Common.csproj">
       <Project>{632054A4-2CFC-4E57-BAEE-FD4DDB8F9CD4}</Project>
       <Name>SimpleRenamer.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleRenamer.L0\SimpleRenamer.L0.csproj">
+      <Project>{475D9248-137A-48F1-B72A-3BAA70555AC8}</Project>
+      <Name>SimpleRenamer.L0</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
