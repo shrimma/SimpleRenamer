@@ -11,9 +11,10 @@ namespace SimpleRenamer.Framework
     public class TvdbManager : ITvdbManager
     {
         private string apiKey;
-        private string baseUri;
         private string jwtToken;
         private IRetryHelper retryHelper;
+        private RestClient _restClient;
+
         public TvdbManager(IConfigurationManager configManager, IRetryHelper retryHelp)
         {
             if (configManager == null)
@@ -25,9 +26,10 @@ namespace SimpleRenamer.Framework
                 throw new ArgumentNullException(nameof(retryHelp));
             }
             apiKey = configManager.TvDbApiKey;
-            baseUri = "https://api.thetvdb.com";
             jwtToken = "";
             retryHelper = retryHelp;
+            _restClient = new RestClient("https://api.thetvdb.com");
+            _restClient.AddDefaultHeader("content-type", "application/json");
         }
 
         private async Task Login()
@@ -35,11 +37,10 @@ namespace SimpleRenamer.Framework
             Auth auth = new Auth();
             auth.Apikey = apiKey;
 
-            RestClient client = new RestClient($"{baseUri}/login");
-            var request = new RestRequest(Method.POST);
-            request.AddHeader("content-type", "application/json");
+            //create rest request
+            var request = new RestRequest("login", Method.POST);
             request.AddParameter("application/json", auth.ToJson(), ParameterType.RequestBody);
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
+            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -68,112 +69,259 @@ namespace SimpleRenamer.Framework
             SeriesData series = null;
             SeriesActors actors = null;
             SeriesEpisodes episodes = null;
-            SeriesImageQueryResults posters = null;
+            SeriesImageQueryResults seriesPosters = null;
             SeriesImageQueryResults seasonPosters = null;
             SeriesImageQueryResults seriesBanners = null;
 
-            //get general series data
-            RestClient client = new RestClient($"{baseUri}/series/{tmdbId}");
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("content-type", "application/json");
-            request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            int currentRetry = 0;
+            //get series
+            while (series == null)
             {
-                series = JsonConvert.DeserializeObject<SeriesData>(response.Content);
-            }
-            else
-            {
-                //TODO what to do if login rejected
+                try
+                {
+                    series = await GetSeries(tmdbId);
+                }
+                catch (UnauthorizedAccessException uae)
+                {
+                    //we only want to try and login 3 times
+                    currentRetry++;
+                    if (currentRetry > 3)
+                    {
+                        throw;
+                    }
+                    await Login();
+                }
             }
 
             //get actors
-            client = new RestClient($"{baseUri}/series/{tmdbId}/actors");
-            request = new RestRequest(Method.GET);
-            request.AddHeader("content-type", "application/json");
-            request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            currentRetry = 0;
+            while (actors == null)
             {
-                actors = JsonConvert.DeserializeObject<SeriesActors>(response.Content);
-            }
-            else
-            {
-                //TODO
+                try
+                {
+                    actors = await GetActors(tmdbId);
+                }
+                catch (UnauthorizedAccessException uae)
+                {
+                    //we only want to try and login 3 times
+                    currentRetry++;
+                    if (currentRetry > 3)
+                    {
+                        throw;
+                    }
+                    await Login();
+                }
             }
 
             //get episodes
-            client = new RestClient($"{baseUri}/series/{tmdbId}/episodes");
-            request = new RestRequest(Method.GET);
-            request.AddHeader("content-type", "application/json");
-            request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            currentRetry = 0;
+            while (episodes == null)
             {
-                episodes = JsonConvert.DeserializeObject<SeriesEpisodes>(response.Content);
-            }
-            else
-            {
-                //TODO
+                try
+                {
+                    episodes = await GetEpisodes(tmdbId);
+                }
+                catch (UnauthorizedAccessException uae)
+                {
+                    //we only want to try and login 3 times
+                    currentRetry++;
+                    if (currentRetry > 3)
+                    {
+                        throw;
+                    }
+                    await Login();
+                }
             }
 
             //get series posters
-            client = new RestClient($"{baseUri}/series/{tmdbId}/images/query");
-            request = new RestRequest(Method.GET);
-            request.AddHeader("content-type", "application/json");
-            request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            request.AddParameter("keyType", "poster", ParameterType.QueryString);
-            response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            currentRetry = 0;
+            while (seriesPosters == null)
             {
-                posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
-            }
-            else
-            {
-                //TODO
+                try
+                {
+                    seriesPosters = await GetSeriesPosters(tmdbId);
+                }
+                catch (UnauthorizedAccessException uae)
+                {
+                    //we only want to try and login 3 times
+                    currentRetry++;
+                    if (currentRetry > 3)
+                    {
+                        throw;
+                    }
+                    await Login();
+                }
             }
 
             //get season specific posters
-            client = new RestClient($"{baseUri}/series/{tmdbId}/images/query");
-            request = new RestRequest(Method.GET);
-            request.AddHeader("content-type", "application/json");
-            request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            request.AddParameter("keyType", "season", ParameterType.QueryString);
-            response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            currentRetry = 0;
+            while (seasonPosters == null)
             {
-                seasonPosters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
-            }
-            else
-            {
-                //TODO
+                try
+                {
+                    seasonPosters = await GetSeasonPosters(tmdbId);
+                }
+                catch (UnauthorizedAccessException uae)
+                {
+                    //we only want to try and login 3 times
+                    currentRetry++;
+                    if (currentRetry > 3)
+                    {
+                        throw;
+                    }
+                    await Login();
+                }
             }
 
             //get series banners
-            client = new RestClient($"{baseUri}/series/{tmdbId}/images/query");
-            request = new RestRequest(Method.GET);
-            request.AddHeader("content-type", "application/json");
-            request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            request.AddParameter("keyType", "series", ParameterType.QueryString);
-            response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            currentRetry = 0;
+            while (seriesBanners == null)
             {
-                seriesBanners = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
-            }
-            else
-            {
-                //TODO
+                try
+                {
+                    seriesBanners = await GetSeriesBanners(tmdbId);
+                }
+                catch (UnauthorizedAccessException uae)
+                {
+                    //we only want to try and login 3 times
+                    currentRetry++;
+                    if (currentRetry > 3)
+                    {
+                        throw;
+                    }
+                    await Login();
+                }
             }
 
-            if (series != null && actors != null && episodes != null && posters != null && seasonPosters != null && seriesBanners != null)
+            if (series != null && actors != null && episodes != null && seriesPosters != null && seasonPosters != null && seriesBanners != null)
             {
-                return new CompleteSeries(series.Data, actors.Data, episodes.Data, posters.Data, seasonPosters.Data, seriesBanners.Data);
+                return new CompleteSeries(series.Data, actors.Data, episodes.Data, seriesPosters.Data, seasonPosters.Data, seriesBanners.Data);
             }
             else
             {
                 //TODO this should throw
                 return null;
             }
+        }
+
+        private async Task<SeriesData> GetSeries(string tmdbId)
+        {
+            RestRequest request = new RestRequest($"series/{tmdbId}", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {jwtToken}");
+            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                SeriesData series = JsonConvert.DeserializeObject<SeriesData>(response.Content);
+                return series;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException();
+            }
+            return null;
+        }
+
+        private async Task<SeriesActors> GetActors(string tmdbId)
+        {
+            RestRequest request = new RestRequest($"/series/{tmdbId}/actors", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {jwtToken}");
+            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                SeriesActors actors = JsonConvert.DeserializeObject<SeriesActors>(response.Content);
+                return actors;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException();
+            }
+            return null;
+        }
+
+        private async Task<SeriesEpisodes> GetEpisodes(string tmdbId)
+        {
+            RestRequest request = new RestRequest($"/series/{tmdbId}/episodes", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {jwtToken}");
+            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                SeriesEpisodes episodes = JsonConvert.DeserializeObject<SeriesEpisodes>(response.Content);
+                return episodes;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException();
+            }
+            return null;
+        }
+
+        private async Task<SeriesImageQueryResults> GetSeriesPosters(string tmdbId)
+        {
+            RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {jwtToken}");
+            request.AddParameter("keyType", "poster", ParameterType.QueryString);
+            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
+                return posters;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException();
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                //not found
+                return new SeriesImageQueryResults();
+            }
+            return null;
+        }
+
+        private async Task<SeriesImageQueryResults> GetSeasonPosters(string tmdbId)
+        {
+            RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {jwtToken}");
+            request.AddParameter("keyType", "season", ParameterType.QueryString);
+            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
+                return posters;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException();
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                //not found
+                return new SeriesImageQueryResults();
+            }
+            return null;
+        }
+
+        private async Task<SeriesImageQueryResults> GetSeriesBanners(string tmdbId)
+        {
+            RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {jwtToken}");
+            request.AddParameter("keyType", "series", ParameterType.QueryString);
+            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
+                return posters;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException();
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                //not found
+                return new SeriesImageQueryResults();
+            }
+            return null;
         }
 
         public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName)
@@ -183,12 +331,10 @@ namespace SimpleRenamer.Framework
                 await Login();
             }
 
-            RestClient client = new RestClient($"{baseUri}/search/series");
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("content-type", "application/json");
+            RestRequest request = new RestRequest("/search/series", Method.GET);
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("name", seriesName, ParameterType.QueryString);
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await client.ExecuteTaskAsync(request));
+            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 SearchData data = JsonConvert.DeserializeObject<SearchData>(response.Content);
