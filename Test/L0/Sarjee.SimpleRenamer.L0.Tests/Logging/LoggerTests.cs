@@ -9,6 +9,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
     [TestClass]
     public class LoggerTests
     {
+        #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Logger)]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -77,6 +78,43 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
 
             //check we get a valid object back
             Assert.IsNotNull(logger);
+        }
+        #endregion Constructor
+
+        [TestMethod]
+        [TestCategory(TestCategories.Logger)]
+        public void Logger_TraceMessage_Success()
+        {
+            //setup config
+            var config = new Mock<IConfigurationManager>();
+            config.SetupGet(x => x.OneTrueErrorUrl).Returns("http://localhost/OTE/");
+            config.SetupGet(x => x.OneTrueErrorApplicationKey).Returns("123456789");
+            config.SetupGet(x => x.OneTrueErrorSharedSecret).Returns("987654321");
+            IConfigurationManager configManager = config.Object;
+            ILogger logger = new Logger(configManager);
+
+            //check we get a valid object back
+            Assert.IsNotNull(logger);
+
+            logger.TraceMessage("hello world");
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Logger)]
+        public void Logger_TraceException_Success()
+        {
+            //setup config
+            var config = new Mock<IConfigurationManager>();
+            config.SetupGet(x => x.OneTrueErrorUrl).Returns("http://localhost/OTE/");
+            config.SetupGet(x => x.OneTrueErrorApplicationKey).Returns("123456789");
+            config.SetupGet(x => x.OneTrueErrorSharedSecret).Returns("987654321");
+            IConfigurationManager configManager = config.Object;
+            ILogger logger = new Logger(configManager);
+
+            //check we get a valid object back
+            Assert.IsNotNull(logger);
+
+            logger.TraceException(new ArgumentNullException("lolol"));
         }
     }
 }

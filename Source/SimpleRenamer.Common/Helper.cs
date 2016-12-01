@@ -32,7 +32,20 @@ namespace Sarjee.SimpleRenamer.Common
 
         public bool AreListsEqual<T>(List<T> listOne, List<T> listTwo)
         {
-            return (listOne.Count == listTwo.Count) && !listOne.Except(listTwo).Any();
+            if (listOne.Count != listTwo.Count)
+            {
+                return false;
+            }
+            if (listOne.Except(listTwo).Any())
+            {
+                return false;
+            }
+            if (listTwo.Except(listOne).Any())
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

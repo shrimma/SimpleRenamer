@@ -16,7 +16,6 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
         {
             IBackgroundQueue backgroundQueue = new BackgroundQueue();
 
-            //we shouldnt get here so throw if we do
             Assert.IsNotNull(backgroundQueue);
         }
     }

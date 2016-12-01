@@ -102,8 +102,8 @@ namespace Sarjee.SimpleRenamer.Logging
                 System.Diagnostics.Trace.WriteLine("inner exception message: " + ex.InnerException.Message);
             }
 
-            string innerEx = ex.InnerException == null ? "" : ex.InnerException.Message;
-            string logthis = string.Format("Message: {0}, Caller Member: {1}, Source File Path: {2}, Source Line Number: {3}, Exception: {4}, Message: {5}, Inner Exception: {6}", message, memberName, sourceFilePath, sourceLineNumber.ToString(), ex.ToString(), ex.Message, innerEx);
+            string innerEx = ex.InnerException == null ? "" : $", InnerException: {ex.InnerException.Message}";
+            string logthis = string.Format("Message: {0}, Caller Member: {1}, Source File Path: {2}, Source Line Number: {3}, Exception: {4}, Message: {5}{6}", message, memberName, sourceFilePath, sourceLineNumber.ToString(), ex.ToString(), ex.Message, innerEx);
             log.Fatal(logthis, ex);
         }
     }
