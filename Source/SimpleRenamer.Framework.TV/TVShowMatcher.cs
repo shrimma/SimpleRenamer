@@ -15,31 +15,31 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 {
     public class TVShowMatcher : ITVShowMatcher
     {
-        private ILogger logger;
+        private ILogger _logger;
         private Settings settings;
-        private ITvdbManager tvdbManager;
-        private IConfigurationManager configurationManager;
+        private ITvdbManager _tvdbManager;
+        private IConfigurationManager _configurationManager;
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public TVShowMatcher(IConfigurationManager configManager, ITvdbManager tvdb, ILogger log)
+        public TVShowMatcher(IConfigurationManager configManager, ITvdbManager tvdbManager, ILogger logger)
         {
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
-            if (tvdb == null)
+            if (tvdbManager == null)
             {
-                throw new ArgumentNullException(nameof(tvdb));
+                throw new ArgumentNullException(nameof(tvdbManager));
             }
-            if (log == null)
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(log));
+                throw new ArgumentNullException(nameof(logger));
             }
 
-            configurationManager = configManager;
-            tvdbManager = tvdb;
-            logger = log;
-            settings = configurationManager.Settings;
+            _configurationManager = configManager;
+            _tvdbManager = tvdbManager;
+            _logger = logger;
+            settings = _configurationManager.Settings;
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public async Task<TVEpisodeScrape> ScrapeDetailsAsync(MatchedFile episode)
         {
-            logger.TraceMessage("ScrapeDetailsAsync - Start");
+            _logger.TraceMessage("ScrapeDetailsAsync - Start");
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {episode.FilePath}"));
             //read the mapping file and try and find any already selected matches
             episode = FixMismatchTitles(episode);
@@ -67,7 +67,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             //generate the new file name
             episodeScrape.tvep = GenerateFileName(episodeScrape.tvep);
 
-            logger.TraceMessage("ScrapeDetailsAsync - End");
+            _logger.TraceMessage("ScrapeDetailsAsync - End");
             return episodeScrape;
         }
 
@@ -78,8 +78,8 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         private MatchedFile FixMismatchTitles(MatchedFile episode)
         {
-            ShowNameMapping showNameMapping = configurationManager.ShowNameMappings;
-            logger.TraceMessage("FixMismatchTitles - Start");
+            ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
+            _logger.TraceMessage("FixMismatchTitles - Start");
             if (showNameMapping != null && showNameMapping.Mappings != null && showNameMapping.Mappings.Count > 0)
             {
                 foreach (Mapping m in showNameMapping.Mappings)
@@ -99,7 +99,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 }
             }
 
-            logger.TraceMessage("FixMismatchTitles - End");
+            _logger.TraceMessage("FixMismatchTitles - End");
             return episode;
         }
 
@@ -110,9 +110,9 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         private async Task<TVEpisodeScrape> ScrapeShowAsync(MatchedFile episode)
         {
-            logger.TraceMessage("ScrapeShowAsync - Start");
+            _logger.TraceMessage("ScrapeShowAsync - Start");
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
-            var series = await tvdbManager.SearchSeriesByNameAsync(episode.ShowName);
+            var series = await _tvdbManager.SearchSeriesByNameAsync(episode.ShowName);
             string seriesId = string.Empty;
             //IF we have no results or more than 1 result then flag the file to be manually matched
             if (series == null || series.Count > 1)
@@ -128,18 +128,18 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 episodeScrape = await ScrapeSpecificShow(episode, seriesId, true);
             }
 
-            logger.TraceMessage("ScrapeShowAsync - End");
+            _logger.TraceMessage("ScrapeShowAsync - End");
             return episodeScrape;
         }
 
         private async Task<TVEpisodeScrape> ScrapeSpecificShow(MatchedFile episode, string seriesId, bool newMatch)
         {
-            logger.TraceMessage("ScrapeSpecificShow - Start");
+            _logger.TraceMessage("ScrapeSpecificShow - Start");
             uint season = 0;
             uint.TryParse(episode.Season, out season);
             int episodeNumber = 0;
             int.TryParse(episode.Episode, out episodeNumber);
-            CompleteSeries matchedSeries = await tvdbManager.GetSeriesByIdAsync(seriesId);
+            CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(seriesId);
             episode.TVDBShowId = seriesId;
             episode.ShowName = matchedSeries.Series.SeriesName;
             episode.EpisodeName = matchedSeries.Episodes.Where(s => s.AiredSeason.Value == season && s.AiredEpisodeNumber == episodeNumber).FirstOrDefault().EpisodeName;
@@ -153,7 +153,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 episode.ShowImage = matchedSeries.Posters.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName;
             }
 
-            logger.TraceMessage("ScrapeSpecificShow - End");
+            _logger.TraceMessage("ScrapeSpecificShow - End");
             return new TVEpisodeScrape(episode, matchedSeries);
         }
 
@@ -161,8 +161,8 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             return await Task.Run(async () =>
             {
-                logger.TraceMessage("GetPossibleShowsForEpisode - Start");
-                var series = await tvdbManager.SearchSeriesByNameAsync(showName);
+                _logger.TraceMessage("GetPossibleShowsForEpisode - Start");
+                var series = await _tvdbManager.SearchSeriesByNameAsync(showName);
                 DateTime dt = new DateTime();
                 string airedDate;
                 List<ShowView> shows = new List<ShowView>();
@@ -189,7 +189,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     }
                 }
 
-                logger.TraceMessage("SelectShowFromListGetPossibleShowsForEpisode - End");
+                _logger.TraceMessage("SelectShowFromListGetPossibleShowsForEpisode - End");
                 return shows;
             });
         }
@@ -211,13 +211,13 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
                     if (episodeScrape.series != null)
                     {
-                        ShowNameMapping showNameMapping = configurationManager.ShowNameMappings;
+                        ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
                         Mapping map = new Mapping(episodeScrape.tvep.ShowName, episodeScrape.series.Series.SeriesName, episodeScrape.series.Series.Id.ToString());
                         if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                         {
                             showNameMapping.Mappings.Add(map);
                         }
-                        configurationManager.ShowNameMappings = showNameMapping;
+                        _configurationManager.ShowNameMappings = showNameMapping;
                     }
                     episodeScrape.tvep.FileType = FileType.TvShow;
                 }
@@ -240,7 +240,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         private MatchedFile GenerateFileName(MatchedFile episode)
         {
-            logger.TraceMessage("GenerateFileName - Start");
+            _logger.TraceMessage("GenerateFileName - Start");
 
             string temp = settings.NewFileNameFormat;
             if (temp.Contains("{ShowName}"))
@@ -261,16 +261,16 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
             episode.NewFileName = temp;
 
-            logger.TraceMessage("GenerateFileName - End");
+            _logger.TraceMessage("GenerateFileName - End");
             return episode;
         }
 
         private string RemoveSpecialCharacters(string input)
         {
-            logger.TraceMessage("RemoveSpecialCharacters - Start");
+            _logger.TraceMessage("RemoveSpecialCharacters - Start");
             string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
             Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
-            logger.TraceMessage("RemoveSpecialCharacters - End");
+            _logger.TraceMessage("RemoveSpecialCharacters - End");
             return r.Replace(input, "");
         }
     }

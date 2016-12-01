@@ -13,20 +13,20 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     public class FileMatcher : IFileMatcher
     {
         private RegexFile regexExpressions;
-        private ILogger logger;
+        private ILogger _logger;
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public FileMatcher(ILogger log, IConfigurationManager configManager)
+        public FileMatcher(ILogger logger, IConfigurationManager configManager)
         {
-            if (log == null)
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(log));
+                throw new ArgumentNullException(nameof(logger));
             }
             if (configManager == null)
             {
-                throw new ArgumentNullException(nameof(log));
+                throw new ArgumentNullException(nameof(configManager));
             }
-            logger = log;
+            _logger = logger;
             regexExpressions = configManager.RegexExpressions;
         }
 
@@ -44,7 +44,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 if (episode != null)
                 {
                     //if episode is not null then we matched so add to the output list
-                    logger.TraceMessage(string.Format("Matched {0}", episode.FilePath));
+                    _logger.TraceMessage(string.Format("Matched {0}", episode.FilePath));
                     lock (lockList)
                     {
                         episodes.Add(episode);
@@ -53,7 +53,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 else
                 {
                     //else we couldn't match the file so add a file with just filepath so user can manually match
-                    logger.TraceMessage(string.Format("Couldn't find a match!"));
+                    _logger.TraceMessage(string.Format("Couldn't find a match!"));
                     episode = new MatchedFile(file, Path.GetFileNameWithoutExtension(file));
                     lock (lockList)
                     {
@@ -68,7 +68,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
         private async Task<MatchedFile> SearchFileNameAsync(string fileName, CancellationToken ct)
         {
-            logger.TraceMessage("SearchFileNameAsync - Start");
+            _logger.TraceMessage("SearchFileNameAsync - Start");
             string showname = null;
             string season = null;
             string episode = null;
@@ -96,7 +96,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                             if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
                             {
                                 //if we found a showname, season, and episode in the filename then this is a match
-                                logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
+                                _logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
                                 return new MatchedFile(fileName, showname, season, episode);
                             }
                         }
@@ -110,7 +110,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                             if (!string.IsNullOrEmpty(movieTitle) && !string.IsNullOrEmpty(yearString))
                             {
                                 //if we found a movie title and year then this is a match
-                                logger.TraceMessage("SearchFileNameAsync - Found movietitle, and year in file name");
+                                _logger.TraceMessage("SearchFileNameAsync - Found movietitle, and year in file name");
                                 return new MatchedFile(fileName, movieTitle, year);
                             }
                         }
@@ -119,18 +119,18 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 catch (Exception ex)
                 {
                     //we don't really care if one of the regex fails so swallow this exception
-                    logger.TraceException(ex, $"The REGEXP {exp.Expression} failed on {fileName}");
+                    _logger.TraceException(ex, $"The REGEXP {exp.Expression} failed on {fileName}");
                 }
                 ct.ThrowIfCancellationRequested();
             }
 
-            logger.TraceMessage("SearchFileNameAsync - No regex could match the file - End");
+            _logger.TraceMessage("SearchFileNameAsync - No regex could match the file - End");
             return null;
         }
 
         private string GetTrueShowName(string input)
         {
-            logger.TraceMessage("GetTrueShowName - Start");
+            _logger.TraceMessage("GetTrueShowName - Start");
             string output = null;
             string[] words = input.Split('.');
             int i = 1;
@@ -147,22 +147,22 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 i++;
             }
 
-            logger.TraceMessage("GetTrueShowName - End");
+            _logger.TraceMessage("GetTrueShowName - End");
             return output.Trim();
         }
 
         private bool IsJoiningWord(string input)
         {
-            logger.TraceMessage("IsJoiningWord - Start");
+            _logger.TraceMessage("IsJoiningWord - Start");
             foreach (string word in JoiningWords)
             {
                 if (input.Equals(word.ToLowerInvariant()))
                 {
-                    logger.TraceMessage("IsJoiningWord - True");
+                    _logger.TraceMessage("IsJoiningWord - True");
                     return true;
                 }
             }
-            logger.TraceMessage("IsJoiningWord - False");
+            _logger.TraceMessage("IsJoiningWord - False");
             return false;
         }
         private string[] JoiningWords

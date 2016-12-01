@@ -10,35 +10,35 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 {
     public class GetMovieDetails : IGetMovieDetails
     {
-        private ILogger logger;
-        private ITmdbManager tmdbManager;
+        private ILogger _logger;
+        private ITmdbManager _tmdbManager;
 
-        public GetMovieDetails(ILogger log, ITmdbManager tmdb)
+        public GetMovieDetails(ILogger logger, ITmdbManager tmdbManager)
         {
-            if (log == null)
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(log));
+                throw new ArgumentNullException(nameof(logger));
             }
-            if (tmdb == null)
+            if (tmdbManager == null)
             {
-                throw new ArgumentNullException(nameof(tmdb));
+                throw new ArgumentNullException(nameof(tmdbManager));
             }
 
-            logger = log;
-            tmdbManager = tmdb;
+            _logger = logger;
+            _tmdbManager = tmdbManager;
         }
 
 
         public async Task<MovieInfo> GetMovieWithBanner(string movieId, CancellationToken ct)
         {
-            logger.TraceMessage("GetMovieInfo - Start");
-            MovieCredits matchedMovie = await tmdbManager.GetMovieAsync(movieId);
+            _logger.TraceMessage("GetMovieInfo - Start");
+            MovieCredits matchedMovie = await _tmdbManager.GetMovieAsync(movieId);
             BitmapImage bannerImage = new BitmapImage();
 
             if (!string.IsNullOrEmpty(matchedMovie.Movie.PosterPath))
             {
                 bannerImage.BeginInit();
-                bannerImage.UriSource = new Uri(await tmdbManager.GetPosterUriAsync(matchedMovie.Movie.PosterPath));
+                bannerImage.UriSource = new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.Movie.PosterPath));
                 bannerImage.EndInit();
             }
             else
@@ -46,7 +46,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 //TODO add a not found poster
             }
 
-            logger.TraceMessage("GetMovieInfo - End");
+            _logger.TraceMessage("GetMovieInfo - End");
             return new MovieInfo(matchedMovie, bannerImage);
         }
     }

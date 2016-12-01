@@ -11,33 +11,33 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     public class FileMover : IFileMover
     {
         private bool? OnMonoCached;
-        private IBannerDownloader bannerDownloader;
-        private ILogger logger;
+        private IBannerDownloader _bannerDownloader;
+        private ILogger _logger;
         private Settings settings;
 
-        public FileMover(IBannerDownloader bannerDl, ILogger log, IConfigurationManager configManager)
+        public FileMover(IBannerDownloader bannerDownloader, ILogger logger, IConfigurationManager configManager)
         {
-            if (bannerDl == null)
+            if (bannerDownloader == null)
             {
-                throw new ArgumentNullException(nameof(bannerDl));
+                throw new ArgumentNullException(nameof(bannerDownloader));
             }
-            if (log == null)
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(log));
+                throw new ArgumentNullException(nameof(logger));
             }
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
 
-            bannerDownloader = bannerDl;
-            logger = log;
+            _bannerDownloader = bannerDownloader;
+            _logger = logger;
             settings = configManager.Settings;
         }
 
         public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner)
         {
-            logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - Start");
+            _logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - Start");
             FileMoveResult result = new FileMoveResult(true, episode);
             string ext = Path.GetExtension(episode.FilePath);
             if (episode.FileType == FileType.TvShow)
@@ -69,18 +69,18 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                         if (!string.IsNullOrEmpty(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
                         {
                             //Grab Show banner if required
-                            bannerResult = await bannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
+                            bannerResult = await _bannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
                         }
                         if (!string.IsNullOrEmpty(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))
                         {
                             //Grab Season banner if required
-                            bannerResult = await bannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
+                            bannerResult = await _bannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.TraceException(ex);
+                    _logger.TraceException(ex);
                     //we don't really care if image download fails
                 }
             }
@@ -95,13 +95,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 }
             }
 
-            logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - End");
+            _logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - End");
             return result;
         }
 
         public async Task<bool> MoveFileAsync(MatchedFile episode, string destinationFilePath, CancellationToken ct)
         {
-            logger.TraceMessage("MoveFileAsync - Start");
+            _logger.TraceMessage("MoveFileAsync - Start");
             FileInfo fromFile = new FileInfo(episode.FilePath);
             FileInfo toFile = new FileInfo(destinationFilePath);
             if (QuickOperation(fromFile, toFile))
@@ -113,19 +113,19 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 CopyItOurself(settings, fromFile, toFile, ct);
             }
 
-            logger.TraceMessage("MoveFileAsync - End");
+            _logger.TraceMessage("MoveFileAsync - End");
             return true;
         }
 
         private bool QuickOperation(FileInfo fromFile, FileInfo toFile)
         {
-            logger.TraceMessage("QuickOperation - Start");
+            _logger.TraceMessage("QuickOperation - Start");
             if ((fromFile == null) || (toFile == null) || (fromFile.Directory == null) || (toFile.Directory == null))
             {
                 return false;
             }
 
-            logger.TraceMessage("QuickOperation - End");
+            _logger.TraceMessage("QuickOperation - End");
             return (settings.RenameFiles && !settings.CopyFiles && (fromFile.Directory.Root.FullName.ToLower() == toFile.Directory.Root.FullName.ToLower())); // same device ... TODO: UNC paths?
         }
 
@@ -151,7 +151,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
         private void OSMoveRename(FileInfo fromFile, FileInfo toFile)
         {
-            logger.TraceMessage("OSMoveRename - Start");
+            _logger.TraceMessage("OSMoveRename - Start");
             if (FileIsSame(fromFile, toFile))
             {
                 // XP won't actually do a rename if its only a case difference
@@ -164,7 +164,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 fromFile.MoveTo(toFile.FullName);
             }
             KeepTimestamps(fromFile, toFile);
-            logger.TraceMessage("OSMoveRename - End");
+            _logger.TraceMessage("OSMoveRename - End");
         }
 
         private bool OnMono()
@@ -183,7 +183,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
         private void CopyItOurself(Settings settings, FileInfo fromFile, FileInfo toFile, CancellationToken ct)
         {
-            logger.TraceMessage("CopyItOurself - Start");
+            _logger.TraceMessage("CopyItOurself - Start");
             const int kArrayLength = 1 * 1024 * 1024;
             Byte[] dataArray = new Byte[kArrayLength];
 
@@ -271,7 +271,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             } // try
             catch (System.Threading.ThreadAbortException tae)
             {
-                logger.TraceException(tae);
+                _logger.TraceException(tae);
                 if (useWin32)
                 {
                     NicelyStopAndCleanUp_Win32(copier, toFile);
@@ -284,7 +284,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
             catch (OperationCanceledException oce)
             {
-                logger.TraceException(oce);
+                _logger.TraceException(oce);
                 if (useWin32)
                 {
                     NicelyStopAndCleanUp_Win32(copier, toFile);
@@ -298,7 +298,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
                 if (useWin32)
                 {
                     NicelyStopAndCleanUp_Win32(copier, toFile);
@@ -310,7 +310,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 throw;
             }
 
-            logger.TraceMessage("CopyItOurself - End");
+            _logger.TraceMessage("CopyItOurself - End");
         }
 
         private void NicelyStopAndCleanUp_Win32(WinFileIO copier, FileInfo toFile)

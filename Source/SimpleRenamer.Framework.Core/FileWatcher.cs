@@ -11,34 +11,34 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 {
     public class FileWatcher : IFileWatcher
     {
-        private ILogger logger;
-        private IConfigurationManager configurationManager;
+        private ILogger _logger;
+        private IConfigurationManager _configurationManager;
         private Settings settings;
         private IgnoreList ignoreList;
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public FileWatcher(ILogger log, IConfigurationManager configManager)
+        public FileWatcher(ILogger logger, IConfigurationManager configManager)
         {
-            if (log == null)
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(log));
+                throw new ArgumentNullException(nameof(logger));
             }
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
-            logger = log;
-            configurationManager = configManager;
-            settings = configurationManager.Settings;
+            _logger = logger;
+            _configurationManager = configManager;
+            settings = _configurationManager.Settings;
         }
 
         public async Task<List<string>> SearchTheseFoldersAsync(CancellationToken ct)
         {
-            logger.TraceMessage("SearchTheseFoldersAsync - Start");
+            _logger.TraceMessage("SearchTheseFoldersAsync - Start");
             List<string> foundFiles = new List<string>();
             //grab the list of ignored files
 
-            ignoreList = configurationManager.IgnoredFiles;
+            ignoreList = _configurationManager.IgnoredFiles;
             //FOR EACH WATCH FOLDER
             foreach (string folder in settings.WatchFolders)
             {
@@ -59,7 +59,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
 
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Searched all watch folders for video files"));
-            logger.TraceMessage("SearchTheseFoldersAsync - End");
+            _logger.TraceMessage("SearchTheseFoldersAsync - End");
 
             return foundFiles;
         }
@@ -72,7 +72,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private List<string> SearchThisFolder(string dir, CancellationToken ct)
         {
-            logger.TraceMessage("SearchThisFolder - Start");
+            _logger.TraceMessage("SearchThisFolder - Start");
             List<string> foundFiles = new List<string>();
             foreach (string file in Directory.GetFiles(dir, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
@@ -84,7 +84,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 ct.ThrowIfCancellationRequested();
             }
 
-            logger.TraceMessage("SearchThisFolder - End");
+            _logger.TraceMessage("SearchThisFolder - End");
             return foundFiles;
         }
 
@@ -96,17 +96,17 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private bool IsValidExtension(string input)
         {
-            logger.TraceMessage("SearchThisFolderIsValidExtension - Start");
+            _logger.TraceMessage("SearchThisFolderIsValidExtension - Start");
             foreach (string extension in settings.ValidExtensions)
             {
                 if (input.ToLowerInvariant().Equals(extension.ToLowerInvariant()))
                 {
-                    logger.TraceMessage("SearchThisFolderIsValidExtension - True");
+                    _logger.TraceMessage("SearchThisFolderIsValidExtension - True");
                     return true;
                 }
             }
 
-            logger.TraceMessage("SearchThisFolderIsValidExtension - False");
+            _logger.TraceMessage("SearchThisFolderIsValidExtension - False");
             return false;
         }
     }

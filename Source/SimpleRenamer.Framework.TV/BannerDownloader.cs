@@ -9,38 +9,38 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 {
     public class BannerDownloader : IBannerDownloader
     {
-        private ILogger logger;
-        private ITvdbManager tvdbManager;
+        private ILogger _logger;
+        private ITvdbManager _tvdbManager;
 
-        public BannerDownloader(ILogger log, ITvdbManager tvdb)
+        public BannerDownloader(ILogger logger, ITvdbManager tvdbManager)
         {
-            if (log == null)
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(log));
+                throw new ArgumentNullException(nameof(logger));
             }
-            if (tvdb == null)
+            if (tvdbManager == null)
             {
-                throw new ArgumentNullException(nameof(tvdb));
+                throw new ArgumentNullException(nameof(tvdbManager));
             }
 
-            logger = log;
-            tvdbManager = tvdb;
+            _logger = logger;
+            _tvdbManager = tvdbManager;
         }
 
         /// <inheritdoc/>
         public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder)
         {
-            logger.TraceMessage("SaveBannerAsync - Start");
+            _logger.TraceMessage("SaveBannerAsync - Start");
             string fullBannerPath = Path.Combine(destinationFolder, "Folder.jpg");
             if (!File.Exists(fullBannerPath))
             {
                 using (WebClient client = new WebClient())
                 {
-                    client.DownloadFileAsync(new Uri(tvdbManager.GetBannerUri(tvdbBannerPath)), fullBannerPath);
+                    client.DownloadFileAsync(new Uri(_tvdbManager.GetBannerUri(tvdbBannerPath)), fullBannerPath);
                 }
             }
 
-            logger.TraceMessage("SaveBannerAsync - End");
+            _logger.TraceMessage("SaveBannerAsync - End");
             return true;
         }
     }

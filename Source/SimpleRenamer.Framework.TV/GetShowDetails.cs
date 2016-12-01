@@ -10,33 +10,33 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 {
     public class GetShowDetails : IGetShowDetails
     {
-        private ILogger logger;
-        private ITvdbManager tvdbManager;
+        private ILogger _logger;
+        private ITvdbManager _tvdbManager;
 
-        public GetShowDetails(ILogger log, ITvdbManager tvdb)
+        public GetShowDetails(ILogger logger, ITvdbManager tvdbManager)
         {
-            if (log == null)
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(log));
+                throw new ArgumentNullException(nameof(logger));
             }
-            if (tvdb == null)
+            if (tvdbManager == null)
             {
-                throw new ArgumentNullException(nameof(tvdb));
+                throw new ArgumentNullException(nameof(tvdbManager));
             }
 
-            logger = log;
-            tvdbManager = tvdb;
+            _logger = logger;
+            _tvdbManager = tvdbManager;
         }
 
         public async Task<SeriesWithBanner> GetShowWithBannerAsync(string showId)
         {
-            logger.TraceMessage("GetSeriesInfo - Start");
-            CompleteSeries matchedSeries = await tvdbManager.GetSeriesByIdAsync(showId);
+            _logger.TraceMessage("GetSeriesInfo - Start");
+            CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(showId);
             BitmapImage bannerImage = new BitmapImage();
             if (matchedSeries.SeriesBanners != null && matchedSeries.SeriesBanners.Count > 0)
             {
                 bannerImage.BeginInit();
-                bannerImage.UriSource = new Uri(tvdbManager.GetBannerUri(matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName));
+                bannerImage.UriSource = new Uri(_tvdbManager.GetBannerUri(matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName));
                 bannerImage.EndInit();
             }
             else
@@ -44,7 +44,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 //TODO create a no image found banner
             }
 
-            logger.TraceMessage("GetSeriesInfo - End");
+            _logger.TraceMessage("GetSeriesInfo - End");
             return new SeriesWithBanner(matchedSeries, bannerImage);
         }
     }

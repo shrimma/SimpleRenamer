@@ -28,13 +28,13 @@ namespace Sarjee.SimpleRenamer
         private ObservableCollection<MatchedFile> scannedEpisodes;
 
         //here are all our interfaces
-        private ILogger logger;
-        private ITVShowMatcher tvShowMatcher;
-        private IMovieMatcher movieMatcher;
-        private IDependencyInjectionContext injectionContext;
-        private IScanFiles scanForShows;
-        private IActionMatchedFiles performActionsOnShows;
-        private IConfigurationManager configurationManager;
+        private ILogger _logger;
+        private ITVShowMatcher _tvShowMatcher;
+        private IMovieMatcher _movieMatcher;
+        private IDependencyInjectionContext _injectionContext;
+        private IScanFiles _scanFiles;
+        private IActionMatchedFiles _actionMatchedFiles;
+        private IConfigurationManager _configurationManager;
         private SelectShowWindow selectShowWindow;
         private ShowDetailsWindow showDetailsWindow;
         private MovieDetailsWindow movieDetailsWindow;
@@ -46,70 +46,70 @@ namespace Sarjee.SimpleRenamer
         private string MediaTypePath;
         private string MediaTypeShowName;
 
-        public MainWindow(ILogger log, ITVShowMatcher tvShowMatch, IMovieMatcher movieMatch, IDependencyInjectionContext injection, IActionMatchedFiles performActions, IScanFiles scanShows, IConfigurationManager configManager)
+        public MainWindow(ILogger logger, ITVShowMatcher tvShowMatcher, IMovieMatcher movieMatcher, IDependencyInjectionContext injectionContext, IActionMatchedFiles actionMatchedFiles, IScanFiles scanFiles, IConfigurationManager configManager)
         {
-            if (log == null)
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(log));
+                throw new ArgumentNullException(nameof(logger));
             }
-            if (tvShowMatch == null)
+            if (tvShowMatcher == null)
             {
-                throw new ArgumentNullException(nameof(tvShowMatch));
+                throw new ArgumentNullException(nameof(tvShowMatcher));
             }
-            if (movieMatch == null)
+            if (movieMatcher == null)
             {
-                throw new ArgumentNullException(nameof(movieMatch));
+                throw new ArgumentNullException(nameof(movieMatcher));
             }
-            if (injection == null)
+            if (injectionContext == null)
             {
-                throw new ArgumentNullException(nameof(injection));
+                throw new ArgumentNullException(nameof(injectionContext));
             }
-            if (scanShows == null)
+            if (scanFiles == null)
             {
-                throw new ArgumentNullException(nameof(scanShows));
+                throw new ArgumentNullException(nameof(scanFiles));
             }
-            if (performActions == null)
+            if (actionMatchedFiles == null)
             {
-                throw new ArgumentNullException(nameof(performActions));
+                throw new ArgumentNullException(nameof(actionMatchedFiles));
             }
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
-            logger = log;
-            tvShowMatcher = tvShowMatch;
-            movieMatcher = movieMatch;
-            injectionContext = injection;
-            scanForShows = scanShows;
-            performActionsOnShows = performActions;
-            configurationManager = configManager;
+            _logger = logger;
+            _tvShowMatcher = tvShowMatcher;
+            _movieMatcher = movieMatcher;
+            _injectionContext = injectionContext;
+            _scanFiles = scanFiles;
+            _actionMatchedFiles = actionMatchedFiles;
+            _configurationManager = configManager;
 
             try
             {
                 InitializeComponent();
-                logger.TraceMessage("Starting Application");
-                showDetailsWindow = injectionContext.GetService<ShowDetailsWindow>();
-                movieDetailsWindow = injectionContext.GetService<MovieDetailsWindow>();
-                settingsWindow = injectionContext.GetService<SettingsWindow>();
-                selectShowWindow = injectionContext.GetService<SelectShowWindow>();
+                _logger.TraceMessage("Starting Application");
+                showDetailsWindow = _injectionContext.GetService<ShowDetailsWindow>();
+                movieDetailsWindow = _injectionContext.GetService<MovieDetailsWindow>();
+                settingsWindow = _injectionContext.GetService<SettingsWindow>();
+                selectShowWindow = _injectionContext.GetService<SelectShowWindow>();
                 selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
-                settings = configurationManager.Settings;
+                settings = _configurationManager.Settings;
                 scannedEpisodes = new ObservableCollection<MatchedFile>();
                 ShowsListBox.ItemsSource = scannedEpisodes;
                 ShowsListBox.SizeChanged += ListView_SizeChanged;
                 ShowsListBox.Loaded += ListView_Loaded;
 
                 //setup the perform actions event handlers
-                performActionsOnShows.RaiseFileMovedEvent += PerformActionsOnShows_RaiseFileMovedEvent;
-                performActionsOnShows.RaiseFilePreProcessedEvent += PerformActionsOnShows_RaiseFilePreProcessedEvent;
-                performActionsOnShows.RaiseProgressEvent += ProgressTextEvent;
-                scanForShows.RaiseProgressEvent += ProgressTextEvent;
+                _actionMatchedFiles.RaiseFileMovedEvent += PerformActionsOnShows_RaiseFileMovedEvent;
+                _actionMatchedFiles.RaiseFilePreProcessedEvent += PerformActionsOnShows_RaiseFilePreProcessedEvent;
+                _actionMatchedFiles.RaiseProgressEvent += ProgressTextEvent;
+                _scanFiles.RaiseProgressEvent += ProgressTextEvent;
                 ScanButton.IsEnabled = IsScanEnabled();
                 this.Closing += MainWindow_Closing;
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
@@ -191,16 +191,16 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
-                logger.TraceMessage("Closing");
+                _logger.TraceMessage("Closing");
                 if (CancelButton.Visibility == Visibility.Visible)
                 {
                     e.Cancel = true;
                 }
-                configurationManager.SaveConfiguration();
+                _configurationManager.SaveConfiguration();
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
@@ -260,26 +260,26 @@ namespace Sarjee.SimpleRenamer
                 //set to indeterminate so it keeps looping while scanning
                 FileMoveProgressBar.IsIndeterminate = true;
 
-                logger.TraceMessage(string.Format("Starting"));
-                var ep = await scanForShows.Scan(cts.Token);
+                _logger.TraceMessage(string.Format("Starting"));
+                var ep = await _scanFiles.Scan(cts.Token);
                 scannedEpisodes = new ObservableCollection<MatchedFile>(ep);
-                logger.TraceMessage($"Grabbed {scannedEpisodes.Count} episodes");
+                _logger.TraceMessage($"Grabbed {scannedEpisodes.Count} episodes");
                 ShowsListBox.ItemsSource = scannedEpisodes;
-                logger.TraceMessage($"Populated listbox with the scanned episodes");
+                _logger.TraceMessage($"Populated listbox with the scanned episodes");
                 //add a bit of delay before the progress bar disappears
                 await Task.Delay(TimeSpan.FromMilliseconds(300));
             }
             catch (OperationCanceledException)
             {
-                logger.TraceMessage("User canceled scan");
+                _logger.TraceMessage("User canceled scan");
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
             finally
             {
-                logger.TraceMessage("Finished");
+                _logger.TraceMessage("Finished");
                 EnableUi();
             }
         }
@@ -296,7 +296,7 @@ namespace Sarjee.SimpleRenamer
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
@@ -306,12 +306,12 @@ namespace Sarjee.SimpleRenamer
             {
                 //show the settings window
                 settingsWindow.ShowDialog();
-                settings = configurationManager.Settings;
+                settings = _configurationManager.Settings;
                 ScanButton.IsEnabled = IsScanEnabled();
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
@@ -324,24 +324,24 @@ namespace Sarjee.SimpleRenamer
                 //set to indeterminate so it keeps looping while scanning
                 FileMoveProgressBar.IsIndeterminate = false;
                 //process the folders and jpg downloads async
-                logger.TraceMessage(string.Format("Starting"));
+                _logger.TraceMessage(string.Format("Starting"));
                 FileMoveProgressBar.Value = 0;
                 FileMoveProgressBar.Maximum = (scannedEpisodes.Where(x => x.ActionThis == true).Count()) * 2;
-                await performActionsOnShows.Action(scannedEpisodes, cts.Token);
+                await _actionMatchedFiles.Action(scannedEpisodes, cts.Token);
                 //add a bit of delay before the progress bar disappears
                 await Task.Delay(TimeSpan.FromMilliseconds(300));
             }
             catch (OperationCanceledException)
             {
-                logger.TraceMessage("User canceled actions");
+                _logger.TraceMessage("User canceled actions");
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
             finally
             {
-                logger.TraceMessage("Finished");
+                _logger.TraceMessage("Finished");
                 EnableUi();
             }
         }
@@ -367,7 +367,7 @@ namespace Sarjee.SimpleRenamer
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
@@ -399,11 +399,11 @@ namespace Sarjee.SimpleRenamer
                 MatchedFile updatedFile;
                 if (e.Type == FileType.TvShow)
                 {
-                    updatedFile = await tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp);
+                    updatedFile = await _tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp);
                 }
                 else
                 {
-                    updatedFile = await movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp);
+                    updatedFile = await _movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp);
                 }
 
                 //if selection wasn't skipped then update the selected item
@@ -416,7 +416,7 @@ namespace Sarjee.SimpleRenamer
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
@@ -428,7 +428,7 @@ namespace Sarjee.SimpleRenamer
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
@@ -438,17 +438,17 @@ namespace Sarjee.SimpleRenamer
             {
                 IgnoreFlyout.IsOpen = false;
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
-                IgnoreList ignoreList = configurationManager.IgnoredFiles;
+                IgnoreList ignoreList = _configurationManager.IgnoredFiles;
                 if (!ignoreList.IgnoreFiles.Contains(tempEp.FilePath))
                 {
                     ignoreList.IgnoreFiles.Add(tempEp.FilePath);
                     scannedEpisodes.Remove(tempEp);
-                    configurationManager.IgnoredFiles = ignoreList;
+                    _configurationManager.IgnoredFiles = ignoreList;
                 }
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
@@ -491,7 +491,7 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
-                logger.TraceMessage("Show Detail button clicked");
+                _logger.TraceMessage("Show Detail button clicked");
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 if (tempEp.FileType == FileType.TvShow)
                 {
@@ -506,7 +506,7 @@ namespace Sarjee.SimpleRenamer
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
@@ -514,31 +514,31 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
-                logger.TraceMessage("Edit button clicked");
+                _logger.TraceMessage("Edit button clicked");
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 if (tempEp.FileType == FileType.TvShow)
                 {
-                    logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
-                    ShowNameMapping snm = configurationManager.ShowNameMappings;
+                    _logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
+                    ShowNameMapping snm = _configurationManager.ShowNameMappings;
                     if (snm != null && snm.Mappings.Count > 0)
                     {
-                        logger.TraceMessage(string.Format("Mappings available"));
+                        _logger.TraceMessage(string.Format("Mappings available"));
                         Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(tempEp.TVDBShowId)).FirstOrDefault();
                         if (mapping != null)
                         {
-                            logger.TraceMessage(string.Format("Mapping found {0}", mapping.FileShowName));
+                            _logger.TraceMessage(string.Format("Mapping found {0}", mapping.FileShowName));
                             ShowEditShowWindow(tempEp, mapping);
                         }
                         else
                         {
-                            logger.TraceMessage(string.Format("Mapping could not be found!"));
+                            _logger.TraceMessage(string.Format("Mapping could not be found!"));
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
@@ -555,7 +555,7 @@ namespace Sarjee.SimpleRenamer
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
@@ -589,21 +589,21 @@ namespace Sarjee.SimpleRenamer
 
                 if (updateMapping)
                 {
-                    ShowNameMapping snm = configurationManager.ShowNameMappings;
+                    ShowNameMapping snm = _configurationManager.ShowNameMappings;
                     if (snm != null && snm.Mappings.Count > 0)
                     {
                         Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(EditShowTvdbId)).FirstOrDefault();
                         if (mapping != null)
                         {
                             mapping.CustomFolderName = currentText;
-                            configurationManager.ShowNameMappings = snm;
+                            _configurationManager.ShowNameMappings = snm;
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 

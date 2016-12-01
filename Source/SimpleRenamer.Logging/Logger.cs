@@ -14,11 +14,28 @@ namespace Sarjee.SimpleRenamer.Logging
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
+            if (string.IsNullOrWhiteSpace(configManager.OneTrueErrorUrl))
+            {
+                throw new ArgumentNullException(nameof(configManager.OneTrueErrorUrl));
+            }
+            if (string.IsNullOrWhiteSpace(configManager.OneTrueErrorApplicationKey))
+            {
+                throw new ArgumentNullException(nameof(configManager.OneTrueErrorApplicationKey));
+            }
+            if (string.IsNullOrWhiteSpace(configManager.OneTrueErrorSharedSecret))
+            {
+                throw new ArgumentNullException(nameof(configManager.OneTrueErrorSharedSecret));
+            }
+
+            //log4net config
             log = log4net.LogManager.GetLogger(typeof(Logger));
             log4net.Config.XmlConfigurator.Configure();
 
+            //TODO FACTOR THIS OUT WITH A HTTPS CERT
             //ignore the certificate issue with OTE server
             IgnoreBadCertificate();
+
+            //OTE config
             OneTrue.Configuration.Credentials(new Uri(configManager.OneTrueErrorUrl), configManager.OneTrueErrorApplicationKey, configManager.OneTrueErrorSharedSecret);
             OneTrue.Configuration.CatchLog4NetExceptions();
         }

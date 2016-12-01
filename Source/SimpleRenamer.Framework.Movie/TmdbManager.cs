@@ -11,22 +11,22 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
     public class TmdbManager : ITmdbManager
     {
         private string apiKey;
-        private IRetryHelper retryHelper;
+        private IRetryHelper _retryHelper;
         private string posterBaseUri;
         private RestClient _restClient;
 
-        public TmdbManager(IConfigurationManager configManager, IRetryHelper retryHelp)
+        public TmdbManager(IConfigurationManager configManager, IRetryHelper retryHelper)
         {
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
-            if (retryHelp == null)
+            if (retryHelper == null)
             {
-                throw new ArgumentNullException(nameof(retryHelp));
+                throw new ArgumentNullException(nameof(retryHelper));
             }
             apiKey = configManager.TmDbApiKey;
-            retryHelper = retryHelp;
+            _retryHelper = retryHelper;
             _restClient = new RestClient("https://api.themoviedb.org");
             _restClient.AddDefaultHeader("content-type", "application/json");
         }
@@ -46,7 +46,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 
             RestRequest request = new RestRequest(resource, Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -65,7 +65,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             Credits credits = null;
             RestRequest request = new RestRequest($"/3/movie/{movieId}?api_key={apiKey}", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 movie = JsonConvert.DeserializeObject<Common.Movie.Model.Movie>(response.Content);
@@ -77,7 +77,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 
             request = new RestRequest($"/3/movie/{movieId}/credits?api_key={apiKey}", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 credits = JsonConvert.DeserializeObject<Credits>(response.Content);
@@ -99,7 +99,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             var request = new RestRequest($"/3/movie/{movieId}?api_key={apiKey}", Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -119,7 +119,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             {
                 RestRequest request = new RestRequest($"/3/configuration?api_key={apiKey}", Method.GET);
                 request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-                IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+                IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {

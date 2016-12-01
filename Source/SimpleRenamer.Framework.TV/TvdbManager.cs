@@ -13,22 +13,22 @@ namespace Sarjee.SimpleRenamer.Framework.TV
     {
         private string apiKey;
         private string jwtToken;
-        private IRetryHelper retryHelper;
+        private IRetryHelper _retryHelper;
         private RestClient _restClient;
 
-        public TvdbManager(IConfigurationManager configManager, IRetryHelper retryHelp)
+        public TvdbManager(IConfigurationManager configManager, IRetryHelper retryHelper)
         {
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
-            if (retryHelp == null)
+            if (retryHelper == null)
             {
-                throw new ArgumentNullException(nameof(retryHelp));
+                throw new ArgumentNullException(nameof(retryHelper));
             }
             apiKey = configManager.TvDbApiKey;
             jwtToken = "";
-            retryHelper = retryHelp;
+            _retryHelper = retryHelper;
             _restClient = new RestClient("https://api.thetvdb.com");
             _restClient.AddDefaultHeader("content-type", "application/json");
         }
@@ -41,7 +41,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             //create rest request
             var request = new RestRequest("login", Method.POST);
             request.AddParameter("application/json", auth.ToJson(), ParameterType.RequestBody);
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -209,7 +209,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             RestRequest request = new RestRequest($"series/{tmdbId}", Method.GET);
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 SeriesData series = JsonConvert.DeserializeObject<SeriesData>(response.Content);
@@ -226,7 +226,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             RestRequest request = new RestRequest($"/series/{tmdbId}/actors", Method.GET);
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 SeriesActors actors = JsonConvert.DeserializeObject<SeriesActors>(response.Content);
@@ -243,7 +243,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             RestRequest request = new RestRequest($"/series/{tmdbId}/episodes", Method.GET);
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 SeriesEpisodes episodes = JsonConvert.DeserializeObject<SeriesEpisodes>(response.Content);
@@ -261,7 +261,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("keyType", "poster", ParameterType.QueryString);
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
@@ -284,7 +284,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("keyType", "season", ParameterType.QueryString);
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
@@ -307,7 +307,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("keyType", "series", ParameterType.QueryString);
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
@@ -335,7 +335,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             RestRequest request = new RestRequest("/search/series", Method.GET);
             request.AddHeader("Authorization", $"Bearer {jwtToken}");
             request.AddParameter("name", seriesName, ParameterType.QueryString);
-            IRestResponse response = await retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 SearchData data = JsonConvert.DeserializeObject<SearchData>(response.Content);

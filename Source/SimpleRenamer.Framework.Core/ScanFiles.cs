@@ -15,52 +15,52 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 {
     public class ScanFiles : IScanFiles
     {
-        private ILogger logger;
-        private IFileWatcher fileWatcher;
-        private ITVShowMatcher tvShowMatcher;
-        private IMovieMatcher movieMatcher;
-        private IFileMatcher fileMatcher;
-        private IConfigurationManager configurationManager;
+        private ILogger _logger;
+        private IFileWatcher _fileWatcher;
+        private ITVShowMatcher _tvShowMatcher;
+        private IMovieMatcher _movieMatcher;
+        private IFileMatcher _fileMatcher;
+        private IConfigurationManager _configurationManager;
         private Settings settings;
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public ScanFiles(ILogger log, IFileWatcher fileWatch, ITVShowMatcher showMatch, IMovieMatcher movieMatch, IFileMatcher fileMatch, IConfigurationManager configManager)
+        public ScanFiles(ILogger logger, IFileWatcher fileWatcher, ITVShowMatcher showMatcher, IMovieMatcher movieMatcher, IFileMatcher fileMatcher, IConfigurationManager configManager)
         {
-            if (log == null)
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(log));
+                throw new ArgumentNullException(nameof(logger));
             }
-            if (fileWatch == null)
+            if (fileWatcher == null)
             {
-                throw new ArgumentNullException(nameof(fileWatch));
+                throw new ArgumentNullException(nameof(fileWatcher));
             }
-            if (showMatch == null)
+            if (showMatcher == null)
             {
-                throw new ArgumentNullException(nameof(showMatch));
+                throw new ArgumentNullException(nameof(showMatcher));
             }
-            if (movieMatch == null)
+            if (movieMatcher == null)
             {
-                throw new ArgumentNullException(nameof(movieMatch));
+                throw new ArgumentNullException(nameof(movieMatcher));
             }
-            if (fileMatch == null)
+            if (fileMatcher == null)
             {
-                throw new ArgumentNullException(nameof(fileMatch));
+                throw new ArgumentNullException(nameof(fileMatcher));
             }
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
-            logger = log;
-            fileWatcher = fileWatch;
-            tvShowMatcher = showMatch;
-            movieMatcher = movieMatch;
-            fileMatcher = fileMatch;
-            configurationManager = configManager;
-            settings = configurationManager.Settings;
-            fileWatcher.RaiseProgressEvent += RaiseProgress;
-            fileMatcher.RaiseProgressEvent += RaiseProgress;
-            tvShowMatcher.RaiseProgressEvent += RaiseProgress;
-            movieMatcher.RaiseProgressEvent += RaiseProgress;
+            _logger = logger;
+            _fileWatcher = fileWatcher;
+            _tvShowMatcher = showMatcher;
+            _movieMatcher = movieMatcher;
+            _fileMatcher = fileMatcher;
+            _configurationManager = configManager;
+            settings = _configurationManager.Settings;
+            _fileWatcher.RaiseProgressEvent += RaiseProgress;
+            _fileMatcher.RaiseProgressEvent += RaiseProgress;
+            _tvShowMatcher.RaiseProgressEvent += RaiseProgress;
+            _movieMatcher.RaiseProgressEvent += RaiseProgress;
         }
 
         private void RaiseProgress(object sender, ProgressTextEventArgs e)
@@ -73,9 +73,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return await Task.Run(async () =>
             {
                 //search folders for a list of video file paths
-                List<string> videoFiles = await fileWatcher.SearchTheseFoldersAsync(ct);
+                List<string> videoFiles = await _fileWatcher.SearchTheseFoldersAsync(ct);
                 //use regex to attempt to figure out some details about the files ie showname, episode number, etc
-                List<MatchedFile> matchedFiles = await fileMatcher.SearchFilesAsync(videoFiles, ct);
+                List<MatchedFile> matchedFiles = await _fileMatcher.SearchFilesAsync(videoFiles, ct);
                 //try and match the tv shows with TVDB
                 List<MatchedFile> scannedEpisodes = await MatchTVShows(matchedFiles.Where(x => x.FileType == FileType.TvShow).ToList(), ct);
                 //try and match movies with TMDB
@@ -107,8 +107,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         {
             object lockList = new object();
             List<MatchedFile> scannedEpisodes = new List<MatchedFile>();
-            ShowNameMapping showNameMapping = configurationManager.ShowNameMappings;
-            ShowNameMapping originalMapping = configurationManager.ShowNameMappings;
+            ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
+            ShowNameMapping originalMapping = _configurationManager.ShowNameMappings;
             ParallelOptions po = new ParallelOptions();
             po.CancellationToken = ct;
             //for each file
@@ -118,7 +118,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 //scrape the episode name and incorporate this in the filename (if setting allows)
                 if (settings.RenameFiles)
                 {
-                    scrapeResult = tvShowMatcher.ScrapeDetailsAsync(tempEp).GetAwaiter().GetResult();
+                    scrapeResult = _tvShowMatcher.ScrapeDetailsAsync(tempEp).GetAwaiter().GetResult();
                     tempEp = scrapeResult.tvep;
                     if (scrapeResult.series != null)
                     {
@@ -136,13 +136,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     tempEp.NewFileName = Path.GetFileNameWithoutExtension(tempEp.FilePath);
                 }
-                logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
+                _logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.EpisodeName));
                 //only add the file if it needs renaming/moving
                 string destinationDirectory = Path.Combine(settings.DestinationFolderTV, tempEp.ShowName, string.Format("Season {0}", tempEp.Season));
                 string destinationFilePath = Path.Combine(destinationDirectory, tempEp.NewFileName + Path.GetExtension(tempEp.FilePath));
                 if (!tempEp.FilePath.Equals(destinationFilePath))
                 {
-                    logger.TraceMessage(string.Format("Will move with name {0}", tempEp.NewFileName));
+                    _logger.TraceMessage(string.Format("Will move with name {0}", tempEp.NewFileName));
                     lock (lockList)
                     {
                         scannedEpisodes.Add(tempEp);
@@ -150,13 +150,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 }
                 else
                 {
-                    logger.TraceMessage(string.Format("File is already in good location {0}", tempEp.FilePath));
+                    _logger.TraceMessage(string.Format("File is already in good location {0}", tempEp.FilePath));
                 }
             });
 
             if (showNameMapping.Mappings != originalMapping.Mappings || showNameMapping.Mappings.Count != originalMapping.Mappings.Count)
             {
-                configurationManager.ShowNameMappings = showNameMapping;
+                _configurationManager.ShowNameMappings = showNameMapping;
             }
 
             return scannedEpisodes;
@@ -170,14 +170,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             //for each file
             Parallel.ForEach(matchedFiles, (tempMovie) =>
             {
-                tempMovie = movieMatcher.ScrapeDetailsAsync(tempMovie).GetAwaiter().GetResult();
+                tempMovie = _movieMatcher.ScrapeDetailsAsync(tempMovie).GetAwaiter().GetResult();
 
                 //only add the file if it needs renaming/moving
                 string movieDirectory = Path.Combine(settings.DestinationFolderMovie, $"{tempMovie.ShowName} ({tempMovie.Season})");
                 string destinationFilePath = Path.Combine(movieDirectory, tempMovie.ShowName + Path.GetExtension(tempMovie.FilePath));
                 if (!tempMovie.FilePath.Equals(destinationFilePath))
                 {
-                    logger.TraceMessage(string.Format("Will move with name {0}", tempMovie.NewFileName));
+                    _logger.TraceMessage(string.Format("Will move with name {0}", tempMovie.NewFileName));
                     lock (lockList)
                     {
                         scannedMovies.Add(tempMovie);
@@ -185,7 +185,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 }
                 else
                 {
-                    logger.TraceMessage(string.Format("File is already in good location {0}", tempMovie.FilePath));
+                    _logger.TraceMessage(string.Format("File is already in good location {0}", tempMovie.FilePath));
                 }
                 ct.ThrowIfCancellationRequested();
             });
