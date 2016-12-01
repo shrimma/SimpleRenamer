@@ -10,6 +10,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
     [TestClass]
     public class TvdbManagerTests
     {
+        #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.TV)]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -45,5 +46,6 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             //we shouldnt get here so throw if we do
             Assert.IsNotNull(tvdbManager);
         }
+        #endregion Constructor
     }
 }

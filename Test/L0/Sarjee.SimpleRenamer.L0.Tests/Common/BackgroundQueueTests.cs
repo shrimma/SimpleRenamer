@@ -10,6 +10,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
     [TestClass]
     public class BackgroundQueueTests
     {
+        #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Common)]
         public void BackgroundQueueCtor_Success()
@@ -18,5 +19,6 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
 
             Assert.IsNotNull(backgroundQueue);
         }
+        #endregion Constructor
     }
 }

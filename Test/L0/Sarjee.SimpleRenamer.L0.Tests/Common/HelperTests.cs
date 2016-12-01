@@ -61,6 +61,19 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
 
         [TestMethod]
         [TestCategory(TestCategories.Common)]
+        public void Helper_IsFileExtensionValid_InvalidChar_ReturnsFalse()
+        {
+            IHelper helper = new Helper();
+
+            Assert.IsNotNull(helper);
+
+            bool result = helper.IsFileExtensionValid(".fil*");
+
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Common)]
         public void Helper_IsFileExtensionValid_Valid_ReturnsTrue()
         {
             IHelper helper = new Helper();

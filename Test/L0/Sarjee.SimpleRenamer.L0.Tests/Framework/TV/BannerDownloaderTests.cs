@@ -11,6 +11,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
     [TestClass]
     public class BannerDownloaderTest
     {
+        #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.TV)]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -44,6 +45,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
 
             Assert.IsNotNull(bannerDownloader);
         }
+        #endregion Constructor
 
         [TestMethod]
         [TestCategory(TestCategories.TV)]

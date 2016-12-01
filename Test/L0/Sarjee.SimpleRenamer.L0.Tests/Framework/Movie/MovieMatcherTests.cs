@@ -11,6 +11,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
     [TestClass]
     public class MovieMatcherTests
     {
+        #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -44,5 +45,6 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
 
             Assert.IsNotNull(movieMatcher);
         }
+        #endregion Constructor
     }
 }

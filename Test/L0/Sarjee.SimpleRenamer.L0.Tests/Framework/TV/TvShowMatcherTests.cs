@@ -10,6 +10,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
     [TestClass]
     public class TvShowMatcherTests
     {
+        #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.TV)]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -57,5 +58,6 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
 
             Assert.IsNotNull(tvShowMatcher);
         }
+        #endregion Constructor
     }
 }

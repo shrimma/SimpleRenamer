@@ -10,6 +10,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
     [TestClass]
     public class GetMovieDetailsTests
     {
+        #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -43,5 +44,6 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
 
             Assert.IsNotNull(getMovieDetails);
         }
+        #endregion Constructor
     }
 }

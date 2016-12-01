@@ -81,6 +81,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
         }
         #endregion Constructor
 
+        #region TraceMessage
         [TestMethod]
         [TestCategory(TestCategories.Logger)]
         public void Logger_TraceMessage_Success()
@@ -98,7 +99,9 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
 
             logger.TraceMessage("hello world");
         }
+        #endregion TraceMessage
 
+        #region TraceException
         [TestMethod]
         [TestCategory(TestCategories.Logger)]
         public void Logger_TraceException_Success()
@@ -116,5 +119,6 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
 
             logger.TraceException(new ArgumentNullException("lolol"));
         }
+        #endregion TraceException
     }
 }
