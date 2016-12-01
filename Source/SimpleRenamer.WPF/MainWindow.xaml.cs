@@ -117,14 +117,17 @@ namespace Sarjee.SimpleRenamer
         {
             if (string.IsNullOrEmpty(settings.DestinationFolderMovie) && string.IsNullOrEmpty(settings.DestinationFolderTV))
             {
+                ScanButton.ToolTip = "Destination TV and Movie folders must be configured in settings.";
                 return false;
             }
             else if (settings.WatchFolders.Count < 1)
             {
+                ScanButton.ToolTip = "At least one Watch Folder must be configured in settings.";
                 return false;
             }
             else
             {
+                ScanButton.ToolTip = string.Empty;
                 return true;
             }
         }

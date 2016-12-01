@@ -72,7 +72,7 @@
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="ScanButton" Content="SCAN" HorizontalAlignment="Stretch" Margin="5,5,2.5,0" VerticalAlignment="Top" Click="ScanButton_Click" IsEnabled="False" />
+            <Button Grid.Column="0" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="ScanButton" Content="SCAN" HorizontalAlignment="Stretch" Margin="5,5,2.5,0" VerticalAlignment="Top" Click="ScanButton_Click" IsEnabled="False" ToolTipService.ShowOnDisabled="true" />
             <Button Grid.Column="1" Style="{DynamicResource SquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="ActionButton" Content="ACTION" IsEnabled="False" HorizontalAlignment="Stretch" Margin="2.5,5,5,0" VerticalAlignment="Top" Click="ActionButton_Click"/>
             <Button Grid.Column="0" Grid.ColumnSpan="2" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="CancelButton" Content="CANCEL" IsEnabled="False" HorizontalAlignment="Stretch" Margin="5,5,5,0" VerticalAlignment="Top" Click="CancelButton_Click" Visibility="Hidden" />
         </Grid>
