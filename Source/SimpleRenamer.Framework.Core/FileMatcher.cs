@@ -1,0 +1,175 @@
+﻿using Sarjee.SimpleRenamer.Common.EventArguments;
+using Sarjee.SimpleRenamer.Common.Interface;
+using Sarjee.SimpleRenamer.Common.Model;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Sarjee.SimpleRenamer.Framework.Core
+{
+    public class FileMatcher : IFileMatcher
+    {
+        private RegexFile regexExpressions;
+        private ILogger logger;
+        public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
+
+        public FileMatcher(ILogger log, IConfigurationManager configManager)
+        {
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+            if (configManager == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+            logger = log;
+            regexExpressions = configManager.RegexExpressions;
+        }
+
+        public async Task<List<MatchedFile>> SearchFilesAsync(List<string> files, CancellationToken ct)
+        {
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Parsing file names for show or movie details"));
+            object lockList = new object();
+            List<MatchedFile> episodes = new List<MatchedFile>();
+            //for each file in the list search the filename and determine if it is a TV or Movie
+            ParallelOptions po = new ParallelOptions();
+            po.CancellationToken = ct;
+            Parallel.ForEach(files, po, (file) =>
+            {
+                MatchedFile episode = SearchFileNameAsync(file, ct).GetAwaiter().GetResult();
+                if (episode != null)
+                {
+                    //if episode is not null then we matched so add to the output list
+                    logger.TraceMessage(string.Format("Matched {0}", episode.FilePath));
+                    lock (lockList)
+                    {
+                        episodes.Add(episode);
+                    }
+                }
+                else
+                {
+                    //else we couldn't match the file so add a file with just filepath so user can manually match
+                    logger.TraceMessage(string.Format("Couldn't find a match!"));
+                    episode = new MatchedFile(file, Path.GetFileNameWithoutExtension(file));
+                    lock (lockList)
+                    {
+                        episodes.Add(episode);
+                    }
+                }
+            });
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Grabbed show or movie details from file names"));
+
+            return episodes;
+        }
+
+        private async Task<MatchedFile> SearchFileNameAsync(string fileName, CancellationToken ct)
+        {
+            logger.TraceMessage("SearchFileNameAsync - Start");
+            string showname = null;
+            string season = null;
+            string episode = null;
+            string movieTitle = null;
+            string yearString = null;
+            int year = 0;
+
+            foreach (RegexExpression exp in regexExpressions.RegexExpressions)
+            {
+                try
+                {
+                    if (exp.IsEnabled)
+                    {
+                        //if this expression is enabled then match against the filename
+                        Regex regexStandard = new Regex(exp.Expression, RegexOptions.IgnoreCase);
+                        Match tvshow = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
+
+                        //match for tv show regexp
+                        if (exp.IsForTvShow)
+                        {
+                            showname = GetTrueShowName(tvshow.Groups["series_name"].Value);
+                            season = tvshow.Groups["season_num"].Value;
+                            episode = tvshow.Groups["ep_num"].Value;
+
+                            if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
+                            {
+                                //if we found a showname, season, and episode in the filename then this is a match
+                                logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
+                                return new MatchedFile(fileName, showname, season, episode);
+                            }
+                        }
+                        //else match for movie regexp
+                        else
+                        {
+                            movieTitle = GetTrueShowName(tvshow.Groups["movie_title"].Value);
+                            yearString = tvshow.Groups["movie_year"].Value;
+                            int.TryParse(yearString, out year);
+
+                            if (!string.IsNullOrEmpty(movieTitle) && !string.IsNullOrEmpty(yearString))
+                            {
+                                //if we found a movie title and year then this is a match
+                                logger.TraceMessage("SearchFileNameAsync - Found movietitle, and year in file name");
+                                return new MatchedFile(fileName, movieTitle, year);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //we don't really care if one of the regex fails so swallow this exception
+                    logger.TraceException(ex, $"The REGEXP {exp.Expression} failed on {fileName}");
+                }
+                ct.ThrowIfCancellationRequested();
+            }
+
+            logger.TraceMessage("SearchFileNameAsync - No regex could match the file - End");
+            return null;
+        }
+
+        private string GetTrueShowName(string input)
+        {
+            logger.TraceMessage("GetTrueShowName - Start");
+            string output = null;
+            string[] words = input.Split('.');
+            int i = 1;
+            foreach (string word in words)
+            {
+                if (IsJoiningWord(word.ToLowerInvariant()) && i > 1)
+                {
+                    output += word + " ";
+                }
+                else
+                {
+                    output += System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(word) + " ";
+                }
+                i++;
+            }
+
+            logger.TraceMessage("GetTrueShowName - End");
+            return output.Trim();
+        }
+
+        private bool IsJoiningWord(string input)
+        {
+            logger.TraceMessage("IsJoiningWord - Start");
+            foreach (string word in JoiningWords)
+            {
+                if (input.Equals(word.ToLowerInvariant()))
+                {
+                    logger.TraceMessage("IsJoiningWord - True");
+                    return true;
+                }
+            }
+            logger.TraceMessage("IsJoiningWord - False");
+            return false;
+        }
+        private string[] JoiningWords
+        {
+            get { return joiningWords.Split(','); }
+        }
+
+        private string joiningWords = "the,of,and";
+    }
+}
