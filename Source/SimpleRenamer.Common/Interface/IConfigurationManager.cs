@@ -20,12 +20,6 @@ namespace Sarjee.SimpleRenamer.Common.Interface
 
         string OneTrueErrorSharedSecret { get; }
 
-        string RegexFilePath { get; }
-
-        string IgnoreListFilePath { get; }
-
-        string ShowNameMappingFilePath { get; }
-
         Settings Settings { get; set; }
 
         RegexFile RegexExpressions { get; set; }

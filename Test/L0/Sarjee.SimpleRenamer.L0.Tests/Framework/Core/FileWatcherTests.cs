@@ -1,8 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
+using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Framework.Core;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 {
@@ -44,5 +47,30 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             Assert.IsNotNull(fileWatcher);
         }
         #endregion Constructor
+
+        [TestMethod]
+        [TestCategory(TestCategories.Core)]
+        public async Task FileWatcher_SearchTheseFoldersAsync_NoWatchFolders_ReturnsEmptyList()
+        {
+            ILogger logger = new Mock<ILogger>().Object;
+            var config = new Mock<IConfigurationManager>();
+            config.SetupGet(x => x.Settings).Returns(new Settings() { WatchFolders = new List<string>() });
+            IConfigurationManager configManager = config.Object;
+            IFileWatcher fileWatcher = new FileWatcher(logger, configManager);
+            fileWatcher.RaiseProgressEvent += FileWatcher_RaiseProgressEvent;
+
+            Assert.IsNotNull(fileWatcher);
+
+            List<string> filesFound = await fileWatcher.SearchTheseFoldersAsync(new System.Threading.CancellationToken());
+
+            List<string> emptyList = new List<string>();
+            Assert.AreEqual<int>(emptyList.Count, filesFound.Count);
+            Assert.AreEqual<List<string>>(emptyList, filesFound);
+        }
+
+        private void FileWatcher_RaiseProgressEvent(object sender, SimpleRenamer.Common.EventArguments.ProgressTextEventArgs e)
+        {
+            //DONT DO ANYTHING WE JUST NEED THIS
+        }
     }
 }

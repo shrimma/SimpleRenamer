@@ -63,7 +63,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
         }
 
-        public string IgnoreListFilePath
+        private string IgnoreListFilePath
         {
             get
             {
@@ -121,7 +121,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
         }
 
-        public string RegexFilePath
+        private string RegexFilePath
         {
             get
             {
@@ -146,7 +146,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
         }
 
-        private Settings GetSettings()
+        protected virtual Settings GetSettings()
         {
             Settings mySettings = new Settings();
             Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -166,7 +166,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return mySettings;
         }
 
-        public string ShowNameMappingFilePath
+        private string ShowNameMappingFilePath
         {
             get
             {
@@ -224,6 +224,10 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         }
 
         public void SaveConfiguration()
+        {
+            SaveConfig();
+        }
+        protected virtual void SaveConfig()
         {
             WriteMappingFile(this.ShowNameMappings);
             WriteIgnoreListAsync(this.IgnoredFiles);
