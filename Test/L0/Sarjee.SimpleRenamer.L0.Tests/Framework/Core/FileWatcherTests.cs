@@ -65,7 +65,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             List<string> emptyList = new List<string>();
             Assert.AreEqual<int>(emptyList.Count, filesFound.Count);
-            Assert.AreEqual<List<string>>(emptyList, filesFound);
+            CollectionAssert.AreEqual(emptyList, filesFound);
         }
 
         private void FileWatcher_RaiseProgressEvent(object sender, SimpleRenamer.Common.EventArguments.ProgressTextEventArgs e)

@@ -156,6 +156,7 @@ namespace Sarjee.SimpleRenamer
 
         private void ProgressTextEvent(object sender, ProgressTextEventArgs e)
         {
+            string ok = "ok";
             SetProgressText(e.Text);
         }
 
@@ -181,13 +182,41 @@ namespace Sarjee.SimpleRenamer
 
         private void PerformActionsOnShows_RaiseFilePreProcessedEvent(object sender, FilePreProcessedEventArgs e)
         {
-            FileMoveProgressBar.Value++;
+            IncrementProgressBar();
         }
 
         private void PerformActionsOnShows_RaiseFileMovedEvent(object sender, FileMovedEventArgs e)
         {
-            FileMoveProgressBar.Value++;
-            scannedEpisodes.Remove(e.Episode);
+            IncrementProgressBar();
+            RemoveFileFromView(e.Episode);
+        }
+
+        private void RemoveFileFromView(MatchedFile file)
+        {
+            if (ShowsListBox.Dispatcher.CheckAccess())
+            {
+                //calling thread owns the dispatches
+                scannedEpisodes.Remove(file);
+            }
+            else
+            {
+                //invokation required
+                ShowsListBox.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => RemoveFileFromView(file)));
+            }
+        }
+
+        private void IncrementProgressBar()
+        {
+            if (FileMoveProgressBar.Dispatcher.CheckAccess())
+            {
+                //calling thread owns the dispatchers
+                FileMoveProgressBar.Value++;
+            }
+            else
+            {
+                //invocation required
+                ProgressTextBlock.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => IncrementProgressBar()));
+            }
         }
 
         void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
