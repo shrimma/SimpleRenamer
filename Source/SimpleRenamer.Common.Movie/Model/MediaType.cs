@@ -1,0 +1,16 @@
+﻿namespace Sarjee.SimpleRenamer.Common.Movie.Model
+{
+    public enum MediaType
+    {
+        Unknown,
+
+        [EnumValue("movie")]
+        Movie = 1,
+
+        [EnumValue("tv")]
+        Tv = 2,
+
+        [EnumValue("person")]
+        Person = 3
+    }
+}

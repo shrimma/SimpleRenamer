@@ -1,0 +1,187 @@
+﻿<Controls:MetroWindow x:Class="Sarjee.SimpleRenamer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:Sarjee.SimpleRenamer"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        Title="Simple Renamer" Height="420" Width="525" MinHeight="200" MinWidth="400" Icon="Icons\tv.ico">
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Close" Executed="EditShowCloseBinding_Executed" CanExecute="EditShowCloseBinding_CanExecute"/>
+    </Window.CommandBindings>
+    <Window.Resources>
+        <l:InverseBooleanConverter x:Key="converter"/>
+        <l:IconFileTypeConverter x:Key="iconconverter"/>
+        <Style TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+    </Window.Resources>
+    <Controls:MetroWindow.RightWindowCommands>
+        <Controls:WindowCommands>
+            <Button Name="SettingsButton" Click="SettingsButton_Click">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="Settings" />
+                </StackPanel>
+            </Button>
+        </Controls:WindowCommands>
+    </Controls:MetroWindow.RightWindowCommands>
+    <Controls:MetroWindow.Flyouts>
+        <Controls:FlyoutsControl>
+            <Controls:Flyout Name="IgnoreFlyout" Theme="Accent" Header="Ignore File" Position="Right" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:FlyoutsControl}, Path=ActualWidth}" Margin="200 0 0 0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="35" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Margin="5,0,5,0" Foreground="White">Always ignore this file?</Label>
+                    <Button Grid.Row="1" Style="{DynamicResource SquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Margin="5" Name="IgnoreFlyoutButton" Click="IgnoreFlyoutButton_Click">IGNORE</Button>
+                </Grid>
+            </Controls:Flyout>
+            <Controls:Flyout Name="EditFlyout" Theme="Accent" Header="Edit Show" Position="Right" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:FlyoutsControl}, Path=ActualWidth}" Margin="200 0 0 0" CloseCommand="ApplicationCommands.Close">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="35" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Margin="5,0,5,0" Foreground="White">Custom Show Directory</Label>
+                    <TextBox Grid.Row="1" Margin="5" Name="EditShowFolderTextBox" GotFocus="EditShowFolderTextBox_GotFocus" LostFocus="EditShowFolderTextBox_LostFocus" />
+                </Grid>
+            </Controls:Flyout>
+            <Controls:Flyout Name="MediaTypeFlyout" Theme="Accent" Header="Media Type" Position="Right" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:FlyoutsControl}, Path=ActualWidth}" Margin="200 0 0 0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="35" />
+                        <RowDefinition Height="35" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Margin="5,0,5,0" Foreground="White">Is the file a TV Show or Movie?</Label>
+                    <Button Grid.Row="1" Style="{DynamicResource SquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Margin="5" Name="MediaTypeTv" Click="MediaTypeTv_Click">TV SHOW</Button>
+                    <Button Grid.Row="2" Style="{DynamicResource SquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Margin="5" Name="MediaTypeMovie" Click="MediaTypeMovie_Click">MOVIE</Button>
+                </Grid>
+            </Controls:Flyout>
+        </Controls:FlyoutsControl>
+    </Controls:MetroWindow.Flyouts>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="35" />
+            <RowDefinition Height="15" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="30" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="ScanButton" Content="SCAN" HorizontalAlignment="Stretch" Margin="5,5,2.5,0" VerticalAlignment="Top" Click="ScanButton_Click" IsEnabled="False" ToolTipService.ShowOnDisabled="true" />
+            <Button Grid.Column="1" Style="{DynamicResource SquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="ActionButton" Content="ACTION" IsEnabled="False" HorizontalAlignment="Stretch" Margin="2.5,5,5,0" VerticalAlignment="Top" Click="ActionButton_Click"/>
+            <Button Grid.Column="0" Grid.ColumnSpan="2" Style="{DynamicResource AccentedSquareButtonStyle}" Controls:ButtonHelper.PreserveTextCase="True" Name="CancelButton" Content="CANCEL" IsEnabled="False" HorizontalAlignment="Stretch" Margin="5,5,5,0" VerticalAlignment="Top" Click="CancelButton_Click" Visibility="Hidden" />
+        </Grid>
+        <StackPanel Grid.Row="1" Name="ProgressTextStackPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Visibility="Collapsed">
+            <TextBlock Margin="5,0,5,0" Name="ProgressTextBlock" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        </StackPanel>
+        <ListView Grid.Row="2" HorizontalAlignment="Stretch" Margin="5" VerticalAlignment="Stretch" Name="ShowsListBox" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ShowsListBox_SelectionChanged">
+            <ListView.Resources>
+                <ControlTemplate x:Key="SelectedTemplate" TargetType="ListViewItem">
+                    <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                        <ContentControl Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    </Border>
+                </ControlTemplate>
+                <Style TargetType="ListViewItem">
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource AccentColorBrush2}" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource AccentColorBrush3}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource GrayBrush7}" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsEnabled" Value="False" />
+                                <Condition Property="IsSelected" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" Value="{DynamicResource GrayBrush7}" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True" />
+                                <Condition Property="Selector.IsSelectionActive" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" Value="{DynamicResource AccentColorBrush}" />
+                        </MultiTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.Resources>
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Type">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <iconPacks:PackIconMaterial Kind="{Binding FileType, Converter={StaticResource iconconverter}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Action" Width="60" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" IsEnabled="{Binding SkippedExactSelection, Converter={StaticResource converter}}" IsChecked="{Binding ActionThis}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Title" Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ShowName}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Season" Width="60">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Season}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Episode" Width="60">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Episode}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Name" Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding EpisodeName}" TextAlignment="Left" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Grid Grid.Row="3" Name="ButtonsStackPanel" Visibility="Visible">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Style="{DynamicResource SquareButtonStyle}" Name="MatchShowButton" IsEnabled="False" Content="Match" HorizontalAlignment="Stretch" Margin="5,0,2.5,0" VerticalAlignment="Top" Click="MatchShowButton_Click"/>
+            <Button Grid.Column="1" Style="{DynamicResource SquareButtonStyle}" Name="IgnoreShowButton" IsEnabled="False" Content="Ignore" HorizontalAlignment="Stretch" Margin="2.5,0,2.5,0" VerticalAlignment="Top" Click="IgnoreShowButton_Click"/>
+            <Button Grid.Column="2" Style="{DynamicResource SquareButtonStyle}" Name="DetailButton" IsEnabled="False" Content="Detail" HorizontalAlignment="Stretch" Margin="2.5,0,2.5,0" VerticalAlignment="Top" Click="DetailButton_Click"/>
+            <Button Grid.Column="3" Style="{DynamicResource SquareButtonStyle}" Name="EditButton" IsEnabled="False" Content="Edit" HorizontalAlignment="Stretch" Margin="2.5,0,5,0" VerticalAlignment="Top" Click="EditButton_Click"/>
+        </Grid>
+        <StackPanel Grid.Row="3" Name="ProgressBarStackPanel" Visibility="Collapsed">
+            <ProgressBar Name="FileMoveProgressBar" Margin="5" Height="20" Width="515" Minimum="0" Maximum="100" />
+        </StackPanel>
+    </Grid>
+</Controls:MetroWindow>

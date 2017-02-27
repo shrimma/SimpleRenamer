@@ -1,0 +1,111 @@
+﻿using Sarjee.SimpleRenamer.Common.EventArguments;
+using Sarjee.SimpleRenamer.Common.Interface;
+using Sarjee.SimpleRenamer.Common.Model;
+using Sarjee.SimpleRenamer.Common.Movie.Interface;
+using Sarjee.SimpleRenamer.Common.Movie.Model;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Sarjee.SimpleRenamer.Framework.Movie
+{
+    public class MovieMatcher : IMovieMatcher
+    {
+        private ILogger _logger;
+        private ITmdbManager _tmdbManager;
+        public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
+
+        public MovieMatcher(ILogger logger, ITmdbManager tmdbManager)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+            if (tmdbManager == null)
+            {
+                throw new ArgumentNullException(nameof(tmdbManager));
+            }
+
+
+            _logger = logger;
+            _tmdbManager = tmdbManager;
+        }
+
+        public async Task<List<ShowView>> GetPossibleMoviesForFile(string movieName)
+        {
+            return await Task.Run(async () =>
+            {
+                List<ShowView> movies = new List<ShowView>();
+                SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName, 0);
+                foreach (var s in results.Results)
+                {
+                    string desc = string.Empty;
+                    if (!string.IsNullOrEmpty(s.Overview))
+                    {
+                        if (s.Overview.Length > 50)
+                        {
+                            desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                        }
+                        else
+                        {
+                            desc = s.Overview;
+                        }
+                    }
+                    movies.Add(new ShowView(s.Id.ToString(), s.Title, s.ReleaseDate.Value.Year.ToString(), desc));
+                }
+
+                return movies;
+            });
+        }
+
+        public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie)
+        {
+            _logger.TraceMessage("ScrapeDetailsAsync - Start");
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.FilePath}"));
+
+            SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movie.ShowName, movie.Year);
+
+            //IF we have more than 1 result then flag the file to be manually matched
+            if (results.Results.Count > 1)
+            {
+                movie.ActionThis = false;
+                movie.SkippedExactSelection = true;
+            }
+            else if (results.Results.Count == 1)
+            {
+                //if theres only one match then scape the specific show
+                movie.TMDBShowId = results.Results[0].Id;
+                movie.ShowImage = results.Results[0].PosterPath;
+            }
+            _logger.TraceMessage("ScrapeDetailsAsync - End");
+            return movie;
+        }
+
+        public async Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile)
+        {
+            return await Task.Run(async () =>
+            {
+                _logger.TraceMessage("UpdateFileWithMatchedMovie - Start");
+
+                if (!string.IsNullOrEmpty(movieId))
+                {
+                    SearchMovie searchedMovie = await _tmdbManager.SearchMovieByIdAsync(movieId);
+                    matchedFile.ActionThis = true;
+                    matchedFile.SkippedExactSelection = false;
+                    matchedFile.ShowName = searchedMovie.Title;
+                    matchedFile.TMDBShowId = searchedMovie.Id;
+                    matchedFile.ShowImage = searchedMovie.PosterPath;
+                    matchedFile.FileType = FileType.Movie;
+                }
+                else
+                {
+                    matchedFile.ActionThis = false;
+                    matchedFile.SkippedExactSelection = true;
+                }
+
+                _logger.TraceMessage("UpdateFileWithMatchedMovie - End");
+                return matchedFile;
+            });
+        }
+    }
+}
