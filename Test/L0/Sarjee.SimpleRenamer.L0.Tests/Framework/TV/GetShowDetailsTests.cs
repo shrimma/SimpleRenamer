@@ -22,6 +22,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             mockTvdbManager = mockRepository.Create<ITvdbManager>();
         }
 
+        private IGetShowDetails GetGetShowDetails()
+        {
+            IGetShowDetails getShowDetails = new GetShowDetails(mockLogger.Object, mockTvdbManager.Object);
+            getShowDetails.Should().NotBeNull();
+            return getShowDetails;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.TV)]
@@ -39,7 +46,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         public void GetShowDetailsCtor_Success()
         {
             IGetShowDetails getShowDetails = null;
-            Action action1 = () => getShowDetails = new GetShowDetails(mockLogger.Object, mockTvdbManager.Object);
+            Action action1 = () => getShowDetails = GetGetShowDetails();
 
             action1.ShouldNotThrow();
             getShowDetails.Should().NotBeNull();

@@ -24,6 +24,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             mockTvdbManager = mockRepository.Create<ITvdbManager>();
         }
 
+        private ITVShowMatcher GetTVShowMatcher()
+        {
+            ITVShowMatcher tvShowMatcher = new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object);
+            tvShowMatcher.Should().NotBeNull();
+            return tvShowMatcher;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.TV)]
@@ -43,7 +50,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         public void TVShowMatcherCtor_Success()
         {
             ITVShowMatcher tvShowMatcher = null;
-            Action action1 = () => tvShowMatcher = new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object);
+            Action action1 = () => tvShowMatcher = GetTVShowMatcher();
 
             action1.ShouldNotThrow();
             tvShowMatcher.Should().NotBeNull();

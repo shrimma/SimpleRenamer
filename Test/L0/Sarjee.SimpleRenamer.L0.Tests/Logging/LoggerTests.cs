@@ -84,6 +84,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
             Action action1 = () => logger = GetLogger();
 
             action1.ShouldNotThrow();
+            logger.Should().NotBeNull();
         }
         #endregion Constructor
 

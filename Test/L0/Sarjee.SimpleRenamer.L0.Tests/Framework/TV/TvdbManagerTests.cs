@@ -22,6 +22,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             mockRetryHelper = mockRepository.Create<IRetryHelper>();
         }
 
+        private ITvdbManager GetTvdbManager()
+        {
+            ITvdbManager tvdbManager = new TvdbManager(mockConfigurationManager.Object, mockRetryHelper.Object);
+            tvdbManager.Should().NotBeNull();
+            return tvdbManager;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.TV)]
@@ -39,8 +46,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         public void TvdbManagerCtor_Success()
         {
             ITvdbManager tvdbManager = null;
-            Action action1 = () => tvdbManager = new TvdbManager(mockConfigurationManager.Object, mockRetryHelper.Object);
+            Action action1 = () => tvdbManager = GetTvdbManager();
 
+            action1.ShouldNotThrow();
+            tvdbManager.Should().NotBeNull();
         }
         #endregion Constructor
     }

@@ -23,6 +23,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             mockTvdbManager = mockRepository.Create<ITvdbManager>();
         }
 
+        private IBannerDownloader GetBannerDownloader()
+        {
+            IBannerDownloader bannerDownloader = new BannerDownloader(mockLogger.Object, mockTvdbManager.Object);
+            bannerDownloader.Should().NotBeNull();
+            return bannerDownloader;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.TV)]
@@ -40,7 +47,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         public void BannerDownloaderCtor_Success()
         {
             IBannerDownloader bannerDownloader = null;
-            Action action1 = () => bannerDownloader = new BannerDownloader(mockLogger.Object, mockTvdbManager.Object);
+            Action action1 = () => bannerDownloader = GetBannerDownloader();
 
             action1.ShouldNotThrow();
             bannerDownloader.Should().NotBeNull();
@@ -52,11 +59,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         [Ignore]
         public async Task BannerDownloader_SaveBannerAsync_Success()
         {
-            ILogger logger = new Mock<ILogger>().Object;
-            ITvdbManager tvdbManager = new Mock<ITvdbManager>().Object;
-            IBannerDownloader bannerDownloader = new BannerDownloader(logger, tvdbManager);
-
-            Assert.IsNotNull(bannerDownloader);
+            IBannerDownloader bannerDownloader = GetBannerDownloader();
 
             bool result = await bannerDownloader.SaveBannerAsync("", "");
 
