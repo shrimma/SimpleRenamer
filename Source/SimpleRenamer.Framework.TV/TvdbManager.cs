@@ -22,21 +22,20 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
-            if (retryHelper == null)
-            {
-                throw new ArgumentNullException(nameof(retryHelper));
-            }
+
             apiKey = configManager.TvDbApiKey;
             jwtToken = "";
-            _retryHelper = retryHelper;
+            _retryHelper = retryHelper ?? throw new ArgumentNullException(nameof(retryHelper));
             _restClient = new RestClient("https://api.thetvdb.com");
             _restClient.AddDefaultHeader("content-type", "application/json");
         }
 
         private async Task Login()
         {
-            Auth auth = new Auth();
-            auth.Apikey = apiKey;
+            Auth auth = new Auth()
+            {
+                Apikey = apiKey
+            };
 
             //create rest request
             var request = new RestRequest("login", Method.POST);
@@ -82,7 +81,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     series = await GetSeries(tmdbId);
                 }
-                catch (UnauthorizedAccessException uae)
+                catch (UnauthorizedAccessException)
                 {
                     //we only want to try and login 3 times
                     currentRetry++;
@@ -102,7 +101,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     actors = await GetActors(tmdbId);
                 }
-                catch (UnauthorizedAccessException uae)
+                catch (UnauthorizedAccessException)
                 {
                     //we only want to try and login 3 times
                     currentRetry++;
@@ -122,7 +121,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     episodes = await GetEpisodes(tmdbId);
                 }
-                catch (UnauthorizedAccessException uae)
+                catch (UnauthorizedAccessException)
                 {
                     //we only want to try and login 3 times
                     currentRetry++;
@@ -142,7 +141,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     seriesPosters = await GetSeriesPosters(tmdbId);
                 }
-                catch (UnauthorizedAccessException uae)
+                catch (UnauthorizedAccessException)
                 {
                     //we only want to try and login 3 times
                     currentRetry++;
@@ -162,7 +161,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     seasonPosters = await GetSeasonPosters(tmdbId);
                 }
-                catch (UnauthorizedAccessException uae)
+                catch (UnauthorizedAccessException)
                 {
                     //we only want to try and login 3 times
                     currentRetry++;
@@ -182,7 +181,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     seriesBanners = await GetSeriesBanners(tmdbId);
                 }
-                catch (UnauthorizedAccessException uae)
+                catch (UnauthorizedAccessException)
                 {
                     //we only want to try and login 3 times
                     currentRetry++;

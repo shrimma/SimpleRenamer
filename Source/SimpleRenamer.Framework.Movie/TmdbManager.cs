@@ -21,12 +21,9 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
-            if (retryHelper == null)
-            {
-                throw new ArgumentNullException(nameof(retryHelper));
-            }
+
             apiKey = configManager.TmDbApiKey;
-            _retryHelper = retryHelper;
+            _retryHelper = retryHelper ?? throw new ArgumentNullException(nameof(retryHelper));
             _restClient = new RestClient("https://api.themoviedb.org");
             _restClient.AddDefaultHeader("content-type", "application/json");
         }

@@ -41,7 +41,6 @@
     </Reference>
     <Reference Include="OneTrueError.Client.Log4Net, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\OneTrueError.Client.log4net.1.0.0\lib\net45\OneTrueError.Client.Log4Net.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

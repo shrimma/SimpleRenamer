@@ -26,36 +26,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
         public ScanFiles(ILogger logger, IConfigurationManager configManager, IFileWatcher fileWatcher, ITVShowMatcher showMatcher, IMovieMatcher movieMatcher, IFileMatcher fileMatcher)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
-            if (fileWatcher == null)
-            {
-                throw new ArgumentNullException(nameof(fileWatcher));
-            }
-            if (showMatcher == null)
-            {
-                throw new ArgumentNullException(nameof(showMatcher));
-            }
-            if (movieMatcher == null)
-            {
-                throw new ArgumentNullException(nameof(movieMatcher));
-            }
-            if (fileMatcher == null)
-            {
-                throw new ArgumentNullException(nameof(fileMatcher));
-            }
-            _logger = logger;
-            _configurationManager = configManager;
-            _fileWatcher = fileWatcher;
-            _tvShowMatcher = showMatcher;
-            _movieMatcher = movieMatcher;
-            _fileMatcher = fileMatcher;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
+            _fileWatcher = fileWatcher ?? throw new ArgumentNullException(nameof(fileWatcher));
+            _tvShowMatcher = showMatcher ?? throw new ArgumentNullException(nameof(showMatcher));
+            _movieMatcher = movieMatcher ?? throw new ArgumentNullException(nameof(movieMatcher));
+            _fileMatcher = fileMatcher ?? throw new ArgumentNullException(nameof(fileMatcher));
             settings = _configurationManager.Settings;
             _fileWatcher.RaiseProgressEvent += RaiseProgress;
             _fileMatcher.RaiseProgressEvent += RaiseProgress;

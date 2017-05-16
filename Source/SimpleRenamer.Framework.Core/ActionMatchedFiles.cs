@@ -23,27 +23,10 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
         public ActionMatchedFiles(ILogger logger, IBackgroundQueue backgroundQueue, IFileMover fileMover, IConfigurationManager configManager)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            if (backgroundQueue == null)
-            {
-                throw new ArgumentNullException(nameof(backgroundQueue));
-            }
-            if (fileMover == null)
-            {
-                throw new ArgumentNullException(nameof(fileMover));
-            }
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
-
-            _logger = logger;
-            _backgroundQueue = backgroundQueue;
-            _fileMover = fileMover;
-            _configurationManager = configManager;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _backgroundQueue = backgroundQueue ?? throw new ArgumentNullException(nameof(backgroundQueue));
+            _fileMover = fileMover ?? throw new ArgumentNullException(nameof(fileMover));
+            _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
             settings = _configurationManager.Settings;
         }
 

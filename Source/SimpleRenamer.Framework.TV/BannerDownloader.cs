@@ -14,17 +14,8 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         public BannerDownloader(ILogger logger, ITvdbManager tvdbManager)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            if (tvdbManager == null)
-            {
-                throw new ArgumentNullException(nameof(tvdbManager));
-            }
-
-            _logger = logger;
-            _tvdbManager = tvdbManager;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _tvdbManager = tvdbManager ?? throw new ArgumentNullException(nameof(tvdbManager));
         }
 
         /// <inheritdoc/>
@@ -36,7 +27,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {
                 using (WebClient client = new WebClient())
                 {
-                    client.DownloadFileAsync(new Uri(_tvdbManager.GetBannerUri(tvdbBannerPath)), fullBannerPath);
+                    await client.DownloadFileTaskAsync(new Uri(_tvdbManager.GetBannerUri(tvdbBannerPath)), fullBannerPath);
                 }
             }
 

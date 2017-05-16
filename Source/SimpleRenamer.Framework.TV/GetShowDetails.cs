@@ -15,17 +15,8 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         public GetShowDetails(ILogger logger, ITvdbManager tvdbManager)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            if (tvdbManager == null)
-            {
-                throw new ArgumentNullException(nameof(tvdbManager));
-            }
-
-            _logger = logger;
-            _tvdbManager = tvdbManager;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _tvdbManager = tvdbManager ?? throw new ArgumentNullException(nameof(tvdbManager));
         }
 
         public async Task<SeriesWithBanner> GetShowWithBannerAsync(string showId)

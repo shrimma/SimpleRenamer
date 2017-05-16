@@ -18,15 +18,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
         public FileMatcher(ILogger logger, IConfigurationManager configManager)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             regexExpressions = configManager.RegexExpressions;
         }
 

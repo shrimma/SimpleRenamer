@@ -17,22 +17,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
         public FileMover(ILogger logger, IConfigurationManager configManager, IBannerDownloader bannerDownloader)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
-            if (bannerDownloader == null)
-            {
-                throw new ArgumentNullException(nameof(bannerDownloader));
-            }
 
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             settings = configManager.Settings;
-            _bannerDownloader = bannerDownloader;
+            _bannerDownloader = bannerDownloader ?? throw new ArgumentNullException(nameof(bannerDownloader));
         }
 
         public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner)

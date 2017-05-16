@@ -19,17 +19,8 @@ namespace Sarjee.SimpleRenamer.Views
 
         public ShowDetailsWindow(ILogger log, IGetShowDetails getShow)
         {
-            if (log == null)
-            {
-                throw new ArgumentNullException(nameof(log));
-            }
-            if (getShow == null)
-            {
-                throw new ArgumentNullException(nameof(getShow));
-            }
-
-            logger = log;
-            getShowDetails = getShow;
+            logger = log ?? throw new ArgumentNullException(nameof(log));
+            getShowDetails = getShow ?? throw new ArgumentNullException(nameof(getShow));
 
             try
             {

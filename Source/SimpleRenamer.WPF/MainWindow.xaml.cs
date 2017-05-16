@@ -48,41 +48,13 @@ namespace Sarjee.SimpleRenamer
 
         public MainWindow(ILogger logger, ITVShowMatcher tvShowMatcher, IMovieMatcher movieMatcher, IDependencyInjectionContext injectionContext, IActionMatchedFiles actionMatchedFiles, IScanFiles scanFiles, IConfigurationManager configManager)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            if (tvShowMatcher == null)
-            {
-                throw new ArgumentNullException(nameof(tvShowMatcher));
-            }
-            if (movieMatcher == null)
-            {
-                throw new ArgumentNullException(nameof(movieMatcher));
-            }
-            if (injectionContext == null)
-            {
-                throw new ArgumentNullException(nameof(injectionContext));
-            }
-            if (scanFiles == null)
-            {
-                throw new ArgumentNullException(nameof(scanFiles));
-            }
-            if (actionMatchedFiles == null)
-            {
-                throw new ArgumentNullException(nameof(actionMatchedFiles));
-            }
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
-            _logger = logger;
-            _tvShowMatcher = tvShowMatcher;
-            _movieMatcher = movieMatcher;
-            _injectionContext = injectionContext;
-            _scanFiles = scanFiles;
-            _actionMatchedFiles = actionMatchedFiles;
-            _configurationManager = configManager;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _tvShowMatcher = tvShowMatcher ?? throw new ArgumentNullException(nameof(tvShowMatcher));
+            _movieMatcher = movieMatcher ?? throw new ArgumentNullException(nameof(movieMatcher));
+            _injectionContext = injectionContext ?? throw new ArgumentNullException(nameof(injectionContext));
+            _scanFiles = scanFiles ?? throw new ArgumentNullException(nameof(scanFiles));
+            _actionMatchedFiles = actionMatchedFiles ?? throw new ArgumentNullException(nameof(actionMatchedFiles));
+            _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
 
             try
             {
@@ -156,7 +128,6 @@ namespace Sarjee.SimpleRenamer
 
         private void ProgressTextEvent(object sender, ProgressTextEventArgs e)
         {
-            string ok = "ok";
             SetProgressText(e.Text);
         }
 
@@ -407,7 +378,9 @@ namespace Sarjee.SimpleRenamer
         {
             string title = fileType == FileType.TvShow ? "TV" : "Movie";
             DisableUi();
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             selectShowWindow.SearchForMatches($"Simple Renamer - {title} - Select Show For File {Path.GetFileName(MediaTypePath)}", MediaTypeShowName, fileType);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             selectShowWindow.ShowDialog();
         }
 
@@ -527,12 +500,14 @@ namespace Sarjee.SimpleRenamer
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 if (tempEp.FileType == FileType.TvShow)
                 {
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                     showDetailsWindow.GetSeriesInfo(tempEp.TVDBShowId);
                     showDetailsWindow.ShowDialog();
                 }
                 else if (tempEp.FileType == FileType.Movie)
                 {
                     movieDetailsWindow.GetMovieInfo(tempEp.TMDBShowId.ToString());
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                     movieDetailsWindow.ShowDialog();
                 }
             }

@@ -23,22 +23,9 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         public TVShowMatcher(ILogger logger, IConfigurationManager configManager, ITvdbManager tvdbManager)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
-            if (tvdbManager == null)
-            {
-                throw new ArgumentNullException(nameof(tvdbManager));
-            }
-
-            _logger = logger;
-            _configurationManager = configManager;
-            _tvdbManager = tvdbManager;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
+            _tvdbManager = tvdbManager ?? throw new ArgumentNullException(nameof(tvdbManager));
             settings = _configurationManager.Settings;
         }
 
@@ -135,16 +122,13 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<TVEpisodeScrape> ScrapeSpecificShow(MatchedFile episode, string seriesId, bool newMatch)
         {
             _logger.TraceMessage("ScrapeSpecificShow - Start");
-            uint season = 0;
-            uint.TryParse(episode.Season, out season);
-            int episodeNumber = 0;
-            int.TryParse(episode.Episode, out episodeNumber);
+            uint.TryParse(episode.Season, out uint season);
+            int.TryParse(episode.Episode, out int episodeNumber);
             CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(seriesId);
             episode.TVDBShowId = seriesId;
             episode.ShowName = matchedSeries.Series.SeriesName;
             episode.EpisodeName = matchedSeries.Episodes.Where(s => s.AiredSeason.Value == season && s.AiredEpisodeNumber == episodeNumber).FirstOrDefault().EpisodeName;
-            int seasonAsInt = 0;
-            int.TryParse(episode.Season, out seasonAsInt);
+            int.TryParse(episode.Season, out int seasonAsInt);
             List<SeriesImageQueryResult> seasonBanners = matchedSeries.SeasonPosters.Where(s => s.SubKey.Equals(episode.Season) || s.SubKey.Equals(seasonAsInt.ToString())).ToList();
             if (seasonBanners != null && seasonBanners.Count > 0)
             {

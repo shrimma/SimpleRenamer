@@ -18,16 +18,8 @@ namespace Sarjee.SimpleRenamer.Views
         private RegexFile originalExpressions;
         public RegexExpressionsWindow(IConfigurationManager configManager, IHelper help)
         {
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
-            if (help == null)
-            {
-                throw new ArgumentNullException(nameof(help));
-            }
-            configurationManager = configManager;
-            helper = help;
+            configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
+            helper = help ?? throw new ArgumentNullException(nameof(help));
 
             InitializeComponent();
             //grab settings and display
@@ -39,8 +31,10 @@ namespace Sarjee.SimpleRenamer.Views
         {
             regExp = new ObservableCollection<RegexExpression>(configurationManager.RegexExpressions.RegexExpressions);
             ExpressionsListBox.ItemsSource = regExp;
-            originalExpressions = new RegexFile();
-            originalExpressions.RegexExpressions = configurationManager.RegexExpressions.RegexExpressions;
+            originalExpressions = new RegexFile()
+            {
+                RegexExpressions = configurationManager.RegexExpressions.RegexExpressions
+            };
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

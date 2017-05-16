@@ -18,12 +18,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         public AddExtensionsWindow(IHelper help)
         {
-            if (help == null)
-            {
-                throw new ArgumentNullException(nameof(help));
-            }
-
-            helper = help;
+            helper = help ?? throw new ArgumentNullException(nameof(help));
             InitializeComponent();
             flyoutEnabled = true;
             ExtensionTextBox.Focus();
@@ -38,8 +33,6 @@ namespace Sarjee.SimpleRenamer.Views
             ExtensionTextBox.Focus();
             this.Hide();
         }
-
-
 
         private void OKButton_Click(object sender, RoutedEventArgs e)
         {

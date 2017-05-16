@@ -19,16 +19,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
         public FileWatcher(ILogger logger, IConfigurationManager configManager)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
-            _logger = logger;
-            _configurationManager = configManager;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
             settings = _configurationManager.Settings;
         }
 

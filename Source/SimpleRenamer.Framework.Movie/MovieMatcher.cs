@@ -17,18 +17,8 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 
         public MovieMatcher(ILogger logger, ITmdbManager tmdbManager)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            if (tmdbManager == null)
-            {
-                throw new ArgumentNullException(nameof(tmdbManager));
-            }
-
-
-            _logger = logger;
-            _tmdbManager = tmdbManager;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _tmdbManager = tmdbManager ?? throw new ArgumentNullException(nameof(tmdbManager));
         }
 
         public async Task<List<ShowView>> GetPossibleMoviesForFile(string movieName)

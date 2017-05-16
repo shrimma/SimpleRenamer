@@ -19,17 +19,8 @@ namespace Sarjee.SimpleRenamer.Views
 
         public MovieDetailsWindow(ILogger log, IGetMovieDetails getMovie)
         {
-            if (log == null)
-            {
-                throw new ArgumentNullException(nameof(log));
-            }
-            if (getMovie == null)
-            {
-                throw new ArgumentNullException(nameof(getMovie));
-            }
-
-            logger = log;
-            getMovieDetails = getMovie;
+            logger = log ?? throw new ArgumentNullException(nameof(log));
+            getMovieDetails = getMovie ?? throw new ArgumentNullException(nameof(getMovie));
 
             try
             {

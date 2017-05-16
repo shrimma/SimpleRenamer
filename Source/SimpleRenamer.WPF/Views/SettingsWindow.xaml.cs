@@ -30,30 +30,13 @@ namespace Sarjee.SimpleRenamer.Views
 
         public SettingsWindow(IConfigurationManager configManager, IHelper help, AddExtensionsWindow extWindow, RegexExpressionsWindow expWindow)
         {
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
-            if (help == null)
-            {
-                throw new ArgumentNullException(nameof(help));
-            }
-            if (extWindow == null)
-            {
-                throw new ArgumentNullException(nameof(extWindow));
-            }
-            if (expWindow == null)
-            {
-                throw new ArgumentNullException(nameof(expWindow));
-            }
+            //init our interfaces
+            addExtensionsWindow = extWindow ?? throw new ArgumentNullException(nameof(extWindow));
+            regexExpressionsWindow = expWindow ?? throw new ArgumentNullException(nameof(expWindow));
+            configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
+            helper = help ?? throw new ArgumentNullException(nameof(help));
 
             InitializeComponent();
-
-            //init our interfaces
-            addExtensionsWindow = extWindow;
-            regexExpressionsWindow = expWindow;
-            configurationManager = configManager;
-            helper = help;
 
             accentItems = new List<AccentItem>();
             var mahAppsAccents = ThemeManager.Accents;
