@@ -12,13 +12,20 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
     [TestClass]
     public class BackgroundQueueTests
     {
+        private IBackgroundQueue GetBackgroundQueue()
+        {
+            IBackgroundQueue backgroundQueue = new BackgroundQueue();
+            backgroundQueue.Should().NotBeNull();
+            return backgroundQueue;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Common)]
         public void BackgroundQueueCtor_Success()
         {
             IBackgroundQueue backgroundQueue = null;
-            Action action1 = () => backgroundQueue = new BackgroundQueue();
+            Action action1 = () => backgroundQueue = GetBackgroundQueue();
 
             action1.ShouldNotThrow();
             backgroundQueue.Should().NotBeNull();

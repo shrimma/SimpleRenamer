@@ -31,6 +31,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             mockFileMatcher = mockRepository.Create<IFileMatcher>();
         }
 
+        private IScanFiles GetScanFiles()
+        {
+            IScanFiles scanFiles = new ScanFiles(mockLogger.Object, mockConfigurationManager.Object, mockFileWatcher.Object, mockShowMatcher.Object, mockMovieMatcher.Object, mockFileMatcher.Object);
+            scanFiles.Should().NotBeNull();
+            return scanFiles;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Core)]
@@ -56,7 +63,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         public void ScanFilesCtor_Success()
         {
             IScanFiles scanFiles = null;
-            Action action1 = () => scanFiles = new ScanFiles(mockLogger.Object, mockConfigurationManager.Object, mockFileWatcher.Object, mockShowMatcher.Object, mockMovieMatcher.Object, mockFileMatcher.Object);
+            Action action1 = () => scanFiles = GetScanFiles();
 
             action1.ShouldNotThrow();
             scanFiles.Should().NotBeNull();

@@ -22,6 +22,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             mockTmdbManager = mockRepository.Create<ITmdbManager>();
         }
 
+        private IGetMovieDetails GetGetMovieDetails()
+        {
+            IGetMovieDetails getMovieDetails = new GetMovieDetails(mockLogger.Object, mockTmdbManager.Object);
+            getMovieDetails.Should().NotBeNull();
+            return getMovieDetails;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
@@ -39,7 +46,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         public void GetMovieDetailsCtor_Success()
         {
             IGetMovieDetails getMovieDetails = null;
-            Action action1 = () => getMovieDetails = new GetMovieDetails(mockLogger.Object, mockTmdbManager.Object);
+            Action action1 = () => getMovieDetails = GetGetMovieDetails();
 
             action1.ShouldNotThrow();
             getMovieDetails.Should().NotBeNull();

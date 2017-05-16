@@ -21,6 +21,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
         }
 
+        private IFileMatcher GetFileMatcher()
+        {
+            IFileMatcher fileMatcher = new FileMatcher(mockLogger.Object, mockConfigurationManager.Object);
+            fileMatcher.Should().NotBeNull();
+            return fileMatcher;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Core)]
@@ -38,7 +45,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         public void FileMatcherCtor_Success()
         {
             IFileMatcher fileMatcher = null;
-            Action action1 = () => fileMatcher = new FileMatcher(mockLogger.Object, mockConfigurationManager.Object);
+            Action action1 = () => fileMatcher = GetFileMatcher();
 
             action1.ShouldNotThrow();
             fileMatcher.Should().NotBeNull();

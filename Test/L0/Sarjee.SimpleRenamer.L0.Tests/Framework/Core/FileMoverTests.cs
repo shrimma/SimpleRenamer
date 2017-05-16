@@ -24,6 +24,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             mockBannerDownloader = mockRepository.Create<IBannerDownloader>();
         }
 
+        private IFileMover GetFileMover()
+        {
+            IFileMover fileMover = new FileMover(mockLogger.Object, mockConfigurationManager.Object, mockBannerDownloader.Object);
+            fileMover.Should().NotBeNull();
+            return fileMover;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Core)]
@@ -43,7 +50,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         public void FileMoverCtor_Success()
         {
             IFileMover fileMover = null;
-            Action action1 = () => fileMover = new FileMover(mockLogger.Object, mockConfigurationManager.Object, mockBannerDownloader.Object);
+            Action action1 = () => fileMover = GetFileMover();
 
             action1.ShouldNotThrow();
             fileMover.Should().NotBeNull();

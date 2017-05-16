@@ -10,13 +10,20 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
     [TestClass]
     public class HelperTests
     {
+        private IHelper GetHelper()
+        {
+            IHelper helper = new Helper();
+            helper.Should().NotBeNull();
+            return helper;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Common)]
         public void HelperCtor_Success()
         {
             IHelper helper = null;
-            Action action1 = () => helper = new Helper();
+            Action action1 = () => helper = GetHelper();
 
             action1.ShouldNotThrow();
             helper.Should().NotBeNull();
@@ -28,65 +35,65 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
         [TestCategory(TestCategories.Common)]
         public void Helper_IsFileExtensionValid_Empty_ReturnsFalse()
         {
-            IHelper helper = new Helper();
+            IHelper helper = GetHelper();
 
-            Assert.IsNotNull(helper);
+            bool result = true;
+            Action action1 = () => result = helper.IsFileExtensionValid(string.Empty);
 
-            bool result = helper.IsFileExtensionValid(string.Empty);
-
-            Assert.IsFalse(result);
+            action1.ShouldNotThrow();
+            result.Should().BeFalse();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Common)]
         public void Helper_IsFileExtensionValid_JustFullStop_ReturnsFalse()
         {
-            IHelper helper = new Helper();
+            IHelper helper = GetHelper();
 
-            Assert.IsNotNull(helper);
+            bool result = true;
+            Action action1 = () => result = helper.IsFileExtensionValid(".");
 
-            bool result = helper.IsFileExtensionValid(".");
-
-            Assert.IsFalse(result);
+            action1.ShouldNotThrow();
+            result.Should().BeFalse();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Common)]
         public void Helper_IsFileExtensionValid_MissingFullStop_ReturnsFalse()
         {
-            IHelper helper = new Helper();
+            IHelper helper = GetHelper();
 
-            Assert.IsNotNull(helper);
+            bool result = true;
+            Action action1 = () => result = helper.IsFileExtensionValid("fil");
 
-            bool result = helper.IsFileExtensionValid("fil");
-
-            Assert.IsFalse(result);
+            action1.ShouldNotThrow();
+            result.Should().BeFalse();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Common)]
         public void Helper_IsFileExtensionValid_InvalidChar_ReturnsFalse()
         {
-            IHelper helper = new Helper();
+            IHelper helper = GetHelper();
 
-            Assert.IsNotNull(helper);
+            bool result = true;
+            Action action1 = () => result = helper.IsFileExtensionValid(".fil*");
 
-            bool result = helper.IsFileExtensionValid(".fil*");
-
-            Assert.IsFalse(result);
+            action1.ShouldNotThrow();
+            result.Should().BeFalse();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Common)]
         public void Helper_IsFileExtensionValid_Valid_ReturnsTrue()
         {
-            IHelper helper = new Helper();
+            IHelper helper = GetHelper();
 
-            Assert.IsNotNull(helper);
+            bool result = false;
+            Action action1 = () => result = helper.IsFileExtensionValid(".fil");
 
-            bool result = helper.IsFileExtensionValid(".fil");
-
-            Assert.IsTrue(result);
+            action1.ShouldNotThrow();
+            result.Should().BeTrue();
         }
         #endregion IsFileExtensionValid
 
@@ -95,26 +102,24 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
         [TestCategory(TestCategories.Common)]
         public void Helper_AreListsEqual_EmptyStringLists_ReturnsTrue()
         {
-            IHelper helper = new Helper();
-
-            Assert.IsNotNull(helper);
+            IHelper helper = GetHelper();
 
             //setup lists
             List<string> list1 = new List<string>();
             List<string> list2 = new List<string>();
 
-            bool result = helper.AreListsEqual(list1, list2);
+            bool result = false;
+            Action action1 = () => result = helper.AreListsEqual(list1, list2);
 
-            Assert.IsTrue(result);
+            action1.ShouldNotThrow();
+            result.Should().BeTrue();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Common)]
         public void Helper_AreListsEqual_PopulatedEqualStringLists_ReturnsTrue()
         {
-            IHelper helper = new Helper();
-
-            Assert.IsNotNull(helper);
+            IHelper helper = GetHelper();
 
             //setup lists
             List<string> list1 = new List<string>();
@@ -124,18 +129,18 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             list2.Add("1");
             list2.Remove("1");
 
-            bool result = helper.AreListsEqual(list1, list2);
+            bool result = false;
+            Action action1 = () => result = helper.AreListsEqual(list1, list2);
 
-            Assert.IsTrue(result);
+            action1.ShouldNotThrow();
+            result.Should().BeTrue();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Common)]
         public void Helper_AreListsEqual_PopulatedDifferentCountStringLists_ReturnsFalse()
         {
-            IHelper helper = new Helper();
-
-            Assert.IsNotNull(helper);
+            IHelper helper = GetHelper();
 
             //setup lists
             List<string> list1 = new List<string>();
@@ -144,18 +149,18 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             List<string> list2 = new List<string>();
             list2.Add("123456789");
 
-            bool result = helper.AreListsEqual(list1, list2);
+            bool result = true;
+            Action action1 = () => result = helper.AreListsEqual(list1, list2);
 
-            Assert.IsFalse(result);
+            action1.ShouldNotThrow();
+            result.Should().BeFalse();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Common)]
         public void Helper_AreListsEqual_PopulatedDifferentValueStringLists_ReturnsFalse()
         {
-            IHelper helper = new Helper();
-
-            Assert.IsNotNull(helper);
+            IHelper helper = GetHelper();
 
             //setup lists
             List<string> list1 = new List<string>();
@@ -165,9 +170,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             list2.Add("123456789");
             list2.Add("987654321");
 
-            bool result = helper.AreListsEqual(list1, list2);
+            bool result = true;
+            Action action1 = () => result = helper.AreListsEqual(list1, list2);
 
-            Assert.IsFalse(result);
+            action1.ShouldNotThrow();
+            result.Should().BeFalse();
         }
         #endregion AreListsEqual
     }

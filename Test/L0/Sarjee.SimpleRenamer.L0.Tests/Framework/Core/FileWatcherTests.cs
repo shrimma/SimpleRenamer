@@ -25,6 +25,18 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
         }
 
+        private IFileWatcher GetFileWatcher()
+        {
+            IFileWatcher fileWatcher = new FileWatcher(mockLogger.Object, mockConfigurationManager.Object);
+            fileWatcher.Should().NotBeNull();
+            fileWatcher.RaiseProgressEvent += FileWatcher_RaiseProgressEvent;
+            return fileWatcher;
+        }
+        private void FileWatcher_RaiseProgressEvent(object sender, SimpleRenamer.Common.EventArguments.ProgressTextEventArgs e)
+        {
+            //DONT DO ANYTHING WE JUST NEED THIS
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Core)]
@@ -41,9 +53,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         [TestCategory(TestCategories.Core)]
         public void FileWatcherCtor_Success()
         {
-
             IFileWatcher fileWatcher = null;
-            Action action1 = () => fileWatcher = new FileWatcher(mockLogger.Object, mockConfigurationManager.Object);
+            Action action1 = () => fileWatcher = GetFileWatcher();
 
             action1.ShouldNotThrow();
             fileWatcher.Should().NotBeNull();
@@ -55,9 +66,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         public void FileWatcher_SearchTheseFoldersAsync_NoWatchFolders_ReturnsEmptyList()
         {
             mockConfigurationManager.SetupGet(x => x.Settings).Returns(new Settings() { WatchFolders = new List<string>() });
-            IFileWatcher fileWatcher = new FileWatcher(mockLogger.Object, mockConfigurationManager.Object);
-            fileWatcher.Should().NotBeNull();
-            fileWatcher.RaiseProgressEvent += FileWatcher_RaiseProgressEvent;
+            IFileWatcher fileWatcher = GetFileWatcher();
 
             List<string> emptyList = new List<string>();
             List<string> filesFound = null;
@@ -66,11 +75,6 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             filesFound.Count.Should().Be(emptyList.Count);
             filesFound.ShouldBeEquivalentTo(emptyList);
-        }
-
-        private void FileWatcher_RaiseProgressEvent(object sender, SimpleRenamer.Common.EventArguments.ProgressTextEventArgs e)
-        {
-            //DONT DO ANYTHING WE JUST NEED THIS
         }
     }
 }

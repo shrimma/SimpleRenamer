@@ -22,6 +22,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             mockRetryHelper = mockRepository.Create<IRetryHelper>();
         }
 
+        private ITmdbManager GetTmdbManager()
+        {
+            ITmdbManager tmdbManager = new TmdbManager(mockConfigurationManager.Object, mockRetryHelper.Object);
+            tmdbManager.Should().NotBeNull();
+            return tmdbManager;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
@@ -39,7 +46,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         public void TmdbManagerCtor_Success()
         {
             ITmdbManager tmdbManager = null;
-            Action action1 = () => tmdbManager = new TmdbManager(mockConfigurationManager.Object, mockRetryHelper.Object);
+            Action action1 = () => tmdbManager = GetTmdbManager();
 
             action1.ShouldNotThrow();
             tmdbManager.Should().NotBeNull();
