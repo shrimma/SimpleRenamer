@@ -16,19 +16,23 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     public class ScanFiles : IScanFiles
     {
         private ILogger _logger;
+        private IConfigurationManager _configurationManager;
         private IFileWatcher _fileWatcher;
         private ITVShowMatcher _tvShowMatcher;
         private IMovieMatcher _movieMatcher;
         private IFileMatcher _fileMatcher;
-        private IConfigurationManager _configurationManager;
         private Settings settings;
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public ScanFiles(ILogger logger, IFileWatcher fileWatcher, ITVShowMatcher showMatcher, IMovieMatcher movieMatcher, IFileMatcher fileMatcher, IConfigurationManager configManager)
+        public ScanFiles(ILogger logger, IConfigurationManager configManager, IFileWatcher fileWatcher, ITVShowMatcher showMatcher, IMovieMatcher movieMatcher, IFileMatcher fileMatcher)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
+            }
+            if (configManager == null)
+            {
+                throw new ArgumentNullException(nameof(configManager));
             }
             if (fileWatcher == null)
             {
@@ -46,16 +50,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             {
                 throw new ArgumentNullException(nameof(fileMatcher));
             }
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
             _logger = logger;
+            _configurationManager = configManager;
             _fileWatcher = fileWatcher;
             _tvShowMatcher = showMatcher;
             _movieMatcher = movieMatcher;
             _fileMatcher = fileMatcher;
-            _configurationManager = configManager;
             settings = _configurationManager.Settings;
             _fileWatcher.RaiseProgressEvent += RaiseProgress;
             _fileMatcher.RaiseProgressEvent += RaiseProgress;

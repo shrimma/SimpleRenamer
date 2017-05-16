@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
@@ -12,60 +13,59 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
     [TestClass]
     public class FileWatcherTests
     {
+        private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
+        private Mock<ILogger> mockLogger;
+        private Mock<IConfigurationManager> mockConfigurationManager;
+
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            mockLogger = mockRepository.Create<ILogger>();
+            mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void FileWatcherCtor_NullLogger_ThrowsArgumentNullException()
+        public void FileWatcherCtor_NullArgument_ThrowsArgumentNullException()
         {
-            IFileWatcher fileWatcher = new FileWatcher(null, null);
+            Action action1 = () => new FileWatcher(null, null);
+            Action action2 = () => new FileWatcher(mockLogger.Object, null);
 
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void FileWatcherCtor_NullConfigManager_ThrowsArgumentNullException()
-        {
-            ILogger logger = new Mock<ILogger>().Object;
-            IFileWatcher fileWatcher = new FileWatcher(logger, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
         public void FileWatcherCtor_Success()
         {
-            ILogger logger = new Mock<ILogger>().Object;
-            IConfigurationManager configManager = new Mock<IConfigurationManager>().Object;
-            IFileWatcher fileWatcher = new FileWatcher(logger, configManager);
 
-            Assert.IsNotNull(fileWatcher);
+            IFileWatcher fileWatcher = null;
+            Action action1 = () => fileWatcher = new FileWatcher(mockLogger.Object, mockConfigurationManager.Object);
+
+            action1.ShouldNotThrow();
+            fileWatcher.Should().NotBeNull();
         }
         #endregion Constructor
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
-        public async Task FileWatcher_SearchTheseFoldersAsync_NoWatchFolders_ReturnsEmptyList()
+        public void FileWatcher_SearchTheseFoldersAsync_NoWatchFolders_ReturnsEmptyList()
         {
-            ILogger logger = new Mock<ILogger>().Object;
-            var config = new Mock<IConfigurationManager>();
-            config.SetupGet(x => x.Settings).Returns(new Settings() { WatchFolders = new List<string>() });
-            IConfigurationManager configManager = config.Object;
-            IFileWatcher fileWatcher = new FileWatcher(logger, configManager);
+            mockConfigurationManager.SetupGet(x => x.Settings).Returns(new Settings() { WatchFolders = new List<string>() });
+            IFileWatcher fileWatcher = new FileWatcher(mockLogger.Object, mockConfigurationManager.Object);
+            fileWatcher.Should().NotBeNull();
             fileWatcher.RaiseProgressEvent += FileWatcher_RaiseProgressEvent;
 
-            Assert.IsNotNull(fileWatcher);
-
-            List<string> filesFound = await fileWatcher.SearchTheseFoldersAsync(new System.Threading.CancellationToken());
-
             List<string> emptyList = new List<string>();
-            Assert.AreEqual<int>(emptyList.Count, filesFound.Count);
-            CollectionAssert.AreEqual(emptyList, filesFound);
+            List<string> filesFound = null;
+            Func<Task> action1 = async () => filesFound = await fileWatcher.SearchTheseFoldersAsync(new System.Threading.CancellationToken());
+            action1.ShouldNotThrow();
+
+            filesFound.Count.Should().Be(emptyList.Count);
+            filesFound.ShouldBeEquivalentTo(emptyList);
         }
 
         private void FileWatcher_RaiseProgressEvent(object sender, SimpleRenamer.Common.EventArguments.ProgressTextEventArgs e)

@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
@@ -11,39 +12,38 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
     [TestClass]
     public class MovieMatcherTests
     {
+        private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
+        private Mock<ILogger> mockLogger;
+        private Mock<ITmdbManager> mockTmdbManager;
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            mockLogger = mockRepository.Create<ILogger>();
+            mockTmdbManager = mockRepository.Create<ITmdbManager>();
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void MovieMatcherCtor_NullLogger_ThrowsArgumentNullException()
+        public void MovieMatcherCtor_NullArguments_ThrowsArgumentNullException()
         {
-            IMovieMatcher movieMatcher = new MovieMatcher(null, null);
+            Action action1 = () => new MovieMatcher(null, null);
+            Action action2 = () => new MovieMatcher(mockLogger.Object, null);
 
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void MovieMatcherCtor_NullTmdbManager_ThrowsArgumentNullException()
+        public void MovieMatcherCtor_Success()
         {
-            ILogger logger = new Mock<ILogger>().Object;
-            IMovieMatcher movieMatcher = new MovieMatcher(logger, null);
+            IMovieMatcher movieMatcher = null;
+            Action action1 = () => movieMatcher = new MovieMatcher(mockLogger.Object, mockTmdbManager.Object);
 
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Movie)]
-        public void MovieMatcheCtor_Success()
-        {
-            ILogger logger = new Mock<ILogger>().Object;
-            ITmdbManager tmdbManager = new Mock<ITmdbManager>().Object;
-            IMovieMatcher movieMatcher = new MovieMatcher(logger, tmdbManager);
-
-            Assert.IsNotNull(movieMatcher);
+            action1.ShouldNotThrow();
+            movieMatcher.Should().NotBeNull();
         }
         #endregion Constructor
     }

@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Framework.Core;
@@ -15,8 +16,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         [TestCategory(TestCategories.Core)]
         public void AppConfigurationManagerCtor_Success()
         {
-            IConfigurationManager configurationManager = new AppConfigurationManager();
-            Assert.IsNotNull(configurationManager);
+            IConfigurationManager configurationManager = null;
+            Action action1 = () => configurationManager = new AppConfigurationManager();
+
+            action1.ShouldNotThrow();
+            configurationManager.Should().NotBeNull();
         }
         #endregion Constructor
 

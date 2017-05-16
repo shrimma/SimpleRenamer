@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Framework.Core;
@@ -9,68 +10,47 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
     [TestClass]
     public class ActionMatchedFilesTests
     {
+        private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
+        private Mock<ILogger> mockLogger;
+        private Mock<IBackgroundQueue> mockBackgroundQueue;
+        private Mock<IFileMover> mockFileMover;
+        private Mock<IConfigurationManager> mockConfigurationManager;
+
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            mockLogger = mockRepository.Create<ILogger>();
+            mockBackgroundQueue = mockRepository.Create<IBackgroundQueue>();
+            mockFileMover = mockRepository.Create<IFileMover>();
+            mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ActionMatchedFilesCtor_NullLogger_ThrowsArgumentNullException()
+        public void ActionMatchedFilesCtor_NullArgument_ThrowsArgumentNullException()
         {
-            IActionMatchedFiles actionMatchedFiles = new ActionMatchedFiles(null, null, null, null);
+            Action action1 = () => new ActionMatchedFiles(null, null, null, null);
+            Action action2 = () => new ActionMatchedFiles(mockLogger.Object, null, null, null);
+            Action action3 = () => new ActionMatchedFiles(mockLogger.Object, mockBackgroundQueue.Object, null, null);
+            Action action4 = () => new ActionMatchedFiles(mockLogger.Object, mockBackgroundQueue.Object, mockFileMover.Object, null);
 
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ActionMatchedFilesCtor_NullBackgroundQueue_ThrowsArgumentNullException()
-        {
-            ILogger logger = new Mock<ILogger>().Object;
-            IActionMatchedFiles actionMatchedFiles = new ActionMatchedFiles(logger, null, null, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ActionMatchedFilesCtor_NullFileMover_ThrowsArgumentNullException()
-        {
-            ILogger logger = new Mock<ILogger>().Object;
-            IBackgroundQueue backgroundQueue = new Mock<IBackgroundQueue>().Object;
-            IActionMatchedFiles actionMatchedFiles = new ActionMatchedFiles(logger, backgroundQueue, null, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ActionMatchedFilesCtor_NullConfigurationManager_ThrowsArgumentNullException()
-        {
-            ILogger logger = new Mock<ILogger>().Object;
-            IBackgroundQueue backgroundQueue = new Mock<IBackgroundQueue>().Object;
-            IFileMover fileMover = new Mock<IFileMover>().Object;
-            IActionMatchedFiles actionMatchedFiles = new ActionMatchedFiles(logger, backgroundQueue, fileMover, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
+            action3.ShouldThrow<ArgumentNullException>();
+            action4.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
         public void ActionMatchedFilesCtor_Success()
         {
-            ILogger logger = new Mock<ILogger>().Object;
-            IBackgroundQueue backgroundQueue = new Mock<IBackgroundQueue>().Object;
-            IFileMover fileMover = new Mock<IFileMover>().Object;
-            IConfigurationManager configManager = new Mock<IConfigurationManager>().Object;
-            IActionMatchedFiles actionMatchedFiles = new ActionMatchedFiles(logger, backgroundQueue, fileMover, configManager);
+            IActionMatchedFiles actionMatchedFiles = null;
+            Action action1 = () => actionMatchedFiles = new ActionMatchedFiles(mockLogger.Object, mockBackgroundQueue.Object, mockFileMover.Object, mockConfigurationManager.Object);
 
-            Assert.IsNotNull(actionMatchedFiles);
+            action1.ShouldNotThrow();
+            actionMatchedFiles.Should().NotBeNull();
         }
         #endregion Constructor
     }

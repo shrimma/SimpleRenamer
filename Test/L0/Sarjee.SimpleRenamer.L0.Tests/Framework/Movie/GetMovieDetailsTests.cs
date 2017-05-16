@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
@@ -10,39 +11,38 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
     [TestClass]
     public class GetMovieDetailsTests
     {
+        private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
+        private Mock<ILogger> mockLogger;
+        private Mock<ITmdbManager> mockTmdbManager;
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            mockLogger = mockRepository.Create<ILogger>();
+            mockTmdbManager = mockRepository.Create<ITmdbManager>();
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void GetMovieDetailsCtor_NullLogger_ThrowsArgumentNullException()
+        public void GetMovieDetailsCtor_NullArguments_ThrowsArgumentNullException()
         {
-            IGetMovieDetails getMovieDetails = new GetMovieDetails(null, null);
+            Action action1 = () => new GetMovieDetails(null, null);
+            Action action2 = () => new GetMovieDetails(mockLogger.Object, null);
 
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Movie)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void GetMovieDetailsCtor_NullTmdbManager_ThrowsArgumentNullException()
-        {
-            ILogger logger = new Mock<ILogger>().Object;
-            IGetMovieDetails getMovieDetails = new GetMovieDetails(logger, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
         public void GetMovieDetailsCtor_Success()
         {
-            ILogger logger = new Mock<ILogger>().Object;
-            ITmdbManager tmdbManager = new Mock<ITmdbManager>().Object;
-            IGetMovieDetails getMovieDetails = new GetMovieDetails(logger, tmdbManager);
+            IGetMovieDetails getMovieDetails = null;
+            Action action1 = () => getMovieDetails = new GetMovieDetails(mockLogger.Object, mockTmdbManager.Object);
 
-            Assert.IsNotNull(getMovieDetails);
+            action1.ShouldNotThrow();
+            getMovieDetails.Should().NotBeNull();
         }
         #endregion Constructor
     }

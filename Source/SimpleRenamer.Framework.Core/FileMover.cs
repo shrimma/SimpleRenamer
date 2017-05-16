@@ -15,12 +15,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private ILogger _logger;
         private Settings settings;
 
-        public FileMover(IBannerDownloader bannerDownloader, ILogger logger, IConfigurationManager configManager)
+        public FileMover(ILogger logger, IConfigurationManager configManager, IBannerDownloader bannerDownloader)
         {
-            if (bannerDownloader == null)
-            {
-                throw new ArgumentNullException(nameof(bannerDownloader));
-            }
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -29,10 +25,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
+            if (bannerDownloader == null)
+            {
+                throw new ArgumentNullException(nameof(bannerDownloader));
+            }
 
-            _bannerDownloader = bannerDownloader;
             _logger = logger;
             settings = configManager.Settings;
+            _bannerDownloader = bannerDownloader;
         }
 
         public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner)

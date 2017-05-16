@@ -1,6 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sarjee.SimpleRenamer.Common;
 using Sarjee.SimpleRenamer.Common.Interface;
+using System;
 using System.Collections.Generic;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Common
@@ -13,9 +15,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
         [TestCategory(TestCategories.Common)]
         public void HelperCtor_Success()
         {
-            IHelper helper = new Helper();
+            IHelper helper = null;
+            Action action1 = () => helper = new Helper();
 
-            Assert.IsNotNull(helper);
+            action1.ShouldNotThrow();
+            helper.Should().NotBeNull();
         }
         #endregion Constructor
 

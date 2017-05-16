@@ -1,6 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sarjee.SimpleRenamer.Common;
 using Sarjee.SimpleRenamer.Common.Interface;
+using System;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Common
 {
@@ -15,9 +17,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
         [TestCategory(TestCategories.Common)]
         public void BackgroundQueueCtor_Success()
         {
-            IBackgroundQueue backgroundQueue = new BackgroundQueue();
+            IBackgroundQueue backgroundQueue = null;
+            Action action1 = () => backgroundQueue = new BackgroundQueue();
 
-            Assert.IsNotNull(backgroundQueue);
+            action1.ShouldNotThrow();
+            backgroundQueue.Should().NotBeNull();
         }
         #endregion Constructor
     }
