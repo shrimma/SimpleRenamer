@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
@@ -10,39 +11,38 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
     [TestClass]
     public class GetShowDetailsTests
     {
+        private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
+        private Mock<ILogger> mockLogger;
+        private Mock<ITvdbManager> mockTvdbManager;
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            mockLogger = mockRepository.Create<ILogger>();
+            mockTvdbManager = mockRepository.Create<ITvdbManager>();
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.TV)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void GetShowDetailsCtor_NullLogger_ThrowsArgumentNullException()
+        public void GetShowDetailsCtor_NullArguments_ThrowsArgumentNullException()
         {
-            IGetShowDetails getShowDetails = new GetShowDetails(null, null);
+            Action action1 = () => new GetShowDetails(null, null);
+            Action action2 = () => new GetShowDetails(mockLogger.Object, null);
 
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.TV)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void GetShowDetailsCtor_NullTvdbManager_ThrowsArgumentNullException()
-        {
-            ILogger logger = new Mock<ILogger>().Object;
-            IGetShowDetails getShowDetails = new GetShowDetails(logger, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.TV)]
         public void GetShowDetailsCtor_Success()
         {
-            ILogger logger = new Mock<ILogger>().Object;
-            ITvdbManager tvdbManager = new Mock<ITvdbManager>().Object;
-            IGetShowDetails getShowDetails = new GetShowDetails(logger, tvdbManager);
+            IGetShowDetails getShowDetails = null;
+            Action action1 = () => getShowDetails = new GetShowDetails(mockLogger.Object, mockTvdbManager.Object);
 
-            Assert.IsNotNull(getShowDetails);
+            action1.ShouldNotThrow();
+            getShowDetails.Should().NotBeNull();
         }
         #endregion Constructor
     }

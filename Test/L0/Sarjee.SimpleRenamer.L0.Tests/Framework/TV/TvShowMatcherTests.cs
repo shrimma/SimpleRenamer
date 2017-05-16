@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
@@ -10,53 +11,42 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
     [TestClass]
     public class TvShowMatcherTests
     {
+        private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
+        private Mock<ILogger> mockLogger;
+        private Mock<IConfigurationManager> mockConfigurationManager;
+        private Mock<ITvdbManager> mockTvdbManager;
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            mockLogger = mockRepository.Create<ILogger>();
+            mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
+            mockTvdbManager = mockRepository.Create<ITvdbManager>();
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.TV)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void TVShowMatcherCtor_NullConfigManager_ThrowsArgumentNullException()
+        public void TVShowMatcherCtor_NullArguments_ThrowsArgumentNullException()
         {
-            ITVShowMatcher tvShowMatcher = new TVShowMatcher(null, null, null);
+            Action action1 = () => new TVShowMatcher(null, null, null);
+            Action action2 = () => new TVShowMatcher(mockLogger.Object, null, null);
+            Action action3 = () => new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, null);
 
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.TV)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void TVShowMatcherCtor_NullTvdbManager_ThrowsArgumentNullException()
-        {
-            IConfigurationManager configManager = new Mock<IConfigurationManager>().Object;
-            ITVShowMatcher tvShowMatcher = new TVShowMatcher(configManager, null, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.TV)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void TVShowMatcherCtor_NullLogger_ThrowsArgumentNullException()
-        {
-            IConfigurationManager configManager = new Mock<IConfigurationManager>().Object;
-            ITvdbManager tvdbManager = new Mock<ITvdbManager>().Object;
-            ITVShowMatcher tvShowMatcher = new TVShowMatcher(configManager, tvdbManager, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
+            action3.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.TV)]
         public void TVShowMatcherCtor_Success()
         {
-            IConfigurationManager configManager = new Mock<IConfigurationManager>().Object;
-            ITvdbManager tvdbManager = new Mock<ITvdbManager>().Object;
-            ILogger logger = new Mock<ILogger>().Object;
-            ITVShowMatcher tvShowMatcher = new TVShowMatcher(configManager, tvdbManager, logger);
+            ITVShowMatcher tvShowMatcher = null;
+            Action action1 = () => tvShowMatcher = new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object);
 
-            Assert.IsNotNull(tvShowMatcher);
+            action1.ShouldNotThrow();
+            tvShowMatcher.Should().NotBeNull();
         }
         #endregion Constructor
     }

@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
@@ -10,41 +11,36 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
     [TestClass]
     public class TvdbManagerTests
     {
+        private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
+        private Mock<IConfigurationManager> mockConfigurationManager;
+        private Mock<IRetryHelper> mockRetryHelper;
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
+            mockRetryHelper = mockRepository.Create<IRetryHelper>();
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.TV)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void TvdbManagerCtor_NullConfigManager_ThrowsArgumentNullException()
+        public void TvdbManagerCtor_NullArguments_ThrowsArgumentNullException()
         {
-            ITvdbManager tvdbManager = new TvdbManager(null, null);
+            Action action1 = () => new TvdbManager(null, null);
+            Action action2 = () => new TvdbManager(mockConfigurationManager.Object, null);
 
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.TV)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void TvdbManagerCtor_NullRetryHelper_ThrowsArgumentNullException()
-        {
-            IConfigurationManager configManager = new Mock<IConfigurationManager>().Object;
-            ITvdbManager tvdbManager = new TvdbManager(configManager, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.TV)]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void TvdbManagerCtor_Success()
         {
-            IConfigurationManager configManager = new Mock<IConfigurationManager>().Object;
-            IRetryHelper retryHelper = new Mock<IRetryHelper>().Object;
-            ITvdbManager tvdbManager = new TvdbManager(configManager, null);
+            ITvdbManager tvdbManager = null;
+            Action action1 = () => tvdbManager = new TvdbManager(mockConfigurationManager.Object, mockRetryHelper.Object);
 
-            //we shouldnt get here so throw if we do
-            Assert.IsNotNull(tvdbManager);
         }
         #endregion Constructor
     }

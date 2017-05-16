@@ -16,13 +16,17 @@ namespace Sarjee.SimpleRenamer.Framework.TV
     public class TVShowMatcher : ITVShowMatcher
     {
         private ILogger _logger;
+        private IConfigurationManager _configurationManager;
         private Settings settings;
         private ITvdbManager _tvdbManager;
-        private IConfigurationManager _configurationManager;
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public TVShowMatcher(IConfigurationManager configManager, ITvdbManager tvdbManager, ILogger logger)
+        public TVShowMatcher(ILogger logger, IConfigurationManager configManager, ITvdbManager tvdbManager)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
@@ -31,14 +35,10 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {
                 throw new ArgumentNullException(nameof(tvdbManager));
             }
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
 
+            _logger = logger;
             _configurationManager = configManager;
             _tvdbManager = tvdbManager;
-            _logger = logger;
             settings = _configurationManager.Settings;
         }
 
