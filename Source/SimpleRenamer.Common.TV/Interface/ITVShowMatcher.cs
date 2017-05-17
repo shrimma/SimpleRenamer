@@ -15,7 +15,7 @@ namespace Sarjee.SimpleRenamer.Common.TV.Interface
         /// <param name="episode">Episode to scrape</param>
         /// <param name="showNameMapping">Show to scrape</param>
         /// <returns></returns>
-        Task<TVEpisodeScrape> ScrapeDetailsAsync(MatchedFile episode);
+        Task<MatchedFile> ScrapeDetailsAsync(MatchedFile episode);
 
         /// <summary>
         /// Gets a list of possible series that a TVEpisode name could relate to
