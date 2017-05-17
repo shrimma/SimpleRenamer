@@ -264,7 +264,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             return r.Replace(input, "");
         }
 
-        public async Task<SeriesWithBanner> GetShowWithBannerAsync(string showId)
+        public async Task<(CompleteSeries series, BitmapImage banner)> GetShowWithBannerAsync(string showId)
         {
             _logger.TraceMessage("GetSeriesInfo - Start");
             CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(showId);
@@ -281,7 +281,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
 
             _logger.TraceMessage("GetSeriesInfo - End");
-            return new SeriesWithBanner(matchedSeries, bannerImage);
+            return (matchedSeries, bannerImage);
         }
     }
 }

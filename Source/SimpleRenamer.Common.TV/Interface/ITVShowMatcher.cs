@@ -4,6 +4,7 @@ using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Common.TV.Interface
 {
@@ -37,7 +38,7 @@ namespace Sarjee.SimpleRenamer.Common.TV.Interface
         /// </summary>
         /// <param name="showId">The TVDB show ID to grab banner for</param>
         /// <returns>Populated SeriesWithBanner object</returns>
-        Task<SeriesWithBanner> GetShowWithBannerAsync(string showId);
+        Task<(CompleteSeries series, BitmapImage banner)> GetShowWithBannerAsync(string showId);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made
