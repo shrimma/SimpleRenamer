@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Framework.Core;
@@ -10,13 +11,23 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
     [TestClass]
     public class AppConfigurationManagerTests
     {
+        private IConfigurationManager GetConfigurationManager()
+        {
+            IConfigurationManager configurationManager = new AppConfigurationManager();
+            configurationManager.Should().NotBeNull();
+            return configurationManager;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Core)]
         public void AppConfigurationManagerCtor_Success()
         {
-            IConfigurationManager configurationManager = new AppConfigurationManager();
-            Assert.IsNotNull(configurationManager);
+            IConfigurationManager configurationManager = null;
+            Action action1 = () => configurationManager = GetConfigurationManager();
+
+            action1.ShouldNotThrow();
+            configurationManager.Should().NotBeNull();
         }
         #endregion Constructor
 
@@ -24,54 +35,71 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         [TestCategory(TestCategories.Core)]
         public void AppConfigurationManager_TvdbApiKey()
         {
-            IConfigurationManager configurationManager = new AppConfigurationManager();
-            string apiKey = configurationManager.TvDbApiKey;
+            IConfigurationManager configurationManager = GetConfigurationManager();
 
-            Assert.IsNotNull(apiKey);
+            string apiKey = string.Empty;
+            Action action1 = () => apiKey = configurationManager.TvDbApiKey;
+
+            action1.ShouldNotThrow();
+            apiKey.Should().NotBeNullOrWhiteSpace();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
         public void AppConfigurationManager_TmdbApiKey()
         {
-            IConfigurationManager configurationManager = new AppConfigurationManager();
-            string apiKey = configurationManager.TmDbApiKey;
+            IConfigurationManager configurationManager = GetConfigurationManager();
 
-            Assert.IsNotNull(apiKey);
+            string apiKey = string.Empty;
+            Action action1 = () => apiKey = configurationManager.TmDbApiKey;
+
+            action1.ShouldNotThrow();
+            apiKey.Should().NotBeNullOrWhiteSpace();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
         public void AppConfigurationManager_OneTrueErrorUrl()
         {
-            IConfigurationManager configurationManager = new AppConfigurationManager();
-            string oneTrueErrorUrl = configurationManager.OneTrueErrorUrl;
+            IConfigurationManager configurationManager = GetConfigurationManager();
 
-            Assert.IsNotNull(oneTrueErrorUrl);
+            string oneTrueErrorUrl = string.Empty;
+            Action action1 = () => oneTrueErrorUrl = configurationManager.OneTrueErrorUrl;
 
-            Uri uri = new Uri(oneTrueErrorUrl);
+            action1.ShouldNotThrow();
+            oneTrueErrorUrl.Should().NotBeNullOrWhiteSpace();
 
-            Assert.IsNotNull(uri);
+            Uri uri = null;
+            Action action2 = () => uri = new Uri(oneTrueErrorUrl);
+
+            action2.ShouldNotThrow();
+            uri.Should().NotBeNull();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
         public void AppConfigurationManager_OneTrueErrorApplicationKey()
         {
-            IConfigurationManager configurationManager = new AppConfigurationManager();
-            string oneTrueErrorApplicationKey = configurationManager.OneTrueErrorApplicationKey;
+            IConfigurationManager configurationManager = GetConfigurationManager();
 
-            Assert.IsNotNull(oneTrueErrorApplicationKey);
+            string oneTrueErrorApplicationKey = string.Empty;
+            Action action1 = () => oneTrueErrorApplicationKey = configurationManager.OneTrueErrorApplicationKey;
+
+            action1.ShouldNotThrow();
+            oneTrueErrorApplicationKey.Should().NotBeNullOrWhiteSpace();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
         public void AppConfigurationManager_OneTrueErrorSharedSecret()
         {
-            IConfigurationManager configurationManager = new AppConfigurationManager();
-            string oneTrueErrorSharedSecret = configurationManager.OneTrueErrorSharedSecret;
+            IConfigurationManager configurationManager = GetConfigurationManager();
 
-            Assert.IsNotNull(oneTrueErrorSharedSecret);
+            string oneTrueErrorSharedSecret = string.Empty;
+            Action action1 = () => oneTrueErrorSharedSecret = configurationManager.OneTrueErrorSharedSecret;
+
+            action1.ShouldNotThrow();
+            oneTrueErrorSharedSecret.Should().NotBeNullOrWhiteSpace();
         }
 
         [TestMethod]
@@ -79,39 +107,54 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         public void AppConfigurationManager_Testable_Settings()
         {
             IConfigurationManager configurationManager = new TestableAppConfigurationManager();
-            Settings settings = configurationManager.Settings;
 
-            Assert.IsNotNull(settings);
+            Settings settings = null;
+            Action action1 = () => settings = configurationManager.Settings;
+
+            action1.ShouldNotThrow();
+            settings.Should().NotBeNull();
+            //TODO check the settings values!
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
         public void AppConfigurationManager_RegexExpressions()
         {
-            IConfigurationManager configurationManager = new AppConfigurationManager();
-            RegexFile regexExpressions = configurationManager.RegexExpressions;
+            IConfigurationManager configurationManager = GetConfigurationManager();
 
-            Assert.IsNotNull(regexExpressions);
+            RegexFile regexExpressions = null;
+            Action action1 = () => regexExpressions = configurationManager.RegexExpressions;
+
+            action1.ShouldNotThrow();
+            regexExpressions.Should().NotBeNull();
+            //TODO check the regex vlaues here
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
         public void AppConfigurationManager_IgnoredFiles()
         {
-            IConfigurationManager configurationManager = new AppConfigurationManager();
-            IgnoreList ignoreList = configurationManager.IgnoredFiles;
+            IConfigurationManager configurationManager = GetConfigurationManager();
 
-            Assert.IsNotNull(ignoreList);
+            IgnoreList ignoreList = null;
+            Action action1 = () => ignoreList = configurationManager.IgnoredFiles;
+
+            action1.ShouldNotThrow();
+            ignoreList.Should().NotBeNull();
+            //TODO check the ignore here
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
         public void AppConfigurationManager_ShowNameMappings()
         {
-            IConfigurationManager configurationManager = new AppConfigurationManager();
-            ShowNameMapping showNameMapping = configurationManager.ShowNameMappings;
+            IConfigurationManager configurationManager = GetConfigurationManager();
 
-            Assert.IsNotNull(showNameMapping);
+            ShowNameMapping showNameMapping = null;
+            Action action1 = () => showNameMapping = configurationManager.ShowNameMappings;
+
+            action1.ShouldNotThrow();
+            showNameMapping.Should().NotBeNull();
         }
 
         [TestMethod]
@@ -119,9 +162,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         public void AppConfigurationManager_Testable_SaveConfiguration()
         {
             IConfigurationManager configurationManager = new TestableAppConfigurationManager();
-            configurationManager.SaveConfiguration();
 
-            Assert.IsTrue(true);
+            Action action1 = () => configurationManager.SaveConfiguration();
+
+            action1.ShouldNotThrow();
         }
     }
 }

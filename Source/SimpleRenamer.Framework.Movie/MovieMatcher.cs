@@ -5,7 +5,9 @@ using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Framework.Movie
 {
@@ -17,27 +19,17 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 
         public MovieMatcher(ILogger logger, ITmdbManager tmdbManager)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            if (tmdbManager == null)
-            {
-                throw new ArgumentNullException(nameof(tmdbManager));
-            }
-
-
-            _logger = logger;
-            _tmdbManager = tmdbManager;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _tmdbManager = tmdbManager ?? throw new ArgumentNullException(nameof(tmdbManager));
         }
 
         public async Task<List<ShowView>> GetPossibleMoviesForFile(string movieName)
         {
-            return await Task.Run(async () =>
+            List<ShowView> movies = new List<ShowView>();
+            SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName, 0);
+            foreach (var s in results.Results)
             {
-                List<ShowView> movies = new List<ShowView>();
-                SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName, 0);
-                foreach (var s in results.Results)
+                try
                 {
                     string desc = string.Empty;
                     if (!string.IsNullOrEmpty(s.Overview))
@@ -51,17 +43,21 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                             desc = s.Overview;
                         }
                     }
-                    movies.Add(new ShowView(s.Id.ToString(), s.Title, s.ReleaseDate.Value.Year.ToString(), desc));
+                    movies.Add(new ShowView(s.Id.ToString(), s.Title, s.ReleaseDate.HasValue ? s.ReleaseDate.Value.Year.ToString() : "N/A", desc));
                 }
+                catch (Exception ex)
+                {
+                    //TODO just swalow this?
+                }
+            }
 
-                return movies;
-            });
+            return movies;
         }
 
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie)
         {
             _logger.TraceMessage("ScrapeDetailsAsync - Start");
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.FilePath}"));
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.SourceFilePath}"));
 
             SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movie.ShowName, movie.Year);
 
@@ -106,6 +102,27 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 _logger.TraceMessage("UpdateFileWithMatchedMovie - End");
                 return matchedFile;
             });
+        }
+
+        public async Task<MovieInfo> GetMovieWithBanner(string movieId, CancellationToken ct)
+        {
+            _logger.TraceMessage("GetMovieInfo - Start");
+            MovieCredits matchedMovie = await _tmdbManager.GetMovieAsync(movieId);
+            BitmapImage bannerImage = new BitmapImage();
+
+            if (!string.IsNullOrEmpty(matchedMovie.Movie.PosterPath))
+            {
+                bannerImage.BeginInit();
+                bannerImage.UriSource = new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.Movie.PosterPath));
+                bannerImage.EndInit();
+            }
+            else
+            {
+                //TODO add a not found poster
+            }
+
+            _logger.TraceMessage("GetMovieInfo - End");
+            return new MovieInfo(matchedMovie, bannerImage);
         }
     }
 }

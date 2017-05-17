@@ -29,32 +29,11 @@ namespace Sarjee.SimpleRenamer.Views
 
         public SelectShowWindow(ILogger log, ITVShowMatcher showMatch, IMovieMatcher movieMatch, ShowDetailsWindow showDetails, MovieDetailsWindow movieDetails)
         {
-            if (log == null)
-            {
-                throw new ArgumentNullException(nameof(log));
-            }
-            if (showMatch == null)
-            {
-                throw new ArgumentNullException(nameof(showMatch));
-            }
-            if (movieMatch == null)
-            {
-                throw new ArgumentNullException(nameof(movieMatch));
-            }
-            if (showDetails == null)
-            {
-                throw new ArgumentNullException(nameof(showDetails));
-            }
-            if (movieDetails == null)
-            {
-                throw new ArgumentNullException(nameof(movieDetails));
-            }
-
-            logger = log;
-            showMatcher = showMatch;
-            movieMatcher = movieMatch;
-            showDetailsWindow = showDetails;
-            movieDetailsWindow = movieDetails;
+            logger = log ?? throw new ArgumentNullException(nameof(log));
+            showMatcher = showMatch ?? throw new ArgumentNullException(nameof(showMatch));
+            movieMatcher = movieMatch ?? throw new ArgumentNullException(nameof(movieMatch));
+            showDetailsWindow = showDetails ?? throw new ArgumentNullException(nameof(showDetails));
+            movieDetailsWindow = movieDetails ?? throw new ArgumentNullException(nameof(movieDetails));
 
             InitializeComponent();
             this.ShowListBox.SizeChanged += ListView_SizeChanged;
@@ -100,11 +79,14 @@ namespace Sarjee.SimpleRenamer.Views
 
         void SelectShowWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(null, currentFileType));
-            e.Cancel = true;
-            //clear the item list
-            this.ShowListBox.ItemsSource = null;
-            this.Hide();
+            if (this.Visibility == Visibility.Visible)
+            {
+                RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(null, currentFileType));
+                e.Cancel = true;
+                //clear the item list
+                this.ShowListBox.ItemsSource = null;
+                this.Hide();
+            }
         }
 
         public async Task SearchForMatches(string title, string searchString, FileType fileType)
@@ -114,6 +96,7 @@ namespace Sarjee.SimpleRenamer.Views
             this.SearchTextBox.Text = searchString;
             this.Title = title;
             currentFileType = fileType;
+            ShowListBox.ItemsSource = null;
 
             //grab possible matches
             List<ShowView> possibleMatches = await GetMatches(searchString, fileType);
@@ -171,12 +154,14 @@ namespace Sarjee.SimpleRenamer.Views
             {
                 if (currentFileType == FileType.TvShow)
                 {
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                     showDetailsWindow.GetSeriesInfo(current.Id);
                     showDetailsWindow.ShowDialog();
                 }
                 else if (currentFileType == FileType.Movie)
                 {
                     movieDetailsWindow.GetMovieInfo(current.Id);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                     movieDetailsWindow.ShowDialog();
                 }
             }
@@ -184,7 +169,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         private async Task<List<ShowView>> GetMatches(string searchText, FileType fileType)
         {
-            List<ShowView> possibleMatches;
+            List<ShowView> possibleMatches = null;
             if (currentFileType == FileType.TvShow)
             {
                 possibleMatches = await showMatcher.GetPossibleShowsForEpisode(searchText);

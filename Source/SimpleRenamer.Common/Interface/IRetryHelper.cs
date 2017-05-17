@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common.Interface
 {
+    /// <summary>
+    /// RetryHelper interface
+    /// </summary>
     public interface IRetryHelper
     {
         /// <summary>

@@ -14,22 +14,13 @@ namespace Sarjee.SimpleRenamer.Views
     /// </summary>
     public partial class MovieDetailsWindow
     {
-        private ILogger logger;
-        private IGetMovieDetails getMovieDetails;
+        private ILogger _logger;
+        private IMovieMatcher _movieMatcher;
 
-        public MovieDetailsWindow(ILogger log, IGetMovieDetails getMovie)
+        public MovieDetailsWindow(ILogger logger, IMovieMatcher movieMatcher)
         {
-            if (log == null)
-            {
-                throw new ArgumentNullException(nameof(log));
-            }
-            if (getMovie == null)
-            {
-                throw new ArgumentNullException(nameof(getMovie));
-            }
-
-            logger = log;
-            getMovieDetails = getMovie;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _movieMatcher = movieMatcher ?? throw new ArgumentNullException(nameof(movieMatcher));
 
             try
             {
@@ -42,20 +33,23 @@ namespace Sarjee.SimpleRenamer.Views
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            e.Cancel = true;
-            //clear the UI
-            MovieTagLineTextBox.Text = string.Empty;
-            MovieDescriptionTextBox.Text = string.Empty;
-            ActorsListBox.ItemsSource = null;
-            CrewListBox.ItemsSource = null;
-            BannerImage.Source = null;
-            this.Hide();
+            if (this.Visibility == Visibility.Visible)
+            {
+                e.Cancel = true;
+                //clear the UI
+                MovieTagLineTextBox.Text = string.Empty;
+                MovieDescriptionTextBox.Text = string.Empty;
+                ActorsListBox.ItemsSource = null;
+                CrewListBox.ItemsSource = null;
+                BannerImage.Source = null;
+                this.Hide();
+            }
         }
 
         private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -82,11 +76,11 @@ namespace Sarjee.SimpleRenamer.Views
 
         public async Task GetMovieInfo(string movieId)
         {
-            logger.TraceMessage("GetMovieInfo - Start");
+            _logger.TraceMessage("GetMovieInfo - Start");
             //enable progress spinner
             LoadingProgress.IsActive = true;
             CancellationTokenSource cts = new CancellationTokenSource();
-            MovieInfo movie = await getMovieDetails.GetMovieWithBanner(movieId, cts.Token);
+            MovieInfo movie = await _movieMatcher.GetMovieWithBanner(movieId, cts.Token);
 
             //set the title, show description, rating and firstaired values
             this.Title = string.Format("{0} - Rating {1} - Year {2}", movie.Movie.Movie.Title, string.IsNullOrEmpty(movie.Movie.Movie.VoteAverage.ToString()) ? "0.0" : movie.Movie.Movie.VoteAverage.ToString(), movie.Movie.Movie.ReleaseDate.HasValue ? movie.Movie.Movie.ReleaseDate.Value.Year.ToString() : "1900");
@@ -112,7 +106,7 @@ namespace Sarjee.SimpleRenamer.Views
             //set the banner
             BannerImage.Source = movie.BannerImage;
 
-            logger.TraceMessage("GetMovieInfo - End");
+            _logger.TraceMessage("GetMovieInfo - End");
         }
     }
 }

@@ -14,22 +14,13 @@ namespace Sarjee.SimpleRenamer.Views
     /// </summary>
     public partial class ShowDetailsWindow
     {
-        private ILogger logger;
-        private IGetShowDetails getShowDetails;
+        private ILogger _logger;
+        private ITVShowMatcher _showMatcher;
 
-        public ShowDetailsWindow(ILogger log, IGetShowDetails getShow)
+        public ShowDetailsWindow(ILogger logger, ITVShowMatcher showMatcher)
         {
-            if (log == null)
-            {
-                throw new ArgumentNullException(nameof(log));
-            }
-            if (getShow == null)
-            {
-                throw new ArgumentNullException(nameof(getShow));
-            }
-
-            logger = log;
-            getShowDetails = getShow;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _showMatcher = showMatcher ?? throw new ArgumentNullException(nameof(showMatcher));
 
             try
             {
@@ -42,20 +33,23 @@ namespace Sarjee.SimpleRenamer.Views
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            e.Cancel = true;
-            //clear the UI
-            ShowDescriptionTextBox.Text = string.Empty;
-            ActorsListBox.ItemsSource = null;
-            EpisodesListBox.ItemsSource = null;
-            BannerImage.Source = null;
+            if (this.Visibility == Visibility.Visible)
+            {
+                e.Cancel = true;
+                //clear the UI
+                ShowDescriptionTextBox.Text = string.Empty;
+                ActorsListBox.ItemsSource = null;
+                EpisodesListBox.ItemsSource = null;
+                BannerImage.Source = null;
 
-            this.Hide();
+                this.Hide();
+            }
         }
 
         private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -82,10 +76,10 @@ namespace Sarjee.SimpleRenamer.Views
 
         public async Task GetSeriesInfo(string showId)
         {
-            logger.TraceMessage("GetSeriesInfo - Start");
+            _logger.TraceMessage("GetSeriesInfo - Start");
             LoadingProgress.IsActive = true;
 
-            SeriesWithBanner series = await getShowDetails.GetShowWithBannerAsync(showId);
+            SeriesWithBanner series = await _showMatcher.GetShowWithBannerAsync(showId);
 
             //set the title, show description, rating and firstaired values
             this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.Series.SeriesName, string.IsNullOrEmpty(series.Series.Series.SiteRating.ToString()) ? "0.0" : series.Series.Series.SiteRating.ToString(), string.IsNullOrEmpty(series.Series.Series.FirstAired.ToString()) ? "1900" : series.Series.Series.FirstAired.ToString());
@@ -100,7 +94,7 @@ namespace Sarjee.SimpleRenamer.Views
             //set the banner
             BannerImage.Source = series.BannerImage;
 
-            logger.TraceMessage("GetSeriesInfo - End");
+            _logger.TraceMessage("GetSeriesInfo - End");
         }
     }
 }

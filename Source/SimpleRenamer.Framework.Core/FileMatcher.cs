@@ -18,15 +18,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
         public FileMatcher(ILogger logger, IConfigurationManager configManager)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             regexExpressions = configManager.RegexExpressions;
         }
 
@@ -44,7 +40,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 if (episode != null)
                 {
                     //if episode is not null then we matched so add to the output list
-                    _logger.TraceMessage(string.Format("Matched {0}", episode.FilePath));
+                    _logger.TraceMessage(string.Format("Matched {0}", episode.SourceFilePath));
                     lock (lockList)
                     {
                         episodes.Add(episode);

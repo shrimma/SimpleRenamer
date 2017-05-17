@@ -1,0 +1,24 @@
+﻿{
+  "RegexExpressions": [
+    {
+      "Expression": "^((?<series_name>.+?)[. _-]+)?s(?<season_num>\\d+)[. _-]*e(?<ep_num>\\d+)(([. _-]*e|-)(?<extra_ep_num>(?!(1080|720)[pi])\\d+))*[. _-]*((?<extra_info>.+?)((?<![. _-])-(?<release_group>[^-]+))?)?$",
+      "IsEnabled": true,
+      "IsForTvShow": true
+    },
+    {
+      "Expression": "^((?<series_name>.+?)[\\[. _-]+)?(?<season_num>\\d+)x(?<ep_num>\\d+)(([. _-]*x|-)(?<extra_ep_num>(?!(1080|720)[pi])(?!(?<=x)264)\\d+))*[\\]. _-]*((?<extra_info>.+?)((?<![. _-])-(?<release_group>[^-]+))?)?$",
+      "IsEnabled": true,
+      "IsForTvShow": true
+    },
+    {
+      "Expression": "^((?<series_name>.*[^ (_.])[ (_.]+((?<ShowYearA>\\d{4})([ (_.]+S(?<season_num>\\d{1,2})E(?<ep_num>\\d{1,2}))?|(?<!\\d{4}[ (_.])S(?<SeasonB>\\d{1,2})E(?<EpisodeB>\\d{1,2})|(?<EpisodeC>\\d{3}))|(?<ShowNameB>.+))",
+      "IsEnabled": true,
+      "IsForTvShow": true
+    },
+    {
+      "Expression": "^((?<movie_title>.*[^ (_.])[ (_.]+(?!(1080|720)[pi])(?<movie_year>\\d{4})(.*))",
+      "IsEnabled": true,
+      "IsForTvShow": false
+    }
+  ]
+}

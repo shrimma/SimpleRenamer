@@ -2,6 +2,9 @@
 
 namespace Sarjee.SimpleRenamer.Common.Interface
 {
+    /// <summary>
+    /// DependencyInjectionContext Interface
+    /// </summary>
     public interface IDependencyInjectionContext
     {
         /// <summary>

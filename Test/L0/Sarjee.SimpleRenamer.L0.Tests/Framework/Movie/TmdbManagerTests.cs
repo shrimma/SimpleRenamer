@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
@@ -10,39 +11,45 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
     [TestClass]
     public class TmdbManagerTests
     {
+        private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
+        private Mock<IConfigurationManager> mockConfigurationManager;
+        private Mock<IRetryHelper> mockRetryHelper;
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
+            mockRetryHelper = mockRepository.Create<IRetryHelper>();
+        }
+
+        private ITmdbManager GetTmdbManager()
+        {
+            ITmdbManager tmdbManager = new TmdbManager(mockConfigurationManager.Object, mockRetryHelper.Object);
+            tmdbManager.Should().NotBeNull();
+            return tmdbManager;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void TmdbManagerCtor_NullConfigManager_ThrowsArgumentNullException()
         {
-            ITmdbManager tmdbManager = new TmdbManager(null, null);
+            Action action1 = () => new TmdbManager(null, null);
+            Action action2 = () => new TmdbManager(mockConfigurationManager.Object, null);
 
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Movie)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void TmdbManagerCtor_NullRetryHelper_ThrowsArgumentNullException()
-        {
-            IConfigurationManager configManager = new Mock<IConfigurationManager>().Object;
-            ITmdbManager tmdbManager = new TmdbManager(configManager, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
         public void TmdbManagerCtor_Success()
         {
-            IConfigurationManager configManager = new Mock<IConfigurationManager>().Object;
-            IRetryHelper retryHelper = new Mock<IRetryHelper>().Object;
-            ITmdbManager tmdbManager = new TmdbManager(configManager, retryHelper);
+            ITmdbManager tmdbManager = null;
+            Action action1 = () => tmdbManager = GetTmdbManager();
 
-            Assert.IsNotNull(tmdbManager);
+            action1.ShouldNotThrow();
+            tmdbManager.Should().NotBeNull();
         }
         #endregion Constructor
     }

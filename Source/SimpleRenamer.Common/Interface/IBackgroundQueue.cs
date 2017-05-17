@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common.Interface
 {
+    /// <summary>
+    /// BackgroundQueue Interface
+    /// </summary>
     public interface IBackgroundQueue
     {
         /// <summary>

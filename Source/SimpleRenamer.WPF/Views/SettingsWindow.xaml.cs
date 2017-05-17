@@ -30,30 +30,13 @@ namespace Sarjee.SimpleRenamer.Views
 
         public SettingsWindow(IConfigurationManager configManager, IHelper help, AddExtensionsWindow extWindow, RegexExpressionsWindow expWindow)
         {
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
-            if (help == null)
-            {
-                throw new ArgumentNullException(nameof(help));
-            }
-            if (extWindow == null)
-            {
-                throw new ArgumentNullException(nameof(extWindow));
-            }
-            if (expWindow == null)
-            {
-                throw new ArgumentNullException(nameof(expWindow));
-            }
+            //init our interfaces
+            addExtensionsWindow = extWindow ?? throw new ArgumentNullException(nameof(extWindow));
+            regexExpressionsWindow = expWindow ?? throw new ArgumentNullException(nameof(expWindow));
+            configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
+            helper = help ?? throw new ArgumentNullException(nameof(help));
 
             InitializeComponent();
-
-            //init our interfaces
-            addExtensionsWindow = extWindow;
-            regexExpressionsWindow = expWindow;
-            configurationManager = configManager;
-            helper = help;
 
             accentItems = new List<AccentItem>();
             var mahAppsAccents = ThemeManager.Accents;
@@ -100,29 +83,32 @@ namespace Sarjee.SimpleRenamer.Views
 
         void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            //stop the window actually closing
-            e.Cancel = true;
+            if (this.Visibility == Visibility.Visible)
+            {
+                //stop the window actually closing
+                e.Cancel = true;
 
-            //check if settings have been changed without saving
-            var currentExtensions = new List<string>(validExtensions);
-            if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, currentExtensions) == false)
-            {
-                configurationManager.Settings.ValidExtensions = currentExtensions;
-            }
-            var currentWatchFolders = new List<string>(watchFolders);
-            if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, currentWatchFolders) == false)
-            {
-                configurationManager.Settings.WatchFolders = currentWatchFolders;
-            }
-            if (HaveSettingsChanged() == true)
-            {
-                //if settings have been changed and not saved then prompt user
-                ConfirmationFlyout.IsOpen = true;
-            }
-            else
-            {
-                SetupView();
-                this.Hide();
+                //check if settings have been changed without saving
+                var currentExtensions = new List<string>(validExtensions);
+                if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, currentExtensions) == false)
+                {
+                    configurationManager.Settings.ValidExtensions = currentExtensions;
+                }
+                var currentWatchFolders = new List<string>(watchFolders);
+                if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, currentWatchFolders) == false)
+                {
+                    configurationManager.Settings.WatchFolders = currentWatchFolders;
+                }
+                if (HaveSettingsChanged() == true)
+                {
+                    //if settings have been changed and not saved then prompt user
+                    ConfirmationFlyout.IsOpen = true;
+                }
+                else
+                {
+                    SetupView();
+                    this.Hide();
+                }
             }
         }
 

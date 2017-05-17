@@ -33,6 +33,13 @@ namespace Sarjee.SimpleRenamer.Common.TV.Interface
         Task<MatchedFile> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, MatchedFile episode);
 
         /// <summary>
+        /// Gets a show and it's banner
+        /// </summary>
+        /// <param name="showId">The TVDB show ID to grab banner for</param>
+        /// <returns>Populated SeriesWithBanner object</returns>
+        Task<SeriesWithBanner> GetShowWithBannerAsync(string showId);
+
+        /// <summary>
         /// Fired whenever some noticeable progress is made
         /// </summary>
         event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;

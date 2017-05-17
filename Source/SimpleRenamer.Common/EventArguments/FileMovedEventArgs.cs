@@ -3,17 +3,26 @@ using System;
 
 namespace Sarjee.SimpleRenamer.Common.EventArguments
 {
+    /// <summary>
+    /// FileMovedEventArgs
+    /// </summary>
+    /// <seealso cref="System.EventArgs" />
     public class FileMovedEventArgs : EventArgs
     {
-        private MatchedFile tvEpisode;
-        public FileMovedEventArgs(MatchedFile tvEp)
+        private MatchedFile _file;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileMovedEventArgs"/> class.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <exception cref="System.ArgumentNullException">file</exception>
+        public FileMovedEventArgs(MatchedFile file)
         {
-            tvEpisode = tvEp;
+            _file = file ?? throw new ArgumentNullException(nameof(file));
         }
 
-        public MatchedFile Episode
+        public MatchedFile File
         {
-            get { return tvEpisode; }
+            get { return _file; }
         }
     }
 }

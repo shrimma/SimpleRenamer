@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common.Interface
 {
+    /// <summary>
+    /// ActionMatchedFiles interface
+    /// </summary>
     public interface IActionMatchedFiles
     {
         /// <summary>

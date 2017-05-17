@@ -1,9 +1,9 @@
-﻿using Sarjee.SimpleRenamer.Common.Interface;
+﻿using Newtonsoft.Json;
+using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
-using System.Xml.Serialization;
 
 namespace Sarjee.SimpleRenamer.Framework.Core
 {
@@ -13,6 +13,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private RegexFile regexExpressions;
         private Settings settings;
         private ShowNameMapping showNameMapping;
+        private JsonSerializer jsonSerializer = new JsonSerializer();
 
         public IgnoreList IgnoredFiles
         {
@@ -40,10 +41,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
             else
             {
-                using (FileStream fs = new FileStream(IgnoreListFilePath, FileMode.Open))
+                using (StreamReader file = File.OpenText(IgnoreListFilePath))
                 {
-                    XmlSerializer serializer = new XmlSerializer(typeof(IgnoreList));
-                    ignoreList = (IgnoreList)serializer.Deserialize(fs);
+                    ignoreList = (IgnoreList)jsonSerializer.Deserialize(file, typeof(IgnoreList));
                 }
                 return ignoreList;
             }
@@ -54,12 +54,10 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             //only write the file if there is data
             if (ignoreList != null && ignoreList.IgnoreFiles.Count > 0)
             {
-                using (TextWriter writer = new StreamWriter(IgnoreListFilePath))
+                using (StreamWriter file = File.CreateText(IgnoreListFilePath))
                 {
-                    XmlSerializer serializer = new XmlSerializer(typeof(IgnoreList));
-                    serializer.Serialize(writer, ignoreList);
+                    jsonSerializer.Serialize(file, ignoreList);
                 }
-
             }
         }
 
@@ -67,10 +65,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         {
             get
             {
-                return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "IgnoreFileList.xml");
+                return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "IgnoreFileList.json");
             }
         }
-
 
         public RegexFile RegexExpressions
         {
@@ -82,7 +79,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 }
                 return regexExpressions;
             }
-
             set
             {
                 regexExpressions = value;
@@ -99,10 +95,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
             else
             {
-                using (FileStream fs = new FileStream(RegexFilePath, FileMode.Open))
+                using (StreamReader file = File.OpenText(RegexFilePath))
                 {
-                    XmlSerializer serializer = new XmlSerializer(typeof(RegexFile));
-                    regexFile = (RegexFile)serializer.Deserialize(fs);
+                    regexFile = (RegexFile)jsonSerializer.Deserialize(file, typeof(RegexFile));
                 }
                 return regexFile;
             }
@@ -113,10 +108,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             //only write the file if there is data
             if (regexMatchers != null && regexMatchers.RegexExpressions.Count > 0)
             {
-                using (TextWriter writer = new StreamWriter(RegexFilePath))
+                using (StreamWriter file = File.CreateText(RegexFilePath))
                 {
-                    XmlSerializer serializer = new XmlSerializer(typeof(RegexFile));
-                    serializer.Serialize(writer, regexMatchers);
+                    jsonSerializer.Serialize(file, regexMatchers);
                 }
             }
         }
@@ -125,7 +119,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         {
             get
             {
-                return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "RegexExpressions.xml");
+                return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "RegexExpressions.json");
             }
         }
 
@@ -170,7 +164,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         {
             get
             {
-                return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "SelectedShowMapping.xml");
+                return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "SelectedShowMapping.json");
             }
         }
 
@@ -184,7 +178,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 }
                 return showNameMapping;
             }
-
             set
             {
                 showNameMapping = value;
@@ -201,10 +194,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
             else
             {
-                using (FileStream fs = new FileStream(ShowNameMappingFilePath, FileMode.Open))
+                using (StreamReader file = File.OpenText(ShowNameMappingFilePath))
                 {
-                    XmlSerializer serializer = new XmlSerializer(typeof(ShowNameMapping));
-                    snm = (ShowNameMapping)serializer.Deserialize(fs);
+                    snm = (ShowNameMapping)jsonSerializer.Deserialize(file, typeof(ShowNameMapping));
                 }
                 return snm;
             }
@@ -215,10 +207,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             //only write the file if there is data
             if (showNameMapping != null && showNameMapping.Mappings.Count > 0)
             {
-                using (TextWriter writer = new StreamWriter(ShowNameMappingFilePath))
+                using (StreamWriter file = File.CreateText(ShowNameMappingFilePath))
                 {
-                    XmlSerializer serializer = new XmlSerializer(typeof(ShowNameMapping));
-                    serializer.Serialize(writer, showNameMapping);
+                    jsonSerializer.Serialize(file, showNameMapping);
                 }
             }
         }

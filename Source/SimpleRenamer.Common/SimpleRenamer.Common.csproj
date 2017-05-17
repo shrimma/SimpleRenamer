@@ -37,9 +37,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -54,14 +53,12 @@
     <Compile Include="BackgroundQueue.cs" />
     <Compile Include="Model\FileType.cs" />
     <Compile Include="Model\IgnoreList.cs" />
-    <Compile Include="Model\LogType.cs" />
     <Compile Include="Model\Mapping.cs" />
     <Compile Include="Model\RegexExpression.cs" />
     <Compile Include="Model\ShowNameMapping.cs" />
     <Compile Include="Model\ShowView.cs" />
     <Compile Include="EventArguments\FileMovedEventArgs.cs" />
     <Compile Include="EventArguments\ProgressTextEventArgs.cs" />
-    <Compile Include="Model\FileMoveResult.cs" />
     <Compile Include="EventArguments\FilePreProcessedEventArgs.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Interface\IBackgroundQueue.cs" />
@@ -84,13 +81,11 @@
     <Compile Include="Model\MatchedFile.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="RegexExpressions.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <Content Include="RegexExpressions.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

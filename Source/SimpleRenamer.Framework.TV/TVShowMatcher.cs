@@ -10,35 +10,23 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Framework.TV
 {
     public class TVShowMatcher : ITVShowMatcher
     {
         private ILogger _logger;
+        private IConfigurationManager _configurationManager;
         private Settings settings;
         private ITvdbManager _tvdbManager;
-        private IConfigurationManager _configurationManager;
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public TVShowMatcher(IConfigurationManager configManager, ITvdbManager tvdbManager, ILogger logger)
+        public TVShowMatcher(ILogger logger, IConfigurationManager configManager, ITvdbManager tvdbManager)
         {
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
-            if (tvdbManager == null)
-            {
-                throw new ArgumentNullException(nameof(tvdbManager));
-            }
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            _configurationManager = configManager;
-            _tvdbManager = tvdbManager;
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
+            _tvdbManager = tvdbManager ?? throw new ArgumentNullException(nameof(tvdbManager));
             settings = _configurationManager.Settings;
         }
 
@@ -50,7 +38,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         public async Task<TVEpisodeScrape> ScrapeDetailsAsync(MatchedFile episode)
         {
             _logger.TraceMessage("ScrapeDetailsAsync - Start");
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {episode.FilePath}"));
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {episode.SourceFilePath}"));
             //read the mapping file and try and find any already selected matches
             episode = FixMismatchTitles(episode);
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
@@ -135,16 +123,13 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<TVEpisodeScrape> ScrapeSpecificShow(MatchedFile episode, string seriesId, bool newMatch)
         {
             _logger.TraceMessage("ScrapeSpecificShow - Start");
-            uint season = 0;
-            uint.TryParse(episode.Season, out season);
-            int episodeNumber = 0;
-            int.TryParse(episode.Episode, out episodeNumber);
+            uint.TryParse(episode.Season, out uint season);
+            int.TryParse(episode.EpisodeNumber, out int episodeNumber);
             CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(seriesId);
             episode.TVDBShowId = seriesId;
             episode.ShowName = matchedSeries.Series.SeriesName;
             episode.EpisodeName = matchedSeries.Episodes.Where(s => s.AiredSeason.Value == season && s.AiredEpisodeNumber == episodeNumber).FirstOrDefault().EpisodeName;
-            int seasonAsInt = 0;
-            int.TryParse(episode.Season, out seasonAsInt);
+            int.TryParse(episode.Season, out int seasonAsInt);
             List<SeriesImageQueryResult> seasonBanners = matchedSeries.SeasonPosters.Where(s => s.SubKey.Equals(episode.Season) || s.SubKey.Equals(seasonAsInt.ToString())).ToList();
             if (seasonBanners != null && seasonBanners.Count > 0)
             {
@@ -165,29 +150,35 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {
                 _logger.TraceMessage("GetPossibleShowsForEpisode - Start");
                 var series = await _tvdbManager.SearchSeriesByNameAsync(showName);
-                DateTime dt = new DateTime();
                 string airedDate;
                 List<ShowView> shows = new List<ShowView>();
                 if (series != null)
                 {
                     foreach (SeriesSearchData s in series)
                     {
-                        string desc = string.Empty;
-                        if (!string.IsNullOrEmpty(s.Overview))
+                        try
                         {
-                            if (s.Overview.Length > 50)
+                            string desc = string.Empty;
+                            if (!string.IsNullOrEmpty(s.Overview))
                             {
-                                desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                                if (s.Overview.Length > 50)
+                                {
+                                    desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                                }
+                                else
+                                {
+                                    desc = s.Overview;
+                                }
                             }
-                            else
-                            {
-                                desc = s.Overview;
-                            }
-                        }
 
-                        bool parsed = DateTime.TryParseExact(s.FirstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt);
-                        airedDate = parsed ? dt.Year.ToString() : "";
-                        shows.Add(new ShowView(s.Id.ToString(), s.SeriesName, airedDate, desc));
+                            bool parsed = DateTime.TryParseExact(s.FirstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt);
+                            airedDate = parsed ? dt.Year.ToString() : "N/A";
+                            shows.Add(new ShowView(s.Id.ToString(), s.SeriesName, airedDate, desc));
+                        }
+                        catch (Exception ex)
+                        {
+                            //TODO just swallow this?
+                        }
                     }
                 }
 
@@ -255,7 +246,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
             if (temp.Contains("{Episode}"))
             {
-                temp = temp.Replace("{Episode}", episode.Episode);
+                temp = temp.Replace("{Episode}", episode.EpisodeNumber);
             }
             if (temp.Contains("{EpisodeName}"))
             {
@@ -274,6 +265,26 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
             _logger.TraceMessage("RemoveSpecialCharacters - End");
             return r.Replace(input, "");
+        }
+
+        public async Task<SeriesWithBanner> GetShowWithBannerAsync(string showId)
+        {
+            _logger.TraceMessage("GetSeriesInfo - Start");
+            CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(showId);
+            BitmapImage bannerImage = new BitmapImage();
+            if (matchedSeries.SeriesBanners != null && matchedSeries.SeriesBanners.Count > 0)
+            {
+                bannerImage.BeginInit();
+                bannerImage.UriSource = new Uri(_tvdbManager.GetBannerUri(matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName));
+                bannerImage.EndInit();
+            }
+            else
+            {
+                //TODO create a no image found banner
+            }
+
+            _logger.TraceMessage("GetSeriesInfo - End");
+            return new SeriesWithBanner(matchedSeries, bannerImage);
         }
     }
 }

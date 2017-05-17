@@ -2,17 +2,35 @@
 
 namespace Sarjee.SimpleRenamer.Common.EventArguments
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.EventArgs" />
     public class ProgressTextEventArgs : EventArgs
     {
-        private string text;
-        public ProgressTextEventArgs(string textToDisplay)
+        private string _text;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProgressTextEventArgs"/> class.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        public ProgressTextEventArgs(string text)
         {
-            text = textToDisplay;
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+            _text = text;
         }
 
+        /// <summary>
+        /// Gets the text.
+        /// </summary>
+        /// <value>
+        /// The text.
+        /// </value>
         public string Text
         {
-            get { return text; }
+            get { return _text; }
         }
     }
 }

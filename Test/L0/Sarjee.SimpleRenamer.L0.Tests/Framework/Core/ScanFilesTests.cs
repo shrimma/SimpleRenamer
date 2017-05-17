@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
@@ -11,101 +12,61 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
     [TestClass]
     public class ScanFilesTests
     {
+        private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
+        private Mock<ILogger> mockLogger;
+        private Mock<IConfigurationManager> mockConfigurationManager;
+        private Mock<IFileWatcher> mockFileWatcher;
+        private Mock<ITVShowMatcher> mockShowMatcher;
+        private Mock<IMovieMatcher> mockMovieMatcher;
+        private Mock<IFileMatcher> mockFileMatcher;
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            mockLogger = mockRepository.Create<ILogger>();
+            mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
+            mockFileWatcher = mockRepository.Create<IFileWatcher>();
+            mockShowMatcher = mockRepository.Create<ITVShowMatcher>();
+            mockMovieMatcher = mockRepository.Create<IMovieMatcher>();
+            mockFileMatcher = mockRepository.Create<IFileMatcher>();
+        }
+
+        private IScanFiles GetScanFiles()
+        {
+            IScanFiles scanFiles = new ScanFiles(mockLogger.Object, mockConfigurationManager.Object, mockFileWatcher.Object, mockShowMatcher.Object, mockMovieMatcher.Object, mockFileMatcher.Object);
+            scanFiles.Should().NotBeNull();
+            return scanFiles;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ScanFilesCtor_NullLogger_ThrowsArgumentNullException()
+        public void ScanFilesCtor_NullArguments_ThrowsArgumentNullException()
         {
-            IScanFiles scanFiles = new ScanFiles(null, null, null, null, null, null);
+            Action action1 = () => new ScanFiles(null, null, null, null, null, null);
+            Action action2 = () => new ScanFiles(mockLogger.Object, null, null, null, null, null);
+            Action action3 = () => new ScanFiles(mockLogger.Object, mockConfigurationManager.Object, null, null, null, null);
+            Action action4 = () => new ScanFiles(mockLogger.Object, mockConfigurationManager.Object, mockFileWatcher.Object, null, null, null);
+            Action action5 = () => new ScanFiles(mockLogger.Object, mockConfigurationManager.Object, mockFileWatcher.Object, mockShowMatcher.Object, null, null);
+            Action action6 = () => new ScanFiles(mockLogger.Object, mockConfigurationManager.Object, mockFileWatcher.Object, mockShowMatcher.Object, mockMovieMatcher.Object, null);
 
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ScanFilesCtor_NullFileWatcher_ThrowsArgumentNullException()
-        {
-            ILogger logger = new Mock<ILogger>().Object;
-            IScanFiles scanFiles = new ScanFiles(logger, null, null, null, null, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ScanFilesCtor_NullTvShowMatcher_ThrowsArgumentNullException()
-        {
-            ILogger logger = new Mock<ILogger>().Object;
-            IFileWatcher fileWatcher = new Mock<IFileWatcher>().Object;
-            IScanFiles scanFiles = new ScanFiles(logger, fileWatcher, null, null, null, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ScanFilesCtor_NullMovieMatcher_ThrowsArgumentNullException()
-        {
-            ILogger logger = new Mock<ILogger>().Object;
-            IFileWatcher fileWatcher = new Mock<IFileWatcher>().Object;
-            ITVShowMatcher tvShowMatcher = new Mock<ITVShowMatcher>().Object;
-            IScanFiles scanFiles = new ScanFiles(logger, fileWatcher, tvShowMatcher, null, null, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ScanFilesCtor_NullFileMatcher_ThrowsArgumentNullException()
-        {
-            ILogger logger = new Mock<ILogger>().Object;
-            IFileWatcher fileWatcher = new Mock<IFileWatcher>().Object;
-            ITVShowMatcher tvShowMatcher = new Mock<ITVShowMatcher>().Object;
-            IMovieMatcher movieMatcher = new Mock<IMovieMatcher>().Object;
-            IScanFiles scanFiles = new ScanFiles(logger, fileWatcher, tvShowMatcher, movieMatcher, null, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ScanFilesCtor_NullConfigManager_ThrowsArgumentNullException()
-        {
-            ILogger logger = new Mock<ILogger>().Object;
-            IFileWatcher fileWatcher = new Mock<IFileWatcher>().Object;
-            ITVShowMatcher tvShowMatcher = new Mock<ITVShowMatcher>().Object;
-            IMovieMatcher movieMatcher = new Mock<IMovieMatcher>().Object;
-            IFileMatcher fileMatcher = new Mock<IFileMatcher>().Object;
-            IScanFiles scanFiles = new ScanFiles(logger, fileWatcher, tvShowMatcher, movieMatcher, fileMatcher, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
+            action3.ShouldThrow<ArgumentNullException>();
+            action4.ShouldThrow<ArgumentNullException>();
+            action5.ShouldThrow<ArgumentNullException>();
+            action6.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
         public void ScanFilesCtor_Success()
         {
-            ILogger logger = new Mock<ILogger>().Object;
-            IFileWatcher fileWatcher = new Mock<IFileWatcher>().Object;
-            ITVShowMatcher tvShowMatcher = new Mock<ITVShowMatcher>().Object;
-            IMovieMatcher movieMatcher = new Mock<IMovieMatcher>().Object;
-            IFileMatcher fileMatcher = new Mock<IFileMatcher>().Object;
-            IConfigurationManager configManager = new Mock<IConfigurationManager>().Object;
-            IScanFiles scanFiles = new ScanFiles(logger, fileWatcher, tvShowMatcher, movieMatcher, fileMatcher, configManager);
+            IScanFiles scanFiles = null;
+            Action action1 = () => scanFiles = GetScanFiles();
 
-            Assert.IsNotNull(scanFiles);
+            action1.ShouldNotThrow();
+            scanFiles.Should().NotBeNull();
         }
         #endregion Constructor
     }

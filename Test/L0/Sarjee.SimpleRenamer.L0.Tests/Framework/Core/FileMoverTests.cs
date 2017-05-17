@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
@@ -10,53 +11,49 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
     [TestClass]
     public class FileMoverTests
     {
+        private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
+        private Mock<ILogger> mockLogger;
+        private Mock<IConfigurationManager> mockConfigurationManager;
+        private Mock<IBannerDownloader> mockBannerDownloader;
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            mockLogger = mockRepository.Create<ILogger>();
+            mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
+            mockBannerDownloader = mockRepository.Create<IBannerDownloader>();
+        }
+
+        private IFileMover GetFileMover()
+        {
+            IFileMover fileMover = new FileMover(mockLogger.Object, mockConfigurationManager.Object, mockBannerDownloader.Object);
+            fileMover.Should().NotBeNull();
+            return fileMover;
+        }
+
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void FileMoverCtor_NullBannerDownloader_ThrowsArgumentNullException()
         {
-            IFileMover fileMover = new FileMover(null, null, null);
+            Action action1 = () => new FileMover(null, null, null);
+            Action action2 = () => new FileMover(mockLogger.Object, null, null);
+            Action action3 = () => new FileMover(mockLogger.Object, mockConfigurationManager.Object, null);
 
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void FileMoverCtor_NullLogger_ThrowsArgumentNullException()
-        {
-            IBannerDownloader bannerDownloader = new Mock<IBannerDownloader>().Object;
-            IFileMover fileMover = new FileMover(bannerDownloader, null, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Core)]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void FileMoverCtor_NullConfigManager_ThrowsArgumentNullException()
-        {
-            IBannerDownloader bannerDownloader = new Mock<IBannerDownloader>().Object;
-            ILogger logger = new Mock<ILogger>().Object;
-            IFileMover fileMover = new FileMover(bannerDownloader, logger, null);
-
-            //we shouldnt get here so throw if we do
-            Assert.IsTrue(false);
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
+            action3.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
         public void FileMoverCtor_Success()
         {
-            IBannerDownloader bannerDownloader = new Mock<IBannerDownloader>().Object;
-            ILogger logger = new Mock<ILogger>().Object;
-            IConfigurationManager configManager = new Mock<IConfigurationManager>().Object;
-            IFileMover fileMover = new FileMover(bannerDownloader, logger, configManager);
+            IFileMover fileMover = null;
+            Action action1 = () => fileMover = GetFileMover();
 
-            Assert.IsNotNull(fileMover);
+            action1.ShouldNotThrow();
+            fileMover.Should().NotBeNull();
         }
         #endregion Constructor
     }

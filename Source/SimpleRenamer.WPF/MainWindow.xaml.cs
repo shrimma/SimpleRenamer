@@ -48,41 +48,13 @@ namespace Sarjee.SimpleRenamer
 
         public MainWindow(ILogger logger, ITVShowMatcher tvShowMatcher, IMovieMatcher movieMatcher, IDependencyInjectionContext injectionContext, IActionMatchedFiles actionMatchedFiles, IScanFiles scanFiles, IConfigurationManager configManager)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            if (tvShowMatcher == null)
-            {
-                throw new ArgumentNullException(nameof(tvShowMatcher));
-            }
-            if (movieMatcher == null)
-            {
-                throw new ArgumentNullException(nameof(movieMatcher));
-            }
-            if (injectionContext == null)
-            {
-                throw new ArgumentNullException(nameof(injectionContext));
-            }
-            if (scanFiles == null)
-            {
-                throw new ArgumentNullException(nameof(scanFiles));
-            }
-            if (actionMatchedFiles == null)
-            {
-                throw new ArgumentNullException(nameof(actionMatchedFiles));
-            }
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
-            _logger = logger;
-            _tvShowMatcher = tvShowMatcher;
-            _movieMatcher = movieMatcher;
-            _injectionContext = injectionContext;
-            _scanFiles = scanFiles;
-            _actionMatchedFiles = actionMatchedFiles;
-            _configurationManager = configManager;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _tvShowMatcher = tvShowMatcher ?? throw new ArgumentNullException(nameof(tvShowMatcher));
+            _movieMatcher = movieMatcher ?? throw new ArgumentNullException(nameof(movieMatcher));
+            _injectionContext = injectionContext ?? throw new ArgumentNullException(nameof(injectionContext));
+            _scanFiles = scanFiles ?? throw new ArgumentNullException(nameof(scanFiles));
+            _actionMatchedFiles = actionMatchedFiles ?? throw new ArgumentNullException(nameof(actionMatchedFiles));
+            _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
 
             try
             {
@@ -156,7 +128,6 @@ namespace Sarjee.SimpleRenamer
 
         private void ProgressTextEvent(object sender, ProgressTextEventArgs e)
         {
-            string ok = "ok";
             SetProgressText(e.Text);
         }
 
@@ -188,7 +159,7 @@ namespace Sarjee.SimpleRenamer
         private void PerformActionsOnShows_RaiseFileMovedEvent(object sender, FileMovedEventArgs e)
         {
             IncrementProgressBar();
-            RemoveFileFromView(e.Episode);
+            RemoveFileFromView(e.File);
         }
 
         private void RemoveFileFromView(MatchedFile file)
@@ -221,18 +192,21 @@ namespace Sarjee.SimpleRenamer
 
         void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            try
+            if (this.Visibility == Visibility.Visible)
             {
-                _logger.TraceMessage("Closing");
-                if (CancelButton.Visibility == Visibility.Visible)
+                try
                 {
-                    e.Cancel = true;
+                    _logger.TraceMessage("Closing");
+                    if (CancelButton.Visibility == Visibility.Visible)
+                    {
+                        e.Cancel = true;
+                    }
+                    _configurationManager.SaveConfiguration();
                 }
-                _configurationManager.SaveConfiguration();
-            }
-            catch (Exception ex)
-            {
-                _logger.TraceException(ex);
+                catch (Exception ex)
+                {
+                    _logger.TraceException(ex);
+                }
             }
         }
 
@@ -384,7 +358,7 @@ namespace Sarjee.SimpleRenamer
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
                 FileType fileType = temp.FileType;
-                MediaTypePath = temp.FilePath;
+                MediaTypePath = temp.SourceFilePath;
                 MediaTypeShowName = temp.ShowName;
                 if (fileType == FileType.Unknown)
                 {
@@ -407,7 +381,9 @@ namespace Sarjee.SimpleRenamer
         {
             string title = fileType == FileType.TvShow ? "TV" : "Movie";
             DisableUi();
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             selectShowWindow.SearchForMatches($"Simple Renamer - {title} - Select Show For File {Path.GetFileName(MediaTypePath)}", MediaTypeShowName, fileType);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             selectShowWindow.ShowDialog();
         }
 
@@ -471,9 +447,9 @@ namespace Sarjee.SimpleRenamer
                 IgnoreFlyout.IsOpen = false;
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 IgnoreList ignoreList = _configurationManager.IgnoredFiles;
-                if (!ignoreList.IgnoreFiles.Contains(tempEp.FilePath))
+                if (!ignoreList.IgnoreFiles.Contains(tempEp.SourceFilePath))
                 {
-                    ignoreList.IgnoreFiles.Add(tempEp.FilePath);
+                    ignoreList.IgnoreFiles.Add(tempEp.SourceFilePath);
                     scannedEpisodes.Remove(tempEp);
                     _configurationManager.IgnoredFiles = ignoreList;
                 }
@@ -527,12 +503,14 @@ namespace Sarjee.SimpleRenamer
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 if (tempEp.FileType == FileType.TvShow)
                 {
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                     showDetailsWindow.GetSeriesInfo(tempEp.TVDBShowId);
                     showDetailsWindow.ShowDialog();
                 }
                 else if (tempEp.FileType == FileType.Movie)
                 {
                     movieDetailsWindow.GetMovieInfo(tempEp.TMDBShowId.ToString());
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                     movieDetailsWindow.ShowDialog();
                 }
             }
@@ -550,7 +528,7 @@ namespace Sarjee.SimpleRenamer
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 if (tempEp.FileType == FileType.TvShow)
                 {
-                    _logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
+                    _logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.EpisodeNumber, tempEp.TVDBShowId));
                     ShowNameMapping snm = _configurationManager.ShowNameMappings;
                     if (snm != null && snm.Mappings.Count > 0)
                     {
