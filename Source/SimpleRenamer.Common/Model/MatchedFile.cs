@@ -4,7 +4,7 @@ using System.ComponentModel;
 namespace Sarjee.SimpleRenamer.Common.Model
 {
     /// <summary>
-    /// 
+    /// Matched File
     /// </summary>
     /// <seealso cref="System.ComponentModel.INotifyPropertyChanged" />
     public class MatchedFile : INotifyPropertyChanged
@@ -29,24 +29,47 @@ namespace Sarjee.SimpleRenamer.Common.Model
         #endregion INotifyPropertyChanged implementation
 
         /// <summary>
-        /// The file path
+        /// The source file path
         /// </summary>
-        private string filePath;
+        private string sourceFilePath;
         /// <summary>
-        /// Gets or sets the file path.
+        /// Gets or sets the source file path.
         /// </summary>
         /// <value>
-        /// The file path.
+        /// The source file path.
         /// </value>
-        public string FilePath
+        public string SourceFilePath
         {
-            get { return filePath; }
+            get { return sourceFilePath; }
             set
             {
-                if (value != filePath)
+                if (value != sourceFilePath)
                 {
-                    filePath = value;
-                    Notify("FilePath");
+                    sourceFilePath = value;
+                    Notify(nameof(SourceFilePath));
+                }
+            }
+        }
+
+        /// <summary>
+        /// The destination file path
+        /// </summary>
+        private string destinationFilePath;
+        /// <summary>
+        /// Gets or sets the destination file path.
+        /// </summary>
+        /// <value>
+        /// The destination file path.
+        /// </value>
+        public string DestinationFilePath
+        {
+            get { return destinationFilePath; }
+            set
+            {
+                if (value != destinationFilePath)
+                {
+                    destinationFilePath = value;
+                    Notify(nameof(DestinationFilePath));
                 }
             }
         }
@@ -69,7 +92,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != tvdbShowId)
                 {
                     tvdbShowId = value;
-                    Notify("TVDBShowId");
+                    Notify(nameof(TVDBShowId));
                 }
             }
         }
@@ -92,7 +115,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != tmdbShowId)
                 {
                     tmdbShowId = value;
-                    Notify("TMDBShowId");
+                    Notify(nameof(TMDBShowId));
                 }
             }
         }
@@ -115,7 +138,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != showName)
                 {
                     showName = value;
-                    Notify("ShowName");
+                    Notify(nameof(ShowName));
                 }
             }
         }
@@ -138,7 +161,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != season)
                 {
                     season = value;
-                    Notify("Season");
+                    Notify(nameof(Season));
                 }
             }
         }
@@ -153,7 +176,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <value>
         /// The episode.
         /// </value>
-        public string Episode
+        public string EpisodeNumber
         {
             get { return episode; }
             set
@@ -161,7 +184,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != episode)
                 {
                     episode = value;
-                    Notify("Episode");
+                    Notify(nameof(EpisodeNumber));
                 }
             }
         }
@@ -184,7 +207,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != episodeName)
                 {
                     episodeName = value;
-                    Notify("EpisodeName");
+                    Notify(nameof(EpisodeName));
                 }
             }
         }
@@ -207,7 +230,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != newFileName)
                 {
                     newFileName = value;
-                    Notify("NewFileName");
+                    Notify(nameof(NewFileName));
                 }
             }
         }
@@ -230,7 +253,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != skippedExactSelection)
                 {
                     skippedExactSelection = value;
-                    Notify("SkippedExactSelection");
+                    Notify(nameof(SkippedExactSelection));
                 }
             }
         }
@@ -253,7 +276,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != seasonImage)
                 {
                     seasonImage = value;
-                    Notify("SeasonImage");
+                    Notify(nameof(SeasonImage));
                 }
             }
         }
@@ -276,7 +299,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != showImage)
                 {
                     showImage = value;
-                    Notify("ShowImage");
+                    Notify(nameof(ShowImage));
                 }
             }
         }
@@ -299,7 +322,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != actionThis)
                 {
                     actionThis = value;
-                    Notify("ActionThis");
+                    Notify(nameof(ActionThis));
                 }
             }
         }
@@ -322,7 +345,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != fileType)
                 {
                     fileType = value;
-                    Notify("FileType");
+                    Notify(nameof(FileType));
                 }
             }
         }
@@ -345,7 +368,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != year)
                 {
                     year = value;
-                    Notify("Year");
+                    Notify(nameof(Year));
                 }
             }
         }
@@ -365,7 +388,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
             {
                 throw new ArgumentNullException(nameof(fileName));
             }
-            FilePath = filePath;
+            SourceFilePath = filePath;
             ShowName = fileName;
             FileType = FileType.Unknown;
             SkippedExactSelection = true;
@@ -397,10 +420,10 @@ namespace Sarjee.SimpleRenamer.Common.Model
             {
                 throw new ArgumentNullException(nameof(episode));
             }
-            FilePath = filePath;
+            SourceFilePath = filePath;
             ShowName = showName;
             Season = season;
-            Episode = episode;
+            EpisodeNumber = episode;
             FileType = FileType.TvShow;
             SkippedExactSelection = false;
             ActionThis = true;
@@ -422,7 +445,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
             {
                 throw new ArgumentNullException(nameof(movieTitle));
             }
-            FilePath = filePath;
+            SourceFilePath = filePath;
             ShowName = movieTitle;
             Year = year;
             Season = year.ToString();

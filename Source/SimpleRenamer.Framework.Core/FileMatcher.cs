@@ -40,7 +40,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 if (episode != null)
                 {
                     //if episode is not null then we matched so add to the output list
-                    _logger.TraceMessage(string.Format("Matched {0}", episode.FilePath));
+                    _logger.TraceMessage(string.Format("Matched {0}", episode.SourceFilePath));
                     lock (lockList)
                     {
                         episodes.Add(episode);

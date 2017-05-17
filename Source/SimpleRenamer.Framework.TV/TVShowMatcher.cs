@@ -38,7 +38,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         public async Task<TVEpisodeScrape> ScrapeDetailsAsync(MatchedFile episode)
         {
             _logger.TraceMessage("ScrapeDetailsAsync - Start");
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {episode.FilePath}"));
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {episode.SourceFilePath}"));
             //read the mapping file and try and find any already selected matches
             episode = FixMismatchTitles(episode);
             TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
@@ -124,7 +124,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             _logger.TraceMessage("ScrapeSpecificShow - Start");
             uint.TryParse(episode.Season, out uint season);
-            int.TryParse(episode.Episode, out int episodeNumber);
+            int.TryParse(episode.EpisodeNumber, out int episodeNumber);
             CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(seriesId);
             episode.TVDBShowId = seriesId;
             episode.ShowName = matchedSeries.Series.SeriesName;
@@ -240,7 +240,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
             if (temp.Contains("{Episode}"))
             {
-                temp = temp.Replace("{Episode}", episode.Episode);
+                temp = temp.Replace("{Episode}", episode.EpisodeNumber);
             }
             if (temp.Contains("{EpisodeName}"))
             {

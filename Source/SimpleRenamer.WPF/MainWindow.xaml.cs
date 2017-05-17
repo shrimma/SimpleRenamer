@@ -355,7 +355,7 @@ namespace Sarjee.SimpleRenamer
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
                 FileType fileType = temp.FileType;
-                MediaTypePath = temp.FilePath;
+                MediaTypePath = temp.SourceFilePath;
                 MediaTypeShowName = temp.ShowName;
                 if (fileType == FileType.Unknown)
                 {
@@ -444,9 +444,9 @@ namespace Sarjee.SimpleRenamer
                 IgnoreFlyout.IsOpen = false;
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 IgnoreList ignoreList = _configurationManager.IgnoredFiles;
-                if (!ignoreList.IgnoreFiles.Contains(tempEp.FilePath))
+                if (!ignoreList.IgnoreFiles.Contains(tempEp.SourceFilePath))
                 {
-                    ignoreList.IgnoreFiles.Add(tempEp.FilePath);
+                    ignoreList.IgnoreFiles.Add(tempEp.SourceFilePath);
                     scannedEpisodes.Remove(tempEp);
                     _configurationManager.IgnoredFiles = ignoreList;
                 }
@@ -525,7 +525,7 @@ namespace Sarjee.SimpleRenamer
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 if (tempEp.FileType == FileType.TvShow)
                 {
-                    _logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.Episode, tempEp.TVDBShowId));
+                    _logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.EpisodeNumber, tempEp.TVDBShowId));
                     ShowNameMapping snm = _configurationManager.ShowNameMappings;
                     if (snm != null && snm.Mappings.Count > 0)
                     {

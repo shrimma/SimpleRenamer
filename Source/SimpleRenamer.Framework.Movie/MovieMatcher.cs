@@ -53,7 +53,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie)
         {
             _logger.TraceMessage("ScrapeDetailsAsync - Start");
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.FilePath}"));
+            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.SourceFilePath}"));
 
             SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movie.ShowName, movie.Year);
 

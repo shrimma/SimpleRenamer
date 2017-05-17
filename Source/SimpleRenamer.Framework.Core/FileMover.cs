@@ -27,11 +27,10 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             _bannerDownloader = bannerDownloader ?? throw new ArgumentNullException(nameof(bannerDownloader));
         }
 
-        public async Task<FileMoveResult> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner)
+        public async Task<MatchedFile> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner)
         {
             _logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - Start");
-            FileMoveResult result = new FileMoveResult(true, episode);
-            string ext = Path.GetExtension(episode.FilePath);
+            string ext = Path.GetExtension(episode.SourceFilePath);
             if (episode.FileType == FileType.TvShow)
             {
                 //use the destination folder and showname etc to define final destination
@@ -45,7 +44,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     showDirectory = Path.Combine(settings.DestinationFolderTV, episode.ShowName);
                 }
                 string seasonDirectory = Path.Combine(showDirectory, string.Format("Season {0}", episode.Season));
-                result.DestinationFilePath = Path.Combine(seasonDirectory, episode.NewFileName + ext);
+                episode.DestinationFilePath = Path.Combine(seasonDirectory, episode.NewFileName + ext);
 
                 //create our destination folder if it doesn't already exist
                 if (!Directory.Exists(seasonDirectory))
@@ -79,7 +78,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             else if (episode.FileType == FileType.Movie)
             {
                 string movieDirectory = Path.Combine(settings.DestinationFolderMovie, $"{episode.ShowName} ({episode.Year})");
-                result.DestinationFilePath = Path.Combine(movieDirectory, episode.ShowName + ext);
+                episode.DestinationFilePath = Path.Combine(movieDirectory, episode.ShowName + ext);
                 //create our destination folder if it doesn't already exist
                 if (!Directory.Exists(movieDirectory))
                 {
@@ -88,14 +87,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
 
             _logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - End");
-            return result;
+            return episode;
         }
 
-        public async Task<bool> MoveFileAsync(MatchedFile episode, string destinationFilePath, CancellationToken ct)
+        public async Task<bool> MoveFileAsync(MatchedFile episode, CancellationToken ct)
         {
             _logger.TraceMessage("MoveFileAsync - Start");
-            FileInfo fromFile = new FileInfo(episode.FilePath);
-            FileInfo toFile = new FileInfo(destinationFilePath);
+            FileInfo fromFile = new FileInfo(episode.SourceFilePath);
+            FileInfo toFile = new FileInfo(episode.DestinationFilePath);
             if (QuickOperation(fromFile, toFile))
             {
                 OSMoveRename(fromFile, toFile);
