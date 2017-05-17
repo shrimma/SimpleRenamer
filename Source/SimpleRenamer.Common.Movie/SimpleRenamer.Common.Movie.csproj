@@ -46,7 +46,6 @@
   <ItemGroup>
     <Compile Include="Interface\IMovieMatcher.cs" />
     <Compile Include="Interface\ITmdbManager.cs" />
-    <Compile Include="Model\MovieCredits.cs" />
     <Compile Include="Model\MovieInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\AccountState.cs" />

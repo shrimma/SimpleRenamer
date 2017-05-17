@@ -83,11 +83,11 @@ namespace Sarjee.SimpleRenamer.Views
             MovieInfo movie = await _movieMatcher.GetMovieWithBanner(movieId, cts.Token);
 
             //set the title, show description, rating and firstaired values
-            this.Title = string.Format("{0} - Rating {1} - Year {2}", movie.Movie.Movie.Title, string.IsNullOrEmpty(movie.Movie.Movie.VoteAverage.ToString()) ? "0.0" : movie.Movie.Movie.VoteAverage.ToString(), movie.Movie.Movie.ReleaseDate.HasValue ? movie.Movie.Movie.ReleaseDate.Value.Year.ToString() : "1900");
+            this.Title = string.Format("{0} - Rating {1} - Year {2}", movie.Movie.Title, string.IsNullOrEmpty(movie.Movie.VoteAverage.ToString()) ? "0.0" : movie.Movie.VoteAverage.ToString(), movie.Movie.ReleaseDate.HasValue ? movie.Movie.ReleaseDate.Value.Year.ToString() : "1900");
 
-            if (!string.IsNullOrEmpty(movie.Movie.Movie.Tagline))
+            if (!string.IsNullOrEmpty(movie.Movie.Tagline))
             {
-                MovieTagLineTextBox.Text = movie.Movie.Movie.Tagline;
+                MovieTagLineTextBox.Text = movie.Movie.Tagline;
                 MovieTagLineTextBox.Visibility = Visibility.Visible;
             }
             else
@@ -95,7 +95,7 @@ namespace Sarjee.SimpleRenamer.Views
                 MovieTagLineTextBox.Visibility = Visibility.Collapsed;
             }
 
-            MovieDescriptionTextBox.Text = movie.Movie.Movie.Overview;
+            MovieDescriptionTextBox.Text = movie.Movie.Overview;
 
             //set the actor listbox
             ActorsListBox.ItemsSource = movie.Movie.Credits.Cast;

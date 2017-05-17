@@ -121,13 +121,13 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         public async Task<MovieInfo> GetMovieWithBanner(string movieId, CancellationToken ct)
         {
             _logger.TraceMessage("GetMovieInfo - Start");
-            MovieCredits matchedMovie = await _tmdbManager.GetMovieAsync(movieId);
+            Common.Movie.Model.Movie matchedMovie = await _tmdbManager.GetMovieAsync(movieId);
             BitmapImage bannerImage = new BitmapImage();
 
-            if (!string.IsNullOrEmpty(matchedMovie.Movie.PosterPath))
+            if (!string.IsNullOrEmpty(matchedMovie.PosterPath))
             {
                 bannerImage.BeginInit();
-                bannerImage.UriSource = new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.Movie.PosterPath));
+                bannerImage.UriSource = new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath));
                 bannerImage.EndInit();
             }
             else
