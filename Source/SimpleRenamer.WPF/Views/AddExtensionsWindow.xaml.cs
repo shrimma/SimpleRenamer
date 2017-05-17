@@ -27,11 +27,14 @@ namespace Sarjee.SimpleRenamer.Views
 
         void AddExtensionsWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            RaiseCustomEvent(this, new ExtensionEventArgs(null));
-            e.Cancel = true;
-            this.ExtensionTextBox.Text = string.Empty;
-            ExtensionTextBox.Focus();
-            this.Hide();
+            if (this.Visibility == Visibility.Visible)
+            {
+                RaiseCustomEvent(this, new ExtensionEventArgs(null));
+                e.Cancel = true;
+                this.ExtensionTextBox.Text = string.Empty;
+                ExtensionTextBox.Focus();
+                this.Hide();
+            }
         }
 
         private void OKButton_Click(object sender, RoutedEventArgs e)

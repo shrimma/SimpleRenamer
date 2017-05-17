@@ -39,14 +39,17 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            e.Cancel = true;
-            //clear the UI
-            ShowDescriptionTextBox.Text = string.Empty;
-            ActorsListBox.ItemsSource = null;
-            EpisodesListBox.ItemsSource = null;
-            BannerImage.Source = null;
+            if (this.Visibility == Visibility.Visible)
+            {
+                e.Cancel = true;
+                //clear the UI
+                ShowDescriptionTextBox.Text = string.Empty;
+                ActorsListBox.ItemsSource = null;
+                EpisodesListBox.ItemsSource = null;
+                BannerImage.Source = null;
 
-            this.Hide();
+                this.Hide();
+            }
         }
 
         private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)

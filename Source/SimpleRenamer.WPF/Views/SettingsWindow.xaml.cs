@@ -83,29 +83,32 @@ namespace Sarjee.SimpleRenamer.Views
 
         void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            //stop the window actually closing
-            e.Cancel = true;
+            if (this.Visibility == Visibility.Visible)
+            {
+                //stop the window actually closing
+                e.Cancel = true;
 
-            //check if settings have been changed without saving
-            var currentExtensions = new List<string>(validExtensions);
-            if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, currentExtensions) == false)
-            {
-                configurationManager.Settings.ValidExtensions = currentExtensions;
-            }
-            var currentWatchFolders = new List<string>(watchFolders);
-            if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, currentWatchFolders) == false)
-            {
-                configurationManager.Settings.WatchFolders = currentWatchFolders;
-            }
-            if (HaveSettingsChanged() == true)
-            {
-                //if settings have been changed and not saved then prompt user
-                ConfirmationFlyout.IsOpen = true;
-            }
-            else
-            {
-                SetupView();
-                this.Hide();
+                //check if settings have been changed without saving
+                var currentExtensions = new List<string>(validExtensions);
+                if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, currentExtensions) == false)
+                {
+                    configurationManager.Settings.ValidExtensions = currentExtensions;
+                }
+                var currentWatchFolders = new List<string>(watchFolders);
+                if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, currentWatchFolders) == false)
+                {
+                    configurationManager.Settings.WatchFolders = currentWatchFolders;
+                }
+                if (HaveSettingsChanged() == true)
+                {
+                    //if settings have been changed and not saved then prompt user
+                    ConfirmationFlyout.IsOpen = true;
+                }
+                else
+                {
+                    SetupView();
+                    this.Hide();
+                }
             }
         }
 

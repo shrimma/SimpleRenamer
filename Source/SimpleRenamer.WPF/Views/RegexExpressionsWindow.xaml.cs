@@ -39,23 +39,26 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            //stop the window actually closing
-            e.Cancel = true;
-            //check if settings have been changed without saving
-            var currentExpressions = new List<RegexExpression>(regExp);
-            if (helper.AreListsEqual(configurationManager.RegexExpressions.RegexExpressions, currentExpressions) == false)
+            if (this.Visibility == Visibility.Visible)
             {
-                configurationManager.RegexExpressions.RegexExpressions = currentExpressions;
-            }
-            if (HaveSettingsChanged() == true)
-            {
-                //if settings have been changed and not saved then prompt user
-                ConfirmationFlyout.IsOpen = true;
-            }
-            else
-            {
-                SetupView();
-                this.Hide();
+                //stop the window actually closing
+                e.Cancel = true;
+                //check if settings have been changed without saving
+                var currentExpressions = new List<RegexExpression>(regExp);
+                if (helper.AreListsEqual(configurationManager.RegexExpressions.RegexExpressions, currentExpressions) == false)
+                {
+                    configurationManager.RegexExpressions.RegexExpressions = currentExpressions;
+                }
+                if (HaveSettingsChanged() == true)
+                {
+                    //if settings have been changed and not saved then prompt user
+                    ConfirmationFlyout.IsOpen = true;
+                }
+                else
+                {
+                    SetupView();
+                    this.Hide();
+                }
             }
         }
 

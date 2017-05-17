@@ -79,11 +79,14 @@ namespace Sarjee.SimpleRenamer.Views
 
         void SelectShowWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(null, currentFileType));
-            e.Cancel = true;
-            //clear the item list
-            this.ShowListBox.ItemsSource = null;
-            this.Hide();
+            if (this.Visibility == Visibility.Visible)
+            {
+                RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(null, currentFileType));
+                e.Cancel = true;
+                //clear the item list
+                this.ShowListBox.ItemsSource = null;
+                this.Hide();
+            }
         }
 
         public async Task SearchForMatches(string title, string searchString, FileType fileType)

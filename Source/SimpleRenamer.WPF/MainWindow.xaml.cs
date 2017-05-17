@@ -192,18 +192,21 @@ namespace Sarjee.SimpleRenamer
 
         void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            try
+            if (this.Visibility == Visibility.Visible)
             {
-                _logger.TraceMessage("Closing");
-                if (CancelButton.Visibility == Visibility.Visible)
+                try
                 {
-                    e.Cancel = true;
+                    _logger.TraceMessage("Closing");
+                    if (CancelButton.Visibility == Visibility.Visible)
+                    {
+                        e.Cancel = true;
+                    }
+                    _configurationManager.SaveConfiguration();
                 }
-                _configurationManager.SaveConfiguration();
-            }
-            catch (Exception ex)
-            {
-                _logger.TraceException(ex);
+                catch (Exception ex)
+                {
+                    _logger.TraceException(ex);
+                }
             }
         }
 
