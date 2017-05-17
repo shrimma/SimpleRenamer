@@ -5,6 +5,8 @@ using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -72,6 +74,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 //if theres only one match then scape the specific show
                 movie.TMDBShowId = results.Results[0].Id;
                 movie.ShowImage = results.Results[0].PosterPath;
+                movie.NewFileName = RemoveSpecialCharacters(movie.ShowName);
             }
             _logger.TraceMessage("ScrapeDetailsAsync - End");
             return movie;
@@ -90,8 +93,10 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                     matchedFile.SkippedExactSelection = false;
                     matchedFile.ShowName = searchedMovie.Title;
                     matchedFile.TMDBShowId = searchedMovie.Id;
+                    matchedFile.Year = searchedMovie.ReleaseDate.HasValue ? searchedMovie.ReleaseDate.Value.Year : 0;
                     matchedFile.ShowImage = searchedMovie.PosterPath;
                     matchedFile.FileType = FileType.Movie;
+                    matchedFile.NewFileName = RemoveSpecialCharacters(searchedMovie.Title);
                 }
                 else
                 {
@@ -102,6 +107,15 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 _logger.TraceMessage("UpdateFileWithMatchedMovie - End");
                 return matchedFile;
             });
+        }
+
+        private string RemoveSpecialCharacters(string input)
+        {
+            _logger.TraceMessage("RemoveSpecialCharacters - Start");
+            string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+            Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+            _logger.TraceMessage("RemoveSpecialCharacters - End");
+            return r.Replace(input, "");
         }
 
         public async Task<MovieInfo> GetMovieWithBanner(string movieId, CancellationToken ct)

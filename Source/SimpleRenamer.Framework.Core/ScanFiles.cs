@@ -3,7 +3,6 @@ using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
-using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -92,15 +91,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             //for each file
             Parallel.ForEach(matchedFiles, po, (tempEp) =>
             {
-                TVEpisodeScrape scrapeResult = null;
                 //scrape the episode name and incorporate this in the filename (if setting allows)
                 if (_settings.RenameFiles)
                 {
-                    scrapeResult = _tvShowMatcher.ScrapeDetailsAsync(tempEp).GetAwaiter().GetResult();
-                    tempEp = scrapeResult.tvep;
-                    if (scrapeResult.series != null)
+                    tempEp = _tvShowMatcher.ScrapeDetailsAsync(tempEp).GetAwaiter().GetResult();
+                    if (!string.IsNullOrWhiteSpace(tempEp.TVDBShowId))
                     {
-                        Mapping map = new Mapping(scrapeResult.tvep.ShowName, scrapeResult.series.Series.SeriesName, scrapeResult.series.Series.Id.ToString());
+                        Mapping map = new Mapping(tempEp.ShowName, tempEp.ShowName, tempEp.TVDBShowId);
                         if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                         {
                             lock (lockList)

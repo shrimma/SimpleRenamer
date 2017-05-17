@@ -35,28 +35,28 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// </summary>
         /// <param name="episode"></param>
         /// <returns></returns>
-        public async Task<TVEpisodeScrape> ScrapeDetailsAsync(MatchedFile episode)
+        public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile episode)
         {
             _logger.TraceMessage("ScrapeDetailsAsync - Start");
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {episode.SourceFilePath}"));
             //read the mapping file and try and find any already selected matches
             episode = FixMismatchTitles(episode);
-            TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
+            MatchedFile file = null;
             //scrape the episode name - if we haven't already got the show ID then search for it
             if (string.IsNullOrEmpty(episode.TVDBShowId))
             {
-                episodeScrape = await ScrapeShowAsync(episode);
+                file = await ScrapeShowAsync(episode);
             }
             else
             {
-                episodeScrape = await ScrapeSpecificShow(episode, episode.TVDBShowId, false);
+                file = await ScrapeSpecificShow(episode, episode.TVDBShowId, false);
             }
 
             //generate the new file name
-            episodeScrape.tvep = GenerateFileName(episodeScrape.tvep);
+            file = GenerateFileName(file);
 
             _logger.TraceMessage("ScrapeDetailsAsync - End");
-            return episodeScrape;
+            return file;
         }
 
         /// <summary>
@@ -96,10 +96,9 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// </summary>
         /// <param name="episode">The episode to scrape</param>
         /// <returns></returns>
-        private async Task<TVEpisodeScrape> ScrapeShowAsync(MatchedFile episode)
+        private async Task<MatchedFile> ScrapeShowAsync(MatchedFile episode)
         {
             _logger.TraceMessage("ScrapeShowAsync - Start");
-            TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
             var series = await _tvdbManager.SearchSeriesByNameAsync(episode.ShowName);
             string seriesId = string.Empty;
             //IF we have no results or more than 1 result then flag the file to be manually matched
@@ -107,20 +106,19 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {
                 episode.ActionThis = false;
                 episode.SkippedExactSelection = true;
-                episodeScrape.tvep = episode;
             }
             else if (series.Count == 1)
             {
                 //if theres only one match then scape the specific show
                 seriesId = series[0].Id.ToString();
-                episodeScrape = await ScrapeSpecificShow(episode, seriesId, true);
+                episode = await ScrapeSpecificShow(episode, seriesId, true);
             }
 
             _logger.TraceMessage("ScrapeShowAsync - End");
-            return episodeScrape;
+            return episode;
         }
 
-        private async Task<TVEpisodeScrape> ScrapeSpecificShow(MatchedFile episode, string seriesId, bool newMatch)
+        private async Task<MatchedFile> ScrapeSpecificShow(MatchedFile episode, string seriesId, bool newMatch)
         {
             _logger.TraceMessage("ScrapeSpecificShow - Start");
             uint.TryParse(episode.Season, out uint season);
@@ -141,7 +139,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
 
             _logger.TraceMessage("ScrapeSpecificShow - End");
-            return new TVEpisodeScrape(episode, matchedSeries);
+            return episode;
         }
 
         public async Task<List<ShowView>> GetPossibleShowsForEpisode(string showName)
@@ -191,37 +189,35 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             return await Task.Run(async () =>
             {
-                TVEpisodeScrape episodeScrape = new TVEpisodeScrape();
                 //if user selected a match then scrape the details
                 if (!string.IsNullOrEmpty(selectedSeriesId))
                 {
-                    episodeScrape = await ScrapeSpecificShow(episode, selectedSeriesId, true);
-                    episodeScrape.tvep.ActionThis = true;
-                    episodeScrape.tvep.SkippedExactSelection = false;
+                    episode = await ScrapeSpecificShow(episode, selectedSeriesId, true);
+                    episode.ActionThis = true;
+                    episode.SkippedExactSelection = false;
 
                     //generate the file name and update the mapping file
-                    episodeScrape.tvep = GenerateFileName(episode);
+                    episode = GenerateFileName(episode);
 
-                    if (episodeScrape.series != null)
+                    if (!string.IsNullOrWhiteSpace(episode.TVDBShowId))
                     {
                         ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
-                        Mapping map = new Mapping(episodeScrape.tvep.ShowName, episodeScrape.series.Series.SeriesName, episodeScrape.series.Series.Id.ToString());
+                        Mapping map = new Mapping(episode.ShowName, episode.ShowName, episode.TVDBShowId);
                         if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                         {
                             showNameMapping.Mappings.Add(map);
                         }
                         _configurationManager.ShowNameMappings = showNameMapping;
                     }
-                    episodeScrape.tvep.FileType = FileType.TvShow;
+                    episode.FileType = FileType.TvShow;
                 }
                 else
                 {
                     episode.ActionThis = false;
                     episode.SkippedExactSelection = true;
-                    episodeScrape.tvep = episode;
                 }
 
-                return episodeScrape.tvep;
+                return episode;
             });
         }
 
@@ -250,14 +246,15 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
             if (temp.Contains("{EpisodeName}"))
             {
-                temp = temp.Replace("{EpisodeName}", string.IsNullOrEmpty(episode.EpisodeName) ? "" : RemoveSpecialCharacters(episode.EpisodeName));
+                temp = temp.Replace("{EpisodeName}", string.IsNullOrEmpty(episode.EpisodeName) ? "" : episode.EpisodeName);
             }
-            episode.NewFileName = temp;
+            episode.NewFileName = RemoveSpecialCharacters(temp);
 
             _logger.TraceMessage("GenerateFileName - End");
             return episode;
         }
 
+        //TODO move this to common lib
         private string RemoveSpecialCharacters(string input)
         {
             _logger.TraceMessage("RemoveSpecialCharacters - Start");
