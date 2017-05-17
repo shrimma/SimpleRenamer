@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Sarjee.SimpleRenamer.Common.Model
 {
     /// <summary>
     /// ShowNameMapping
     /// </summary>
+    [JsonObject("showNameMapping")]
     public class ShowNameMapping
     {
         /// <summary>
@@ -17,6 +19,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <value>
         /// The mappings.
         /// </value>
+        [JsonProperty("mappings")]
         public List<Mapping> Mappings { get { return mappings; } }
     }
 }

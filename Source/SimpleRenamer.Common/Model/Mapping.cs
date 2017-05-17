@@ -1,10 +1,12 @@
-﻿using System.Xml.Serialization;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace Sarjee.SimpleRenamer.Common.Model
 {
     /// <summary>
     /// Mapping
     /// </summary>
+    [JsonObject("mapping")]
     public class Mapping
     {
         /// <summary>
@@ -13,31 +15,34 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <value>
         /// The name of the file show.
         /// </value>
-        [XmlAttribute]
+        [JsonProperty("fileShowName")]
         public string FileShowName { get; set; }
+
         /// <summary>
         /// Gets or sets the name of the TVDB show.
         /// </summary>
         /// <value>
         /// The name of the TVDB show.
         /// </value>
-        [XmlAttribute]
+        [JsonProperty("tvdbShowName")]
         public string TVDBShowName { get; set; }
+
         /// <summary>
         /// Gets or sets the TVDB show identifier.
         /// </summary>
         /// <value>
         /// The TVDB show identifier.
         /// </value>
-        [XmlAttribute]
+        [JsonProperty("tvdbShowId")]
         public string TVDBShowID { get; set; }
+
         /// <summary>
         /// Gets or sets the name of the custom folder.
         /// </summary>
         /// <value>
         /// The name of the custom folder.
         /// </value>
-        [XmlAttribute]
+        [JsonProperty("customFolderName")]
         public string CustomFolderName { get; set; }
 
         /// <summary>
@@ -48,17 +53,22 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <param name="tvdbShowID">The TVDB show identifier.</param>
         public Mapping(string fileShowName, string tvdbShowName, string tvdbShowID)
         {
+            if (string.IsNullOrWhiteSpace(fileShowName))
+            {
+                throw new ArgumentNullException(nameof(fileShowName));
+            }
+            if (string.IsNullOrWhiteSpace(tvdbShowName))
+            {
+                throw new ArgumentNullException(nameof(tvdbShowName));
+            }
+            if (string.IsNullOrWhiteSpace(tvdbShowID))
+            {
+                throw new ArgumentNullException(nameof(tvdbShowID));
+            }
             FileShowName = fileShowName;
             TVDBShowName = tvdbShowName;
             TVDBShowID = tvdbShowID;
             CustomFolderName = string.Empty;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Mapping"/> class.
-        /// </summary>
-        public Mapping()
-        {
         }
     }
 }

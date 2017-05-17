@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Xml.Serialization;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Sarjee.SimpleRenamer.Common.Model
 {
     /// <summary>
     /// IgnoreList
     /// </summary>
+    [JsonObject("ignoreList")]
     public class IgnoreList
     {
         /// <summary>
@@ -14,7 +15,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <value>
         /// The ignore files.
         /// </value>
-        [XmlArrayItem("IgnoreFile")]
+        [JsonProperty("ignoreFiles")]
         public List<string> IgnoreFiles { get; set; }
 
         /// <summary>
