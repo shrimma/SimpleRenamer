@@ -154,7 +154,7 @@
                     <GridViewColumn Header="Episode" Width="60">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Episode}" TextAlignment="Right" />
+                                <TextBlock Text="{Binding EpisodeNumber}" TextAlignment="Right" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
