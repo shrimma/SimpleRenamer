@@ -73,7 +73,6 @@
     <Compile Include="Framework\Core\FileMoverTests.cs" />
     <Compile Include="Framework\Core\FileWatcherTests.cs" />
     <Compile Include="Framework\Core\ScanFilesTests.cs" />
-    <Compile Include="Framework\Movie\GetMovieDetailsTests.cs" />
     <Compile Include="Framework\Movie\MovieMatcherTests.cs" />
     <Compile Include="Framework\Movie\TmdbManagerTests.cs" />
     <Compile Include="Framework\TV\BannerDownloaderTests.cs" />

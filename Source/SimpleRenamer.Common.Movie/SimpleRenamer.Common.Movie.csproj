@@ -44,7 +44,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Interface\IGetMovieDetails.cs" />
     <Compile Include="Interface\IMovieMatcher.cs" />
     <Compile Include="Interface\ITmdbManager.cs" />
     <Compile Include="Model\MovieCredits.cs" />
@@ -87,7 +86,7 @@
     <Compile Include="Model\ReviewBase.cs" />
     <Compile Include="Model\SearchBase.cs" />
     <Compile Include="Model\SearchBaseConverter.cs" />
-    <Compile Include="Model\SearchCOllection.cs" />
+    <Compile Include="Model\SearchCollection.cs" />
     <Compile Include="Model\SearchContainer.cs" />
     <Compile Include="Model\SearchMovie.cs" />
     <Compile Include="Model\SearchMovieTvBase.cs" />
