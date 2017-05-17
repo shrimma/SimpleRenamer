@@ -49,7 +49,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BannerDownloader.cs" />
-    <Compile Include="GetShowDetails.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TvdbManager.cs" />
     <Compile Include="TVShowMatcher.cs" />

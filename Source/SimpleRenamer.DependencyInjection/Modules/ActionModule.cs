@@ -13,7 +13,6 @@ namespace Sarjee.SimpleRenamer.DependencyInjection.Modules
             Bind<IFileMover>().To<FileMover>().InSingletonScope();
             Bind<IActionMatchedFiles>().To<ActionMatchedFiles>().InSingletonScope();
             Bind<IBannerDownloader>().To<BannerDownloader>().InSingletonScope();
-            Bind<IGetShowDetails>().To<GetShowDetails>().InSingletonScope();
         }
     }
 }

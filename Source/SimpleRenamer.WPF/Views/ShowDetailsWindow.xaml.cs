@@ -14,13 +14,13 @@ namespace Sarjee.SimpleRenamer.Views
     /// </summary>
     public partial class ShowDetailsWindow
     {
-        private ILogger logger;
-        private IGetShowDetails getShowDetails;
+        private ILogger _logger;
+        private ITVShowMatcher _showMatcher;
 
-        public ShowDetailsWindow(ILogger log, IGetShowDetails getShow)
+        public ShowDetailsWindow(ILogger logger, ITVShowMatcher showMatcher)
         {
-            logger = log ?? throw new ArgumentNullException(nameof(log));
-            getShowDetails = getShow ?? throw new ArgumentNullException(nameof(getShow));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _showMatcher = showMatcher ?? throw new ArgumentNullException(nameof(showMatcher));
 
             try
             {
@@ -33,7 +33,7 @@ namespace Sarjee.SimpleRenamer.Views
             }
             catch (Exception ex)
             {
-                logger.TraceException(ex);
+                _logger.TraceException(ex);
             }
         }
 
@@ -73,10 +73,10 @@ namespace Sarjee.SimpleRenamer.Views
 
         public async Task GetSeriesInfo(string showId)
         {
-            logger.TraceMessage("GetSeriesInfo - Start");
+            _logger.TraceMessage("GetSeriesInfo - Start");
             LoadingProgress.IsActive = true;
 
-            SeriesWithBanner series = await getShowDetails.GetShowWithBannerAsync(showId);
+            SeriesWithBanner series = await _showMatcher.GetShowWithBannerAsync(showId);
 
             //set the title, show description, rating and firstaired values
             this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.Series.SeriesName, string.IsNullOrEmpty(series.Series.Series.SiteRating.ToString()) ? "0.0" : series.Series.Series.SiteRating.ToString(), string.IsNullOrEmpty(series.Series.Series.FirstAired.ToString()) ? "1900" : series.Series.Series.FirstAired.ToString());
@@ -91,7 +91,7 @@ namespace Sarjee.SimpleRenamer.Views
             //set the banner
             BannerImage.Source = series.BannerImage;
 
-            logger.TraceMessage("GetSeriesInfo - End");
+            _logger.TraceMessage("GetSeriesInfo - End");
         }
     }
 }

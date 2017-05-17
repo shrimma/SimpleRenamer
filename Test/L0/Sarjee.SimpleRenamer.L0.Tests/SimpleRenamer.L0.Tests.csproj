@@ -76,7 +76,6 @@
     <Compile Include="Framework\Movie\MovieMatcherTests.cs" />
     <Compile Include="Framework\Movie\TmdbManagerTests.cs" />
     <Compile Include="Framework\TV\BannerDownloaderTests.cs" />
-    <Compile Include="Framework\TV\GetShowDetailsTests.cs" />
     <Compile Include="Framework\TV\TvdbManagerTests.cs" />
     <Compile Include="Framework\TV\TvShowMatcherTests.cs" />
     <Compile Include="Logging\LoggerTests.cs" />

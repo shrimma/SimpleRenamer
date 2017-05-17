@@ -46,7 +46,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Interface\IBannerDownloader.cs" />
-    <Compile Include="Interface\IGetShowDetails.cs" />
     <Compile Include="Interface\ITvdbManager.cs" />
     <Compile Include="Interface\ITVShowMatcher.cs" />
     <Compile Include="Model\SeriesWithBanner.cs" />

@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Framework.TV
 {
@@ -258,6 +259,26 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
             _logger.TraceMessage("RemoveSpecialCharacters - End");
             return r.Replace(input, "");
+        }
+
+        public async Task<SeriesWithBanner> GetShowWithBannerAsync(string showId)
+        {
+            _logger.TraceMessage("GetSeriesInfo - Start");
+            CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(showId);
+            BitmapImage bannerImage = new BitmapImage();
+            if (matchedSeries.SeriesBanners != null && matchedSeries.SeriesBanners.Count > 0)
+            {
+                bannerImage.BeginInit();
+                bannerImage.UriSource = new Uri(_tvdbManager.GetBannerUri(matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName));
+                bannerImage.EndInit();
+            }
+            else
+            {
+                //TODO create a no image found banner
+            }
+
+            _logger.TraceMessage("GetSeriesInfo - End");
+            return new SeriesWithBanner(matchedSeries, bannerImage);
         }
     }
 }

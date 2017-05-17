@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common.Movie.Interface
 {
+    /// <summary>
+    /// Movie Matcher Interface
+    /// </summary>
     public interface IMovieMatcher
     {
         /// <summary>
