@@ -56,7 +56,7 @@
     <Compile Include="Model\Mapping.cs" />
     <Compile Include="Model\RegexExpression.cs" />
     <Compile Include="Model\ShowNameMapping.cs" />
-    <Compile Include="Model\ShowView.cs" />
+    <Compile Include="Model\DetailView.cs" />
     <Compile Include="EventArguments\FileMovedEventArgs.cs" />
     <Compile Include="EventArguments\ProgressTextEventArgs.cs" />
     <Compile Include="EventArguments\FilePreProcessedEventArgs.cs" />
@@ -76,7 +76,6 @@
     <Compile Include="Model\RegexFile.cs" />
     <Compile Include="RetryHelper.cs" />
     <Compile Include="Model\Settings.cs" />
-    <Compile Include="Model\ShowSeason.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Model\MatchedFile.cs" />
   </ItemGroup>

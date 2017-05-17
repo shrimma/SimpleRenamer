@@ -1,10 +1,10 @@
 ﻿using Sarjee.SimpleRenamer.Common.EventArguments;
 using Sarjee.SimpleRenamer.Common.Model;
-using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Common.Movie.Interface
 {
@@ -25,7 +25,7 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Interface
         /// </summary>
         /// <param name="showName">Name of the show.</param>
         /// <returns></returns>
-        Task<List<ShowView>> GetPossibleMoviesForFile(string showName);
+        Task<List<DetailView>> GetPossibleMoviesForFile(string showName);
 
         /// <summary>
         /// Updates the file with matched movie.
@@ -40,7 +40,7 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Interface
         /// </summary>
         /// <param name="movieId">The TMDB movie ID</param>
         /// <returns>Populated MovieInfo object</returns>
-        Task<MovieInfo> GetMovieWithBanner(string movieId, CancellationToken ct);
+        Task<(Model.Movie movie, BitmapImage banner)> GetMovieWithBanner(string movieId, CancellationToken ct);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

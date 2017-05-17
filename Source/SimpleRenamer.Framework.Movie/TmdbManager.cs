@@ -56,10 +56,9 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             }
         }
 
-        public async Task<MovieCredits> GetMovieAsync(string movieId)
+        public async Task<Common.Movie.Model.Movie> GetMovieAsync(string movieId)
         {
             Common.Movie.Model.Movie movie = null;
-            Credits credits = null;
             RestRequest request = new RestRequest($"/3/movie/{movieId}?api_key={apiKey}", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
             IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
@@ -77,18 +76,10 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                credits = JsonConvert.DeserializeObject<Credits>(response.Content);
+                movie.Credits = JsonConvert.DeserializeObject<Credits>(response.Content);
             }
 
-            if (movie != null && credits != null)
-            {
-                return new MovieCredits(movie, credits);
-            }
-            else
-            {
-                //TODO THROW
-                return null;
-            }
+            return movie;
         }
 
         public async Task<SearchMovie> SearchMovieByIdAsync(string movieId)

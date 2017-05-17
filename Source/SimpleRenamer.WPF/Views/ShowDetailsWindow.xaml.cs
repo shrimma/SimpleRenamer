@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Views
 {
@@ -79,20 +80,20 @@ namespace Sarjee.SimpleRenamer.Views
             _logger.TraceMessage("GetSeriesInfo - Start");
             LoadingProgress.IsActive = true;
 
-            SeriesWithBanner series = await _showMatcher.GetShowWithBannerAsync(showId);
+            (CompleteSeries series, BitmapImage banner) = await _showMatcher.GetShowWithBannerAsync(showId);
 
             //set the title, show description, rating and firstaired values
-            this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.Series.SeriesName, string.IsNullOrEmpty(series.Series.Series.SiteRating.ToString()) ? "0.0" : series.Series.Series.SiteRating.ToString(), string.IsNullOrEmpty(series.Series.Series.FirstAired.ToString()) ? "1900" : series.Series.Series.FirstAired.ToString());
-            ShowDescriptionTextBox.Text = series.Series.Series.Overview;
+            this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.SeriesName, string.IsNullOrEmpty(series.Series.SiteRating.ToString()) ? "0.0" : series.Series.SiteRating.ToString(), string.IsNullOrEmpty(series.Series.FirstAired.ToString()) ? "1900" : series.Series.FirstAired.ToString());
+            ShowDescriptionTextBox.Text = series.Series.Overview;
 
             //set the actor listbox
-            ActorsListBox.ItemsSource = series.Series.Actors;
+            ActorsListBox.ItemsSource = series.Actors;
 
             //set the episodes listbox
-            EpisodesListBox.ItemsSource = series.Series.Episodes.OrderBy(x => x.AiredEpisodeNumber).OrderBy(x => x.AiredSeason);
+            EpisodesListBox.ItemsSource = series.Episodes.OrderBy(x => x.AiredEpisodeNumber).OrderBy(x => x.AiredSeason);
 
             //set the banner
-            BannerImage.Source = series.BannerImage;
+            BannerImage.Source = banner;
 
             _logger.TraceMessage("GetSeriesInfo - End");
         }

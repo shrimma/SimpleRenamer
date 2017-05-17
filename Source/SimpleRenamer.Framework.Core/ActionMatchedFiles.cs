@@ -64,7 +64,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
         private async Task<List<MatchedFile>> PreProcessTVShows(List<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
-            List<ShowSeason> uniqueShowSeasons = new List<ShowSeason>();
+            List<(string show, string season)> uniqueShowSeasons = new List<(string show, string season)>();
             List<MatchedFile> ProcessFiles = new List<MatchedFile>();
             ShowNameMapping snm = _configurationManager.ShowNameMappings;
             foreach (MatchedFile ep in scannedEpisodes)
@@ -73,11 +73,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(ep.TVDBShowId)).FirstOrDefault();
                     //check if this show season combo is already going to be processed
-                    ShowSeason showSeason = new ShowSeason(ep.ShowName, ep.Season);
+                    (string show, string season) = (ep.ShowName, ep.Season);
                     bool alreadyGrabbedBanners = false;
-                    foreach (ShowSeason unique in uniqueShowSeasons)
+                    foreach ((string show, string season) unique in uniqueShowSeasons)
                     {
-                        if (unique.Season.Equals(showSeason.Season) && unique.Show.Equals(showSeason.Show))
+                        if (unique.season.Equals(ep.Season) && unique.show.Equals(ep.ShowName))
                         {
                             alreadyGrabbedBanners = true;
                             break;
@@ -103,7 +103,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                         if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
                         {
                             ProcessFiles.Add(result);
-                            uniqueShowSeasons.Add(showSeason);
+                            uniqueShowSeasons.Add((ep.ShowName, ep.Season));
                             _logger.TraceMessage(string.Format("Successfully processed file and downloaded banners: {0}", result.SourceFilePath));
                         }
                         else

@@ -28,7 +28,7 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Interface
         /// </summary>
         /// <param name="movieId">The movie identifier.</param>
         /// <returns></returns>
-        Task<MovieCredits> GetMovieAsync(string movieId);
+        Task<Model.Movie> GetMovieAsync(string movieId);
 
         /// <summary>
         /// Gets the poster URI asynchronous.

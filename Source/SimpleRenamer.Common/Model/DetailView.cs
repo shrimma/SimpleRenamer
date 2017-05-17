@@ -3,9 +3,9 @@
 namespace Sarjee.SimpleRenamer.Common.Model
 {
     /// <summary>
-    /// ShowView
+    /// DetailView
     /// </summary>
-    public class ShowView
+    public class DetailView
     {
         /// <summary>
         /// Gets or sets the identifier.
@@ -37,13 +37,13 @@ namespace Sarjee.SimpleRenamer.Common.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ShowView"/> class.
+        /// Initializes a new instance of the <see cref="DetailView"/> class.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <param name="showname">The showname.</param>
         /// <param name="year">The year.</param>
         /// <param name="description">The description.</param>
-        public ShowView(string id, string showname, string year, string description)
+        public DetailView(string id, string showname, string year, string description)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
