@@ -59,7 +59,6 @@
     <Compile Include="Model\ShowView.cs" />
     <Compile Include="EventArguments\FileMovedEventArgs.cs" />
     <Compile Include="EventArguments\ProgressTextEventArgs.cs" />
-    <Compile Include="Model\FileMoveResult.cs" />
     <Compile Include="EventArguments\FilePreProcessedEventArgs.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Interface\IBackgroundQueue.cs" />
