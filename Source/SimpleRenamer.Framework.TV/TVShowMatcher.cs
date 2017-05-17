@@ -246,14 +246,15 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
             if (temp.Contains("{EpisodeName}"))
             {
-                temp = temp.Replace("{EpisodeName}", string.IsNullOrEmpty(episode.EpisodeName) ? "" : RemoveSpecialCharacters(episode.EpisodeName));
+                temp = temp.Replace("{EpisodeName}", string.IsNullOrEmpty(episode.EpisodeName) ? "" : episode.EpisodeName);
             }
-            episode.NewFileName = temp;
+            episode.NewFileName = RemoveSpecialCharacters(temp);
 
             _logger.TraceMessage("GenerateFileName - End");
             return episode;
         }
 
+        //TODO move this to common lib
         private string RemoveSpecialCharacters(string input)
         {
             _logger.TraceMessage("RemoveSpecialCharacters - Start");
