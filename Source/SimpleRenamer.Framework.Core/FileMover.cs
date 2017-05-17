@@ -77,7 +77,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
             else if (episode.FileType == FileType.Movie)
             {
-                string movieDirectory = Path.Combine(settings.DestinationFolderMovie, $"{episode.ShowName} ({episode.Year})");
+                string folderName = episode.Year > 0 ? $"{episode.ShowName} ({episode.Year})" : $"{episode.ShowName}";
+                string movieDirectory = Path.Combine(settings.DestinationFolderMovie, folderName);
                 episode.DestinationFilePath = Path.Combine(movieDirectory, episode.NewFileName + ext);
                 //create our destination folder if it doesn't already exist
                 if (!Directory.Exists(movieDirectory))

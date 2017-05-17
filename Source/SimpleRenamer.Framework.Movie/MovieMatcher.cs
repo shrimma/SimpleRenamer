@@ -93,6 +93,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                     matchedFile.SkippedExactSelection = false;
                     matchedFile.ShowName = searchedMovie.Title;
                     matchedFile.TMDBShowId = searchedMovie.Id;
+                    matchedFile.Year = searchedMovie.ReleaseDate.HasValue ? searchedMovie.ReleaseDate.Value.Year : 0;
                     matchedFile.ShowImage = searchedMovie.PosterPath;
                     matchedFile.FileType = FileType.Movie;
                     matchedFile.NewFileName = RemoveSpecialCharacters(searchedMovie.Title);
