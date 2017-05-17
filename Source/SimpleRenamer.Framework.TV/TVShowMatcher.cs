@@ -150,29 +150,35 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {
                 _logger.TraceMessage("GetPossibleShowsForEpisode - Start");
                 var series = await _tvdbManager.SearchSeriesByNameAsync(showName);
-                DateTime dt = new DateTime();
                 string airedDate;
                 List<ShowView> shows = new List<ShowView>();
                 if (series != null)
                 {
                     foreach (SeriesSearchData s in series)
                     {
-                        string desc = string.Empty;
-                        if (!string.IsNullOrEmpty(s.Overview))
+                        try
                         {
-                            if (s.Overview.Length > 50)
+                            string desc = string.Empty;
+                            if (!string.IsNullOrEmpty(s.Overview))
                             {
-                                desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                                if (s.Overview.Length > 50)
+                                {
+                                    desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                                }
+                                else
+                                {
+                                    desc = s.Overview;
+                                }
                             }
-                            else
-                            {
-                                desc = s.Overview;
-                            }
-                        }
 
-                        bool parsed = DateTime.TryParseExact(s.FirstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt);
-                        airedDate = parsed ? dt.Year.ToString() : "";
-                        shows.Add(new ShowView(s.Id.ToString(), s.SeriesName, airedDate, desc));
+                            bool parsed = DateTime.TryParseExact(s.FirstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt);
+                            airedDate = parsed ? dt.Year.ToString() : "N/A";
+                            shows.Add(new ShowView(s.Id.ToString(), s.SeriesName, airedDate, desc));
+                        }
+                        catch (Exception ex)
+                        {
+                            //TODO just swallow this?
+                        }
                     }
                 }
 

@@ -93,6 +93,7 @@ namespace Sarjee.SimpleRenamer.Views
             this.SearchTextBox.Text = searchString;
             this.Title = title;
             currentFileType = fileType;
+            ShowListBox.ItemsSource = null;
 
             //grab possible matches
             List<ShowView> possibleMatches = await GetMatches(searchString, fileType);
@@ -165,7 +166,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         private async Task<List<ShowView>> GetMatches(string searchText, FileType fileType)
         {
-            List<ShowView> possibleMatches;
+            List<ShowView> possibleMatches = null;
             if (currentFileType == FileType.TvShow)
             {
                 possibleMatches = await showMatcher.GetPossibleShowsForEpisode(searchText);

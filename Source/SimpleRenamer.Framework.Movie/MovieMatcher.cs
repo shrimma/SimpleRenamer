@@ -25,11 +25,11 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 
         public async Task<List<ShowView>> GetPossibleMoviesForFile(string movieName)
         {
-            return await Task.Run(async () =>
+            List<ShowView> movies = new List<ShowView>();
+            SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName, 0);
+            foreach (var s in results.Results)
             {
-                List<ShowView> movies = new List<ShowView>();
-                SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName, 0);
-                foreach (var s in results.Results)
+                try
                 {
                     string desc = string.Empty;
                     if (!string.IsNullOrEmpty(s.Overview))
@@ -43,11 +43,15 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                             desc = s.Overview;
                         }
                     }
-                    movies.Add(new ShowView(s.Id.ToString(), s.Title, s.ReleaseDate.Value.Year.ToString(), desc));
+                    movies.Add(new ShowView(s.Id.ToString(), s.Title, s.ReleaseDate.HasValue ? s.ReleaseDate.Value.Year.ToString() : "N/A", desc));
                 }
+                catch (Exception ex)
+                {
+                    //TODO just swalow this?
+                }
+            }
 
-                return movies;
-            });
+            return movies;
         }
 
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie)
