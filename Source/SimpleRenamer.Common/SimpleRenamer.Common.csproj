@@ -53,7 +53,6 @@
     <Compile Include="BackgroundQueue.cs" />
     <Compile Include="Model\FileType.cs" />
     <Compile Include="Model\IgnoreList.cs" />
-    <Compile Include="Model\LogType.cs" />
     <Compile Include="Model\Mapping.cs" />
     <Compile Include="Model\RegexExpression.cs" />
     <Compile Include="Model\ShowNameMapping.cs" />

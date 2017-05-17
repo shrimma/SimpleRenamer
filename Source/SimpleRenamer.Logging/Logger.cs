@@ -1,7 +1,8 @@
 ﻿using OneTrueError.Client;
 using Sarjee.SimpleRenamer.Common.Interface;
-using Sarjee.SimpleRenamer.Common.Model;
 using System;
+using System.Diagnostics.Tracing;
+
 namespace Sarjee.SimpleRenamer.Logging
 {
     public class Logger : ILogger
@@ -60,7 +61,7 @@ namespace Sarjee.SimpleRenamer.Logging
             return true;
         }
 
-        public void TraceMessage(string message = "", LogType logType = LogType.Info,
+        public void TraceMessage(string message = "", EventLevel logType = EventLevel.Informational,
         [System.Runtime.CompilerServices.CallerMemberName] string memberName = "",
         [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
         [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
@@ -73,14 +74,19 @@ namespace Sarjee.SimpleRenamer.Logging
 
             switch (logType)
             {
-                case LogType.Info:
+                case EventLevel.LogAlways:
+                case EventLevel.Verbose:
+                case EventLevel.Informational:
                     log.Info(message);
                     break;
-                case LogType.Warning:
+                case EventLevel.Warning:
                     log.Warn(string.Format("Warning: {0}, Member Name {1}, Source File {2}, Source Line {3}", message, memberName, sourceFilePath, sourceLineNumber));
                     break;
-                case LogType.Error:
+                case EventLevel.Error:
                     log.Error(string.Format("Error: {0}, Member Name {1}, Source File {2}, Source Line {3}", message, memberName, sourceFilePath, sourceLineNumber));
+                    break;
+                case EventLevel.Critical:
+                    log.Fatal(string.Format("Fatal: {0}, Member Name {1}, Source File {2}, Source Line {3}", message, memberName, sourceFilePath, sourceLineNumber));
                     break;
             }
         }

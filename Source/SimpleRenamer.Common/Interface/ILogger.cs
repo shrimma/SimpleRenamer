@@ -1,5 +1,5 @@
-﻿using Sarjee.SimpleRenamer.Common.Model;
-using System;
+﻿using System;
+using System.Diagnostics.Tracing;
 
 namespace Sarjee.SimpleRenamer.Common.Interface
 {
@@ -10,7 +10,7 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// </summary>
         /// <param name="message">The message to log</param>
         /// <param name="logType">The logtype for the log entry</param>
-        void TraceMessage(string message = "", LogType logType = LogType.Info,
+        void TraceMessage(string message = "", EventLevel logType = EventLevel.Informational,
         [System.Runtime.CompilerServices.CallerMemberName] string memberName = "",
         [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
         [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0);
