@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Views
 {
@@ -80,14 +81,14 @@ namespace Sarjee.SimpleRenamer.Views
             //enable progress spinner
             LoadingProgress.IsActive = true;
             CancellationTokenSource cts = new CancellationTokenSource();
-            MovieInfo movie = await _movieMatcher.GetMovieWithBanner(movieId, cts.Token);
+            (Movie movie, BitmapImage banner) = await _movieMatcher.GetMovieWithBanner(movieId, cts.Token);
 
             //set the title, show description, rating and firstaired values
-            this.Title = string.Format("{0} - Rating {1} - Year {2}", movie.Movie.Title, string.IsNullOrEmpty(movie.Movie.VoteAverage.ToString()) ? "0.0" : movie.Movie.VoteAverage.ToString(), movie.Movie.ReleaseDate.HasValue ? movie.Movie.ReleaseDate.Value.Year.ToString() : "1900");
+            this.Title = string.Format("{0} - Rating {1} - Year {2}", movie.Title, string.IsNullOrEmpty(movie.VoteAverage.ToString()) ? "0.0" : movie.VoteAverage.ToString(), movie.ReleaseDate.HasValue ? movie.ReleaseDate.Value.Year.ToString() : "1900");
 
-            if (!string.IsNullOrEmpty(movie.Movie.Tagline))
+            if (!string.IsNullOrEmpty(movie.Tagline))
             {
-                MovieTagLineTextBox.Text = movie.Movie.Tagline;
+                MovieTagLineTextBox.Text = movie.Tagline;
                 MovieTagLineTextBox.Visibility = Visibility.Visible;
             }
             else
@@ -95,16 +96,16 @@ namespace Sarjee.SimpleRenamer.Views
                 MovieTagLineTextBox.Visibility = Visibility.Collapsed;
             }
 
-            MovieDescriptionTextBox.Text = movie.Movie.Overview;
+            MovieDescriptionTextBox.Text = movie.Overview;
 
             //set the actor listbox
-            ActorsListBox.ItemsSource = movie.Movie.Credits.Cast;
+            ActorsListBox.ItemsSource = movie.Credits.Cast;
 
             //set the crew listbox
-            CrewListBox.ItemsSource = movie.Movie.Credits.Crew;
+            CrewListBox.ItemsSource = movie.Credits.Crew;
 
             //set the banner
-            BannerImage.Source = movie.BannerImage;
+            BannerImage.Source = banner;
 
             _logger.TraceMessage("GetMovieInfo - End");
         }

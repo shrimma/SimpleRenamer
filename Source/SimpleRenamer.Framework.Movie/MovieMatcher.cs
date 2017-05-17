@@ -118,7 +118,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             return r.Replace(input, "");
         }
 
-        public async Task<MovieInfo> GetMovieWithBanner(string movieId, CancellationToken ct)
+        public async Task<(Common.Movie.Model.Movie movie, BitmapImage banner)> GetMovieWithBanner(string movieId, CancellationToken ct)
         {
             _logger.TraceMessage("GetMovieInfo - Start");
             Common.Movie.Model.Movie matchedMovie = await _tmdbManager.GetMovieAsync(movieId);
@@ -136,7 +136,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             }
 
             _logger.TraceMessage("GetMovieInfo - End");
-            return new MovieInfo(matchedMovie, bannerImage);
+            return (matchedMovie, bannerImage);
         }
     }
 }
