@@ -25,7 +25,7 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Interface
         /// </summary>
         /// <param name="showName">Name of the show.</param>
         /// <returns></returns>
-        Task<List<ShowView>> GetPossibleMoviesForFile(string showName);
+        Task<List<DetailView>> GetPossibleMoviesForFile(string showName);
 
         /// <summary>
         /// Updates the file with matched movie.

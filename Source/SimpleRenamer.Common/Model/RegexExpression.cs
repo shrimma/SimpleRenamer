@@ -1,10 +1,11 @@
-﻿using System.Xml.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Sarjee.SimpleRenamer.Common.Model
 {
     /// <summary>
     /// RegexExpression
     /// </summary>
+    [JsonObject("regexExpression")]
     public class RegexExpression
     {
         /// <summary>
@@ -13,7 +14,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <value>
         /// The expression.
         /// </value>
-        [XmlText]
+        [JsonProperty("expression")]
         public string Expression { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether this instance is enabled.
@@ -21,15 +22,16 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <value>
         ///   <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
-        [XmlAttribute]
+        [JsonProperty("isEnabled")]
         public bool IsEnabled { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is for tv show.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is for tv show; otherwise, <c>false</c>.
         /// </value>
-        [XmlAttribute]
+        [JsonProperty("isForTvShow")]
         public bool IsForTvShow { get; set; }
 
         /// <summary>
@@ -43,13 +45,6 @@ namespace Sarjee.SimpleRenamer.Common.Model
             Expression = expression;
             IsEnabled = enabled;
             IsForTvShow = isTvShow;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RegexExpression"/> class.
-        /// </summary>
-        public RegexExpression()
-        {
         }
     }
 }

@@ -142,14 +142,14 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             return episode;
         }
 
-        public async Task<List<ShowView>> GetPossibleShowsForEpisode(string showName)
+        public async Task<List<DetailView>> GetPossibleShowsForEpisode(string showName)
         {
             return await Task.Run(async () =>
             {
                 _logger.TraceMessage("GetPossibleShowsForEpisode - Start");
                 var series = await _tvdbManager.SearchSeriesByNameAsync(showName);
                 string airedDate;
-                List<ShowView> shows = new List<ShowView>();
+                List<DetailView> shows = new List<DetailView>();
                 if (series != null)
                 {
                     foreach (SeriesSearchData s in series)
@@ -171,7 +171,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
                             bool parsed = DateTime.TryParseExact(s.FirstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt);
                             airedDate = parsed ? dt.Year.ToString() : "N/A";
-                            shows.Add(new ShowView(s.Id.ToString(), s.SeriesName, airedDate, desc));
+                            shows.Add(new DetailView(s.Id.ToString(), s.SeriesName, airedDate, desc));
                         }
                         catch (Exception ex)
                         {

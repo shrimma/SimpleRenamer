@@ -22,7 +22,7 @@ namespace Sarjee.SimpleRenamer.Common.TV.Interface
         /// </summary>
         /// <param name="showName">The showname to be searched</param>
         /// <returns>A list of series</returns>
-        Task<List<ShowView>> GetPossibleShowsForEpisode(string showName);
+        Task<List<DetailView>> GetPossibleShowsForEpisode(string showName);
 
         /// <summary>
         /// Updates a TV episode with the details of a selected series

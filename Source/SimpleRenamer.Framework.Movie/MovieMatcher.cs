@@ -25,9 +25,9 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             _tmdbManager = tmdbManager ?? throw new ArgumentNullException(nameof(tmdbManager));
         }
 
-        public async Task<List<ShowView>> GetPossibleMoviesForFile(string movieName)
+        public async Task<List<DetailView>> GetPossibleMoviesForFile(string movieName)
         {
-            List<ShowView> movies = new List<ShowView>();
+            List<DetailView> movies = new List<DetailView>();
             SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName, 0);
             foreach (var s in results.Results)
             {
@@ -45,7 +45,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                             desc = s.Overview;
                         }
                     }
-                    movies.Add(new ShowView(s.Id.ToString(), s.Title, s.ReleaseDate.HasValue ? s.ReleaseDate.Value.Year.ToString() : "N/A", desc));
+                    movies.Add(new DetailView(s.Id.ToString(), s.Title, s.ReleaseDate.HasValue ? s.ReleaseDate.Value.Year.ToString() : "N/A", desc));
                 }
                 catch (Exception ex)
                 {

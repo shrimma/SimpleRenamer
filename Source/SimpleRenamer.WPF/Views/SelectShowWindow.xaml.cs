@@ -99,7 +99,7 @@ namespace Sarjee.SimpleRenamer.Views
             ShowListBox.ItemsSource = null;
 
             //grab possible matches
-            List<ShowView> possibleMatches = await GetMatches(searchString, fileType);
+            List<DetailView> possibleMatches = await GetMatches(searchString, fileType);
 
             //if we have matches then enable UI elements
             if (possibleMatches != null && possibleMatches.Count > 0)
@@ -117,7 +117,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void SelectButton_Click(object sender, RoutedEventArgs e)
         {
-            ShowView current = (ShowView)ShowListBox.SelectedItem;
+            DetailView current = (DetailView)ShowListBox.SelectedItem;
             if (current != null)
             {
                 ConfirmationFlyout.IsOpen = true;
@@ -127,7 +127,7 @@ namespace Sarjee.SimpleRenamer.Views
         private void OkFlyoutButton_Click(object sender, RoutedEventArgs e)
         {
             this.ConfirmationFlyout.IsOpen = false;
-            ShowView current = (ShowView)ShowListBox.SelectedItem;
+            DetailView current = (DetailView)ShowListBox.SelectedItem;
             RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(current.Id, currentFileType));
             //clear the item list
             this.ShowListBox.ItemsSource = null;
@@ -149,7 +149,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void ViewButton_Click(object sender, RoutedEventArgs e)
         {
-            ShowView current = (ShowView)ShowListBox.SelectedItem;
+            DetailView current = (DetailView)ShowListBox.SelectedItem;
             if (current != null)
             {
                 if (currentFileType == FileType.TvShow)
@@ -167,9 +167,9 @@ namespace Sarjee.SimpleRenamer.Views
             }
         }
 
-        private async Task<List<ShowView>> GetMatches(string searchText, FileType fileType)
+        private async Task<List<DetailView>> GetMatches(string searchText, FileType fileType)
         {
-            List<ShowView> possibleMatches = null;
+            List<DetailView> possibleMatches = null;
             if (currentFileType == FileType.TvShow)
             {
                 possibleMatches = await showMatcher.GetPossibleShowsForEpisode(searchText);
