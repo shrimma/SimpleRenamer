@@ -7,13 +7,16 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common.Interface
 {
+    /// <summary>
+    /// ScanFiles interface
+    /// </summary>
     public interface IScanFiles
     {
         /// <summary>
-        /// Scans the watch folders and matches files against TVDB shows
+        /// Scans the watch folders and matches files against shows/movies
         /// </summary>
         /// <param name="ct">CancellationToken</param>
-        /// <returns>A list of TVEpisodes</returns>
+        /// <returns></returns>
         Task<List<MatchedFile>> Scan(CancellationToken ct);
 
         /// <summary>

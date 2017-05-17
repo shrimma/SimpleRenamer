@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common.Interface
 {
+    /// <summary>
+    /// File Watcher interface
+    /// </summary>
     public interface IFileWatcher
     {
         /// <summary>

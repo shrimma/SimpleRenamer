@@ -2,6 +2,9 @@
 
 namespace Sarjee.SimpleRenamer.Common.Interface
 {
+    /// <summary>
+    /// Helper interface
+    /// </summary>
     public interface IHelper
     {
         /// <summary>
@@ -11,6 +14,13 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <returns>True if a valid file extension</returns>
         bool IsFileExtensionValid(string fExt);
 
+        /// <summary>
+        /// Checks if the input lists are equal.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="listOne">The list one.</param>
+        /// <param name="listTwo">The list two.</param>
+        /// <returns></returns>
         bool AreListsEqual<T>(List<T> listOne, List<T> listTwo);
     }
 }

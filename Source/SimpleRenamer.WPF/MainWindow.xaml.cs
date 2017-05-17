@@ -159,7 +159,7 @@ namespace Sarjee.SimpleRenamer
         private void PerformActionsOnShows_RaiseFileMovedEvent(object sender, FileMovedEventArgs e)
         {
             IncrementProgressBar();
-            RemoveFileFromView(e.Episode);
+            RemoveFileFromView(e.File);
         }
 
         private void RemoveFileFromView(MatchedFile file)

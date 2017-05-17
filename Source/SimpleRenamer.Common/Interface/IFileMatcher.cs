@@ -7,13 +7,17 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common.Interface
 {
+    /// <summary>
+    /// FileMatcher Interface
+    /// </summary>
     public interface IFileMatcher
     {
         /// <summary>
-        /// Processes a file name against various Regular Expressions to extract TV show information
+        /// Processes a list of files trying to match the filenames against the regular expressions
         /// </summary>
-        /// <param name="fileName">The string to process</param>
-        /// <returns>Populated TVEpisode object</returns>
+        /// <param name="files">The files.</param>
+        /// <param name="ct">The cancellationtoken.</param>
+        /// <returns></returns>
         Task<List<MatchedFile>> SearchFilesAsync(List<string> files, CancellationToken ct);
 
         /// <summary>
