@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Sarjee.SimpleRenamer.Common
 {
@@ -64,6 +65,18 @@ namespace Sarjee.SimpleRenamer.Common
             }
 
             return true;
+        }
+
+        private static string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+        private Regex specialCharacterRegex = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+        /// <summary>
+        /// Removes the special characters.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public string RemoveSpecialCharacters(string input)
+        {
+            return specialCharacterRegex.Replace(input, "");
         }
     }
 }

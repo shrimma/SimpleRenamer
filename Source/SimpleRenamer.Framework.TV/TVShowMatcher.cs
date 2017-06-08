@@ -6,9 +6,7 @@ using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
@@ -24,6 +22,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private IConfigurationManager _configurationManager;
         private Settings settings;
         private ITvdbManager _tvdbManager;
+        private IHelper _helper;
         /// <summary>
         /// Fired whenever some noticeable progress is made
         /// </summary>
@@ -42,12 +41,13 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// or
         /// tvdbManager
         /// </exception>
-        public TVShowMatcher(ILogger logger, IConfigurationManager configManager, ITvdbManager tvdbManager)
+        public TVShowMatcher(ILogger logger, IConfigurationManager configManager, ITvdbManager tvdbManager, IHelper helper)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
             _tvdbManager = tvdbManager ?? throw new ArgumentNullException(nameof(tvdbManager));
             settings = _configurationManager.Settings;
+            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
         }
 
         /// <summary>
@@ -289,25 +289,10 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {
                 temp = temp.Replace("{EpisodeName}", string.IsNullOrEmpty(episode.EpisodeName) ? "" : episode.EpisodeName);
             }
-            episode.NewFileName = RemoveSpecialCharacters(temp);
+            episode.NewFileName = _helper.RemoveSpecialCharacters(temp);
 
             _logger.TraceMessage("GenerateFileName - End");
             return episode;
-        }
-
-        //TODO move this to common lib
-        /// <summary>
-        /// Removes the special characters.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns></returns>
-        private string RemoveSpecialCharacters(string input)
-        {
-            _logger.TraceMessage("RemoveSpecialCharacters - Start");
-            string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
-            Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
-            _logger.TraceMessage("RemoveSpecialCharacters - End");
-            return r.Replace(input, "");
         }
 
         /// <summary>

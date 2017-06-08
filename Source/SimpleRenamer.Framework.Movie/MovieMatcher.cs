@@ -5,8 +5,6 @@ using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -21,6 +19,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
     {
         private ILogger _logger;
         private ITmdbManager _tmdbManager;
+        private IHelper _helper;
         /// <summary>
         /// Fired whenever some noticeable progress is made
         /// </summary>
@@ -36,10 +35,11 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// or
         /// tmdbManager
         /// </exception>
-        public MovieMatcher(ILogger logger, ITmdbManager tmdbManager)
+        public MovieMatcher(ILogger logger, ITmdbManager tmdbManager, IHelper helper)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _tmdbManager = tmdbManager ?? throw new ArgumentNullException(nameof(tmdbManager));
+            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 //if theres only one match then scape the specific show
                 movie.TMDBShowId = results.Results[0].Id;
                 movie.ShowImage = results.Results[0].PosterPath;
-                movie.NewFileName = RemoveSpecialCharacters(movie.ShowName);
+                movie.NewFileName = _helper.RemoveSpecialCharacters(movie.ShowName);
             }
             _logger.TraceMessage("ScrapeDetailsAsync - End");
             return movie;
@@ -129,7 +129,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                     matchedFile.Year = searchedMovie.ReleaseDate.HasValue ? searchedMovie.ReleaseDate.Value.Year : 0;
                     matchedFile.ShowImage = searchedMovie.PosterPath;
                     matchedFile.FileType = FileType.Movie;
-                    matchedFile.NewFileName = RemoveSpecialCharacters(searchedMovie.Title);
+                    matchedFile.NewFileName = _helper.RemoveSpecialCharacters(searchedMovie.Title);
                 }
                 else
                 {
@@ -140,20 +140,6 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 _logger.TraceMessage("UpdateFileWithMatchedMovie - End");
                 return matchedFile;
             });
-        }
-
-        /// <summary>
-        /// Removes the special characters.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns></returns>
-        private string RemoveSpecialCharacters(string input)
-        {
-            _logger.TraceMessage("RemoveSpecialCharacters - Start");
-            string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
-            Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
-            _logger.TraceMessage("RemoveSpecialCharacters - End");
-            return r.Replace(input, "");
         }
 
         /// <summary>
