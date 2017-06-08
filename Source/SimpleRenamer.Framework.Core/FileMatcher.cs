@@ -7,6 +7,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace Sarjee.SimpleRenamer.Framework.Core
 {
@@ -53,36 +54,43 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         {
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Parsing file names for show or movie details"));
             object lockList = new object();
-            List<MatchedFile> episodes = new List<MatchedFile>();
-            //for each file in the list search the filename and determine if it is a TV or Movie
-            ParallelOptions po = new ParallelOptions();
-            po.CancellationToken = ct;
-            Parallel.ForEach(files, po, (file) =>
+            List<MatchedFile> matchedFiles = new List<MatchedFile>();
+
+            //block for searching the files
+            var searchFilesAsyncBlock = new TransformBlock<string, MatchedFile>(async (file) =>
             {
-                MatchedFile episode = SearchFileNameAsync(file, ct).GetAwaiter().GetResult();
-                if (episode != null)
+                MatchedFile matchedFile = await SearchFileNameAsync(file, ct);
+                if (matchedFile != null)
                 {
                     //if episode is not null then we matched so add to the output list
-                    _logger.TraceMessage(string.Format("Matched {0}", episode.SourceFilePath));
-                    lock (lockList)
-                    {
-                        episodes.Add(episode);
-                    }
+                    _logger.TraceMessage(string.Format("Matched {0}", matchedFile.SourceFilePath));
+                    RaiseProgressEvent(this, new ProgressTextEventArgs($"Grabbed show or movie details from file names"));
+                    return matchedFile;
                 }
                 else
                 {
                     //else we couldn't match the file so add a file with just filepath so user can manually match
                     _logger.TraceMessage(string.Format("Couldn't find a match!"));
-                    episode = new MatchedFile(file, Path.GetFileNameWithoutExtension(file));
-                    lock (lockList)
-                    {
-                        episodes.Add(episode);
-                    }
+                    matchedFile = new MatchedFile(file, Path.GetFileNameWithoutExtension(file));
+                    RaiseProgressEvent(this, new ProgressTextEventArgs($"Grabbed show or movie details from file names"));
+                    return matchedFile;
                 }
-            });
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Grabbed show or movie details from file names"));
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
 
-            return episodes;
+            //block for writing the outputs to a list
+            var writeOutputBlock = new ActionBlock<MatchedFile>(c => matchedFiles.Add(c));
+            //link the writing to completion of search
+            searchFilesAsyncBlock.LinkTo(writeOutputBlock, new DataflowLinkOptions { PropagateCompletion = true });
+
+            //post all our files to our dataflow
+            foreach (string file in files)
+            {
+                searchFilesAsyncBlock.Post(file);
+            }
+            searchFilesAsyncBlock.Complete();
+            await writeOutputBlock.Completion;
+
+            return matchedFiles;
         }
 
         /// <summary>
