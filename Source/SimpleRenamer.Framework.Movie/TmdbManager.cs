@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.Movie
 {
+    /// <summary>
+    /// TMDB Manager
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Movie.Interface.ITmdbManager" />
     public class TmdbManager : ITmdbManager
     {
         private string apiKey;
@@ -15,6 +19,16 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         private string posterBaseUri;
         private RestClient _restClient;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TmdbManager"/> class.
+        /// </summary>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <param name="retryHelper">The retry helper.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// configManager
+        /// or
+        /// retryHelper
+        /// </exception>
         public TmdbManager(IConfigurationManager configManager, IRetryHelper retryHelper)
         {
             if (configManager == null)
@@ -28,6 +42,12 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             _restClient.AddDefaultHeader("content-type", "application/json");
         }
 
+        /// <summary>
+        /// Searches the movie by name asynchronous.
+        /// </summary>
+        /// <param name="movieName">Name of the movie.</param>
+        /// <param name="movieYear">The movie year.</param>
+        /// <returns></returns>
         public async Task<SearchContainer<SearchMovie>> SearchMovieByNameAsync(string movieName, int movieYear)
         {
             string resource = string.Empty;
@@ -56,6 +76,11 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             }
         }
 
+        /// <summary>
+        /// Gets the movie asynchronous.
+        /// </summary>
+        /// <param name="movieId">The movie identifier.</param>
+        /// <returns></returns>
         public async Task<Common.Movie.Model.Movie> GetMovieAsync(string movieId)
         {
             Common.Movie.Model.Movie movie = null;
@@ -82,6 +107,11 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             return movie;
         }
 
+        /// <summary>
+        /// Searches the movie by identifier asynchronous.
+        /// </summary>
+        /// <param name="movieId">The movie identifier.</param>
+        /// <returns></returns>
         public async Task<SearchMovie> SearchMovieByIdAsync(string movieId)
         {
             var request = new RestRequest($"/3/movie/{movieId}?api_key={apiKey}", Method.GET);
@@ -100,6 +130,11 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             }
         }
 
+        /// <summary>
+        /// Gets the poster URI asynchronous.
+        /// </summary>
+        /// <param name="posterPath">The poster path.</param>
+        /// <returns></returns>
         public async Task<string> GetPosterUriAsync(string posterPath)
         {
             //if we havent grabbed the base uri yet this session

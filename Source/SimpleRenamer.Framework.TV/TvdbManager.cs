@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.TV
 {
+    /// <summary>
+    /// TVDB Manager
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.TV.Interface.ITvdbManager" />
     public class TvdbManager : ITvdbManager
     {
         private string apiKey;
@@ -16,6 +20,16 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private IRetryHelper _retryHelper;
         private RestClient _restClient;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TvdbManager"/> class.
+        /// </summary>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <param name="retryHelper">The retry helper.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// configManager
+        /// or
+        /// retryHelper
+        /// </exception>
         public TvdbManager(IConfigurationManager configManager, IRetryHelper retryHelper)
         {
             if (configManager == null)
@@ -30,6 +44,10 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             _restClient.AddDefaultHeader("content-type", "application/json");
         }
 
+        /// <summary>
+        /// Logins this instance.
+        /// </summary>
+        /// <returns></returns>
         private async Task Login()
         {
             Auth auth = new Auth()
@@ -54,11 +72,21 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         }
 
+        /// <summary>
+        /// Gets the banner URI.
+        /// </summary>
+        /// <param name="bannerPath">The banner path.</param>
+        /// <returns></returns>
         public string GetBannerUri(string bannerPath)
         {
             return $"http://thetvdb.com/banners/{bannerPath}";
         }
 
+        /// <summary>
+        /// Gets the series by identifier asynchronous.
+        /// </summary>
+        /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <returns></returns>
         public async Task<CompleteSeries> GetSeriesByIdAsync(string tmdbId)
         {
             if (string.IsNullOrEmpty(jwtToken))
@@ -204,6 +232,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
         }
 
+        /// <summary>
+        /// Gets the series.
+        /// </summary>
+        /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
         private async Task<SeriesData> GetSeries(string tmdbId)
         {
             RestRequest request = new RestRequest($"series/{tmdbId}", Method.GET);
@@ -221,6 +255,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             return null;
         }
 
+        /// <summary>
+        /// Gets the actors.
+        /// </summary>
+        /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
         private async Task<SeriesActors> GetActors(string tmdbId)
         {
             RestRequest request = new RestRequest($"/series/{tmdbId}/actors", Method.GET);
@@ -238,6 +278,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             return null;
         }
 
+        /// <summary>
+        /// Gets the episodes.
+        /// </summary>
+        /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
         private async Task<SeriesEpisodes> GetEpisodes(string tmdbId)
         {
             RestRequest request = new RestRequest($"/series/{tmdbId}/episodes", Method.GET);
@@ -255,6 +301,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             return null;
         }
 
+        /// <summary>
+        /// Gets the series posters.
+        /// </summary>
+        /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
         private async Task<SeriesImageQueryResults> GetSeriesPosters(string tmdbId)
         {
             RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
@@ -278,6 +330,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             return null;
         }
 
+        /// <summary>
+        /// Gets the season posters.
+        /// </summary>
+        /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
         private async Task<SeriesImageQueryResults> GetSeasonPosters(string tmdbId)
         {
             RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
@@ -301,6 +359,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             return null;
         }
 
+        /// <summary>
+        /// Gets the series banners.
+        /// </summary>
+        /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
         private async Task<SeriesImageQueryResults> GetSeriesBanners(string tmdbId)
         {
             RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
@@ -324,6 +388,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             return null;
         }
 
+        /// <summary>
+        /// Searches the series by name asynchronous.
+        /// </summary>
+        /// <param name="seriesName">Name of the series.</param>
+        /// <returns></returns>
         public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName)
         {
             if (string.IsNullOrEmpty(jwtToken))

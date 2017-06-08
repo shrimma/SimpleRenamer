@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common
 {
+    /// <summary>
+    /// Retry Helper
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IRetryHelper" />
     public class RetryHelper : IRetryHelper
     {
         private int RETRY_COUNT;
@@ -15,6 +19,11 @@ namespace Sarjee.SimpleRenamer.Common
             RETRY_COUNT = retryCount;
         }
 
+        /// <summary>
+        /// Wrapper for the generic method for async operations that don't return a value
+        /// </summary>
+        /// <param name="asyncOperation"></param>
+        /// <returns></returns>
         public async Task OperationWithBasicRetryAsync(Func<Task> asyncOperation)
         {
             await OperationWithBasicRetryAsync<object>(async () =>
@@ -24,6 +33,12 @@ namespace Sarjee.SimpleRenamer.Common
             });
         }
 
+        /// <summary>
+        /// Main generic method to perform the supplied async method with multiple retires on transient exceptions/errors
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="asyncOperation"></param>
+        /// <returns></returns>
         public async Task<T> OperationWithBasicRetryAsync<T>(Func<Task<T>> asyncOperation)
         {
             int currentRetry = 0;

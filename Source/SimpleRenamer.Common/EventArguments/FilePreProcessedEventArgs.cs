@@ -9,7 +9,7 @@ namespace Sarjee.SimpleRenamer.Common.EventArguments
     public class FilePreProcessedEventArgs : EventArgs
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FilePreProcessedEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="FilePreProcessedEventArgs" /> class.
         /// </summary>
         public FilePreProcessedEventArgs()
         {

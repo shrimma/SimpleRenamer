@@ -7,6 +7,10 @@ using System.IO;
 
 namespace Sarjee.SimpleRenamer.Framework.Core
 {
+    /// <summary>
+    /// App Configuration Manager
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IConfigurationManager" />
     public class AppConfigurationManager : IConfigurationManager
     {
         private IgnoreList ignoredFiles;
@@ -15,6 +19,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private ShowNameMapping showNameMapping;
         private JsonSerializer jsonSerializer = new JsonSerializer();
 
+        /// <summary>
+        /// Gets or sets the ignored files.
+        /// </summary>
+        /// <value>
+        /// The ignored files.
+        /// </value>
         public IgnoreList IgnoredFiles
         {
             get
@@ -69,6 +79,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
         }
 
+        /// <summary>
+        /// Gets or sets the regex expressions.
+        /// </summary>
+        /// <value>
+        /// The regex expressions.
+        /// </value>
         public RegexFile RegexExpressions
         {
             get
@@ -123,6 +139,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
         }
 
+        /// <summary>
+        /// Gets or sets the settings.
+        /// </summary>
+        /// <value>
+        /// The settings.
+        /// </value>
         public Settings Settings
         {
             get
@@ -168,6 +190,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
         }
 
+        /// <summary>
+        /// Gets or sets the show name mappings.
+        /// </summary>
+        /// <value>
+        /// The show name mappings.
+        /// </value>
         public ShowNameMapping ShowNameMappings
         {
             get
@@ -214,6 +242,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
         }
 
+        /// <summary>
+        /// Saves the configuration.
+        /// </summary>
         public void SaveConfiguration()
         {
             SaveConfig();
@@ -250,6 +281,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             configuration.Save(ConfigurationSaveMode.Modified);
         }
 
+        /// <summary>
+        /// Gets the The TV Database API key.
+        /// </summary>
+        /// <value>
+        /// The TV database API key.
+        /// </value>
         public string TvDbApiKey
         {
             get
@@ -258,6 +295,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
         }
 
+        /// <summary>
+        /// Gets the The Movie Database API key.
+        /// </summary>
+        /// <value>
+        /// The Movie database API key.
+        /// </value>
         public string TmDbApiKey
         {
             get
@@ -266,6 +309,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
         }
 
+        /// <summary>
+        /// Gets the one true error URL.
+        /// </summary>
+        /// <value>
+        /// The one true error URL.
+        /// </value>
         public string OneTrueErrorUrl
         {
             get
@@ -274,6 +323,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
         }
 
+        /// <summary>
+        /// Gets the one true error application key.
+        /// </summary>
+        /// <value>
+        /// The one true error application key.
+        /// </value>
         public string OneTrueErrorApplicationKey
         {
             get
@@ -282,6 +337,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
         }
 
+        /// <summary>
+        /// Gets the one true error shared secret.
+        /// </summary>
+        /// <value>
+        /// The one true error shared secret.
+        /// </value>
         public string OneTrueErrorSharedSecret
         {
             get

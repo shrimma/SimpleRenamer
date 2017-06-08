@@ -5,10 +5,27 @@ using System.Diagnostics.Tracing;
 
 namespace Sarjee.SimpleRenamer.Logging
 {
+    /// <summary>
+    /// Logger
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.ILogger" />
     public class Logger : ILogger
     {
         private log4net.ILog log { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Logger"/> class.
+        /// </summary>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// configManager
+        /// or
+        /// OneTrueErrorUrl
+        /// or
+        /// OneTrueErrorApplicationKey
+        /// or
+        /// OneTrueErrorSharedSecret
+        /// </exception>
         public Logger(IConfigurationManager configManager)
         {
             if (configManager == null)
@@ -41,11 +58,22 @@ namespace Sarjee.SimpleRenamer.Logging
             OneTrue.Configuration.CatchLog4NetExceptions();
         }
 
+        /// <summary>
+        /// Ignores the bad certificate.
+        /// </summary>
         private static void IgnoreBadCertificate()
         {
             System.Net.ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(AcceptAllCertifications);
         }
 
+        /// <summary>
+        /// Accepts all certifications.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="certification">The certification.</param>
+        /// <param name="chain">The chain.</param>
+        /// <param name="sslPolicyErrors">The SSL policy errors.</param>
+        /// <returns></returns>
         private static bool AcceptAllCertifications(object sender, System.Security.Cryptography.X509Certificates.X509Certificate certification, System.Security.Cryptography.X509Certificates.X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
         {
             ////ignore certificate errors for the OTE server
@@ -61,6 +89,14 @@ namespace Sarjee.SimpleRenamer.Logging
             return true;
         }
 
+        /// <summary>
+        /// Logs a message
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        /// <param name="logType">Type of the log.</param>
+        /// <param name="memberName">Name of the member.</param>
+        /// <param name="sourceFilePath">The source file path.</param>
+        /// <param name="sourceLineNumber">The source line number.</param>
         public void TraceMessage(string message = "", EventLevel logType = EventLevel.Informational,
         [System.Runtime.CompilerServices.CallerMemberName] string memberName = "",
         [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
@@ -91,6 +127,14 @@ namespace Sarjee.SimpleRenamer.Logging
             }
         }
 
+        /// <summary>
+        /// Logs an exception
+        /// </summary>
+        /// <param name="ex">The exception to log</param>
+        /// <param name="message">The message to log</param>
+        /// <param name="memberName">Name of the member.</param>
+        /// <param name="sourceFilePath">The source file path.</param>
+        /// <param name="sourceLineNumber">The source line number.</param>
         public void TraceException(Exception ex, string message = "",
             [System.Runtime.CompilerServices.CallerMemberName] string memberName = "",
         [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",

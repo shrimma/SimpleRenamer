@@ -6,8 +6,19 @@ using System.Linq;
 
 namespace Sarjee.SimpleRenamer.Common
 {
+    /// <summary>
+    /// Helper
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IHelper" />
     public class Helper : IHelper
     {
+        /// <summary>
+        /// Checks whether the input is a valid file extension
+        /// </summary>
+        /// <param name="fExt">The file extension to process</param>
+        /// <returns>
+        /// True if a valid file extension
+        /// </returns>
         public bool IsFileExtensionValid(string fExt)
         {
             bool answer = true;
@@ -30,6 +41,13 @@ namespace Sarjee.SimpleRenamer.Common
             return answer;
         }
 
+        /// <summary>
+        /// Checks if the input lists are equal.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="listOne">The list one.</param>
+        /// <param name="listTwo">The list two.</param>
+        /// <returns></returns>
         public bool AreListsEqual<T>(List<T> listOne, List<T> listTwo)
         {
             if (listOne.Count != listTwo.Count)

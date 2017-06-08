@@ -12,6 +12,10 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.Core
 {
+    /// <summary>
+    /// Scan Files
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IScanFiles" />
     public class ScanFiles : IScanFiles
     {
         private ILogger _logger;
@@ -21,8 +25,33 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private IMovieMatcher _movieMatcher;
         private IFileMatcher _fileMatcher;
         private Settings _settings;
+        /// <summary>
+        /// Fired whenever some noticeable progress is made
+        /// </summary>
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScanFiles"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <param name="fileWatcher">The file watcher.</param>
+        /// <param name="showMatcher">The show matcher.</param>
+        /// <param name="movieMatcher">The movie matcher.</param>
+        /// <param name="fileMatcher">The file matcher.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// logger
+        /// or
+        /// configManager
+        /// or
+        /// fileWatcher
+        /// or
+        /// showMatcher
+        /// or
+        /// movieMatcher
+        /// or
+        /// fileMatcher
+        /// </exception>
         public ScanFiles(ILogger logger, IConfigurationManager configManager, IFileWatcher fileWatcher, ITVShowMatcher showMatcher, IMovieMatcher movieMatcher, IFileMatcher fileMatcher)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -38,11 +67,21 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             _movieMatcher.RaiseProgressEvent += RaiseProgress;
         }
 
+        /// <summary>
+        /// Raises the progress.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="ProgressTextEventArgs"/> instance containing the event data.</param>
         private void RaiseProgress(object sender, ProgressTextEventArgs e)
         {
             RaiseProgressEvent(this, e);
         }
 
+        /// <summary>
+        /// Scans the watch folders and matches files against shows/movies
+        /// </summary>
+        /// <param name="ct">CancellationToken</param>
+        /// <returns></returns>
         public async Task<List<MatchedFile>> Scan(CancellationToken ct)
         {
             return await Task.Run(async () =>
@@ -78,6 +117,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             });
         }
 
+        /// <summary>
+        /// Matches the tv shows.
+        /// </summary>
+        /// <param name="matchedFiles">The matched files.</param>
+        /// <param name="ct">The ct.</param>
+        /// <returns></returns>
         private async Task<List<MatchedFile>> MatchTVShows(List<MatchedFile> matchedFiles, CancellationToken ct)
         {
             object lockList = new object();
@@ -138,6 +183,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return scannedEpisodes;
         }
 
+        /// <summary>
+        /// Matches the movies.
+        /// </summary>
+        /// <param name="matchedFiles">The matched files.</param>
+        /// <param name="ct">The ct.</param>
+        /// <returns></returns>
         private async Task<List<MatchedFile>> MatchMovies(List<MatchedFile> matchedFiles, CancellationToken ct)
         {
             object lockList = new object();

@@ -8,8 +8,15 @@ using Sarjee.SimpleRenamer.Framework.TV;
 
 namespace Sarjee.SimpleRenamer.DependencyInjection.Modules
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Ninject.Modules.NinjectModule" />
     public class ScanModule : NinjectModule
     {
+        /// <summary>
+        /// Loads the module into the kernel.
+        /// </summary>
         public override void Load()
         {
             Bind<IFileMatcher>().To<FileMatcher>().InSingletonScope();

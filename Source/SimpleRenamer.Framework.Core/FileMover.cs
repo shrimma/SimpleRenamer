@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.Core
 {
+    /// <summary>
+    /// File Mover
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IFileMover" />
     public class FileMover : IFileMover
     {
         private bool? OnMonoCached;
@@ -15,6 +19,19 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private ILogger _logger;
         private Settings settings;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileMover"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <param name="bannerDownloader">The banner downloader.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// configManager
+        /// or
+        /// logger
+        /// or
+        /// bannerDownloader
+        /// </exception>
         public FileMover(ILogger logger, IConfigurationManager configManager, IBannerDownloader bannerDownloader)
         {
             if (configManager == null)
@@ -27,6 +44,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             _bannerDownloader = bannerDownloader ?? throw new ArgumentNullException(nameof(bannerDownloader));
         }
 
+        /// <summary>
+        /// Create the folder structure and downloads banners if configured
+        /// </summary>
+        /// <param name="episode">The file to move</param>
+        /// <param name="mapping">The mapping of the file to TVDB</param>
+        /// <param name="downloadBanner">Whether to download a banner</param>
+        /// <returns></returns>
         public async Task<MatchedFile> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner)
         {
             _logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - Start");
@@ -91,6 +115,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return episode;
         }
 
+        /// <summary>
+        /// Moves a file to the destination file path. If configured will also rename the file.
+        /// </summary>
+        /// <param name="episode">The file to move</param>
+        /// <param name="ct">The cancellationtoken.</param>
+        /// <returns></returns>
         public async Task<bool> MoveFileAsync(MatchedFile episode, CancellationToken ct)
         {
             _logger.TraceMessage("MoveFileAsync - Start");
@@ -109,6 +139,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return true;
         }
 
+        /// <summary>
+        /// Determines if the move is a Quick operation.
+        /// </summary>
+        /// <param name="fromFile">From file.</param>
+        /// <param name="toFile">To file.</param>
+        /// <returns></returns>
         private bool QuickOperation(FileInfo fromFile, FileInfo toFile)
         {
             _logger.TraceMessage("QuickOperation - Start");
@@ -121,16 +157,32 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return (settings.RenameFiles && !settings.CopyFiles && (fromFile.Directory.Root.FullName.ToLower() == toFile.Directory.Root.FullName.ToLower())); // same device ... TODO: UNC paths?
         }
 
+        /// <summary>
+        /// Creates a temporary file name.
+        /// </summary>
+        /// <param name="f">The f.</param>
+        /// <returns></returns>
         private string TempFileName(FileInfo f)
         {
             return f.FullName + ".simplerenametemp";
         }
 
+        /// <summary>
+        /// Checks if file is the same
+        /// </summary>
+        /// <param name="a">File a.</param>
+        /// <param name="b">File b.</param>
+        /// <returns></returns>
         private bool FileIsSame(FileInfo a, FileInfo b)
         {
             return String.Compare(a.FullName, b.FullName, true) == 0; // true->ignore case
         }
 
+        /// <summary>
+        /// Keeps the timestamps.
+        /// </summary>
+        /// <param name="from">From.</param>
+        /// <param name="to">To.</param>
         private void KeepTimestamps(FileInfo from, FileInfo to)
         {
             to.CreationTime = from.CreationTime;
@@ -141,6 +193,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             to.LastWriteTimeUtc = from.LastWriteTimeUtc;
         }
 
+        /// <summary>
+        /// Oses the move rename.
+        /// </summary>
+        /// <param name="fromFile">From file.</param>
+        /// <param name="toFile">To file.</param>
         private void OSMoveRename(FileInfo fromFile, FileInfo toFile)
         {
             _logger.TraceMessage("OSMoveRename - Start");
@@ -159,6 +216,10 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             _logger.TraceMessage("OSMoveRename - End");
         }
 
+        /// <summary>
+        /// Called when [mono].
+        /// </summary>
+        /// <returns></returns>
         private bool OnMono()
         {
             if (!OnMonoCached.HasValue)
@@ -168,11 +229,22 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return OnMonoCached.Value;
         }
 
+        /// <summary>
+        /// Called when [windows].
+        /// </summary>
+        /// <returns></returns>
         private static bool OnWindows()
         {
             return Environment.OSVersion.Platform == PlatformID.Win32NT;
         }
 
+        /// <summary>
+        /// Copies it ourself.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
+        /// <param name="fromFile">From file.</param>
+        /// <param name="toFile">To file.</param>
+        /// <param name="ct">The ct.</param>
         private void CopyItOurself(Settings settings, FileInfo fromFile, FileInfo toFile, CancellationToken ct)
         {
             _logger.TraceMessage("CopyItOurself - Start");
@@ -305,6 +377,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             _logger.TraceMessage("CopyItOurself - End");
         }
 
+        /// <summary>
+        /// Nicelies the stop and clean up win32.
+        /// </summary>
+        /// <param name="copier">The copier.</param>
+        /// <param name="toFile">To file.</param>
         private void NicelyStopAndCleanUp_Win32(WinFileIO copier, FileInfo toFile)
         {
             copier.Close();
@@ -315,6 +392,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
         }
 
+        /// <summary>
+        /// Nicelies the stop and clean up streams.
+        /// </summary>
+        /// <param name="msr">The MSR.</param>
+        /// <param name="msw">The MSW.</param>
+        /// <param name="toFile">To file.</param>
         private void NicelyStopAndCleanUp_Streams(BinaryReader msr, BinaryWriter msw, FileInfo toFile)
         {
             if (msw != null)

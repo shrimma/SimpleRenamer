@@ -9,14 +9,31 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.Core
 {
+    /// <summary>
+    /// File Watcher
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IFileWatcher" />
     public class FileWatcher : IFileWatcher
     {
         private ILogger _logger;
         private IConfigurationManager _configurationManager;
         private Settings settings;
         private IgnoreList ignoreList;
+        /// <summary>
+        /// Fired whenever some noticeable progress is made
+        /// </summary>
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileWatcher"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// logger
+        /// or
+        /// configManager
+        /// </exception>
         public FileWatcher(ILogger logger, IConfigurationManager configManager)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -24,6 +41,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             settings = _configurationManager.Settings;
         }
 
+        /// <summary>
+        /// Searches the configured folders for any video files
+        /// </summary>
+        /// <param name="ct">Cancellation Token</param>
+        /// <returns>
+        /// A list of file paths of video files
+        /// </returns>
         public async Task<List<string>> SearchTheseFoldersAsync(CancellationToken ct)
         {
             _logger.TraceMessage("SearchTheseFoldersAsync - Start");
@@ -60,7 +84,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// Searches a given folder for all video files
         /// </summary>
         /// <param name="dir">The folder to search</param>
-        /// <param name="settings">Our current settings</param>
+        /// <param name="ct">The ct.</param>
         /// <returns></returns>
         private List<string> SearchThisFolder(string dir, CancellationToken ct)
         {
@@ -84,8 +108,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// Returns true if the input extension is one of our valid extensions
         /// </summary>
         /// <param name="input">The input extension</param>
-        /// <param name="settings">Our current settings</param>
-        /// <returns></returns>
+        /// <returns>
+        ///   <c>true</c> if [is valid extension] [the specified input]; otherwise, <c>false</c>.
+        /// </returns>
         private bool IsValidExtension(string input)
         {
             _logger.TraceMessage("SearchThisFolderIsValidExtension - Start");

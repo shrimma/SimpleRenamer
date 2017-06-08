@@ -10,12 +10,29 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.Core
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IFileMatcher" />
     public class FileMatcher : IFileMatcher
     {
         private RegexFile regexExpressions;
         private ILogger _logger;
+        /// <summary>
+        /// Fired whenever some noticeable progress is made
+        /// </summary>
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileMatcher"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// configManager
+        /// or
+        /// logger
+        /// </exception>
         public FileMatcher(ILogger logger, IConfigurationManager configManager)
         {
             if (configManager == null)
@@ -26,6 +43,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             regexExpressions = configManager.RegexExpressions;
         }
 
+        /// <summary>
+        /// Processes a list of files trying to match the filenames against the regular expressions
+        /// </summary>
+        /// <param name="files">The files.</param>
+        /// <param name="ct">The cancellationtoken.</param>
+        /// <returns></returns>
         public async Task<List<MatchedFile>> SearchFilesAsync(List<string> files, CancellationToken ct)
         {
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Parsing file names for show or movie details"));
@@ -62,6 +85,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return episodes;
         }
 
+        /// <summary>
+        /// Searches the file name asynchronous.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="ct">The ct.</param>
+        /// <returns></returns>
         private async Task<MatchedFile> SearchFileNameAsync(string fileName, CancellationToken ct)
         {
             _logger.TraceMessage("SearchFileNameAsync - Start");
@@ -124,6 +153,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return null;
         }
 
+        /// <summary>
+        /// Gets the name of the true show.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
         private string GetTrueShowName(string input)
         {
             _logger.TraceMessage("GetTrueShowName - Start");
@@ -147,6 +181,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return output.Trim();
         }
 
+        /// <summary>
+        /// Determines whether [is joining word] [the specified input].
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns>
+        ///   <c>true</c> if [is joining word] [the specified input]; otherwise, <c>false</c>.
+        /// </returns>
         private bool IsJoiningWord(string input)
         {
             _logger.TraceMessage("IsJoiningWord - Start");
@@ -166,6 +207,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             get { return joiningWords.Split(','); }
         }
 
+        /// <summary>
+        /// The joining words
+        /// </summary>
         private string joiningWords = "the,of,and";
     }
 }
