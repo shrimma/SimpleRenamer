@@ -58,7 +58,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private void* pBuffer;              // Pointer to the buffer used to perform I/O.
 
         // Define the Windows system functions that are called by this class via COM Interop:
-        [System.Runtime.InteropServices.DllImport("kernel32", SetLastError = true)]
+        [System.Runtime.InteropServices.DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
         static extern unsafe System.IntPtr CreateFile
         (
              string FileName,          // file name

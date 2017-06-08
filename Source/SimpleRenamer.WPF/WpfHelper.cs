@@ -9,7 +9,7 @@ namespace Sarjee.SimpleRenamer.WPF
         public static void UpdateColumnsWidth(ListView listView)
         {
             int autoFillColumnIndex = (listView.View as GridView).Columns.Count - 1;
-            if (listView.ActualWidth == Double.NaN)
+            if (Double.IsNaN(listView.ActualWidth))
             {
                 listView.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
             }
