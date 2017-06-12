@@ -3,6 +3,7 @@ using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -57,9 +58,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             List<MatchedFile> matchedFiles = new List<MatchedFile>();
 
             //block for searching the files
-            var searchFilesAsyncBlock = new TransformBlock<string, MatchedFile>(async (file) =>
+            var searchFilesAsyncBlock = new TransformBlock<string, MatchedFile>((file) =>
             {
-                MatchedFile matchedFile = await SearchFileNameAsync(file, ct);
+                MatchedFile matchedFile = SearchFileName(file, ct);
                 if (matchedFile != null)
                 {
                     //if episode is not null then we matched so add to the output list
@@ -94,12 +95,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         }
 
         /// <summary>
-        /// Searches the file name asynchronous.
+        /// Searches the file name.
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
-        /// <param name="ct">The ct.</param>
+        /// <param name="ct">The cancellationToken.</param>
         /// <returns></returns>
-        private async Task<MatchedFile> SearchFileNameAsync(string fileName, CancellationToken ct)
+        private MatchedFile SearchFileName(string fileName, CancellationToken ct)
         {
             _logger.TraceMessage("SearchFileNameAsync - Start");
             string showname = null;
@@ -111,6 +112,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
             foreach (RegexExpression exp in regexExpressions.RegexExpressions)
             {
+                ct.ThrowIfCancellationRequested();
                 try
                 {
                     if (exp.IsEnabled)
@@ -152,12 +154,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 catch (Exception ex)
                 {
                     //we don't really care if one of the regex fails so swallow this exception
-                    _logger.TraceException(ex, $"The REGEXP {exp.Expression} failed on {fileName}");
+                    _logger.TraceException(ex, $"The RegularExpression {exp.Expression} failed on {fileName}.");
                 }
                 ct.ThrowIfCancellationRequested();
             }
 
-            _logger.TraceMessage("SearchFileNameAsync - No regex could match the file - End");
+            _logger.TraceMessage("SearchFileName - No regex could match the file - End");
             return null;
         }
 
@@ -168,7 +170,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private string GetTrueShowName(string input)
         {
-            _logger.TraceMessage("GetTrueShowName - Start");
+            _logger.TraceMessage("GetTrueShowName - Start", EventLevel.Verbose);
             string output = null;
             string[] words = input.Split('.');
             int i = 1;
@@ -185,7 +187,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 i++;
             }
 
-            _logger.TraceMessage("GetTrueShowName - End");
+            _logger.TraceMessage("GetTrueShowName - End", EventLevel.Verbose);
             return output.Trim();
         }
 
@@ -198,16 +200,16 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// </returns>
         private bool IsJoiningWord(string input)
         {
-            _logger.TraceMessage("IsJoiningWord - Start");
+            _logger.TraceMessage("IsJoiningWord - Start", EventLevel.Verbose);
             foreach (string word in JoiningWords)
             {
                 if (input.Equals(word.ToLowerInvariant()))
                 {
-                    _logger.TraceMessage("IsJoiningWord - True");
+                    _logger.TraceMessage("IsJoiningWord - True", EventLevel.Verbose);
                     return true;
                 }
             }
-            _logger.TraceMessage("IsJoiningWord - False");
+            _logger.TraceMessage("IsJoiningWord - False", EventLevel.Verbose);
             return false;
         }
         private string[] JoiningWords
