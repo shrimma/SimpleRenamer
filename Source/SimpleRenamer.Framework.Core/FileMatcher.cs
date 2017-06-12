@@ -119,14 +119,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     {
                         //if this expression is enabled then match against the filename
                         Regex regexStandard = new Regex(exp.Expression, RegexOptions.IgnoreCase);
-                        Match tvshow = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
+                        Match fileMatch = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
 
                         //match for tv show regexp
                         if (exp.IsForTvShow)
                         {
-                            showname = GetTrueShowName(tvshow.Groups["series_name"].Value);
-                            season = tvshow.Groups["season_num"].Value;
-                            episode = tvshow.Groups["ep_num"].Value;
+                            showname = SanitizeFileName(fileMatch.Groups["series_name"].Value);
+                            season = fileMatch.Groups["season_num"].Value;
+                            episode = fileMatch.Groups["ep_num"].Value;
 
                             if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
                             {
@@ -138,8 +138,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                         //else match for movie regexp
                         else
                         {
-                            movieTitle = GetTrueShowName(tvshow.Groups["movie_title"].Value);
-                            yearString = tvshow.Groups["movie_year"].Value;
+                            movieTitle = SanitizeFileName(fileMatch.Groups["movie_title"].Value);
+                            yearString = fileMatch.Groups["movie_year"].Value;
                             int.TryParse(yearString, out year);
 
                             if (!string.IsNullOrEmpty(movieTitle) && !string.IsNullOrEmpty(yearString))
@@ -164,13 +164,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         }
 
         /// <summary>
-        /// Gets the name of the true show.
+        /// Removes fullstops and correctly cases joining words
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
-        private string GetTrueShowName(string input)
+        private string SanitizeFileName(string input)
         {
-            _logger.TraceMessage("GetTrueShowName - Start", EventLevel.Verbose);
+            _logger.TraceMessage("SanitizeFileName - Start", EventLevel.Verbose);
             string output = null;
             string[] words = input.Split('.');
             int i = 1;
@@ -187,7 +187,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 i++;
             }
 
-            _logger.TraceMessage("GetTrueShowName - End", EventLevel.Verbose);
+            _logger.TraceMessage("SanitizeFileName - End", EventLevel.Verbose);
             return output.Trim();
         }
 
