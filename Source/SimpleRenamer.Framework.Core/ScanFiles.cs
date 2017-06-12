@@ -133,17 +133,17 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             ShowNameMapping originalMapping = _configurationManager.ShowNameMappings;
 
             //block for searching the files
-            var searchFilesAsyncBlock = new TransformBlock<MatchedFile, MatchedFile>(async (tempEp) =>
+            var searchFilesAsyncBlock = new TransformBlock<MatchedFile, MatchedFile>(async (file) =>
             {
                 ct.ThrowIfCancellationRequested();
-                string originalShowName = tempEp.ShowName;
+                string originalShowName = file.ShowName;
                 //scrape the episode name and incorporate this in the filename (if setting allows)
                 if (_settings.RenameFiles)
                 {
-                    tempEp = await _tvShowMatcher.ScrapeDetailsAsync(tempEp);
-                    if (!string.IsNullOrWhiteSpace(tempEp.TVDBShowId))
+                    file = await _tvShowMatcher.ScrapeDetailsAsync(file);
+                    if (!string.IsNullOrWhiteSpace(file.TVDBShowId))
                     {
-                        Mapping map = new Mapping(originalShowName, tempEp.ShowName, tempEp.TVDBShowId);
+                        Mapping map = new Mapping(originalShowName, file.ShowName, file.TVDBShowId);
                         if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                         {
                             lock (lockList)
@@ -155,33 +155,33 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 }
                 else
                 {
-                    tempEp.NewFileName = Path.GetFileNameWithoutExtension(tempEp.SourceFilePath);
+                    file.NewFileName = Path.GetFileNameWithoutExtension(file.SourceFilePath);
                 }
-                _logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.EpisodeNumber, tempEp.EpisodeName));
+                _logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3}", file.ShowName, file.Season, file.EpisodeNumber, file.EpisodeName));
                 ct.ThrowIfCancellationRequested();
 
                 //only add the file if it needs renaming/moving
-                string destinationDirectory = Path.Combine(_settings.DestinationFolderTV, tempEp.ShowName, string.Format("Season {0}", tempEp.Season));
-                string destinationFilePath = Path.Combine(destinationDirectory, tempEp.NewFileName + Path.GetExtension(tempEp.SourceFilePath));
-                if (!tempEp.SourceFilePath.Equals(destinationFilePath))
+                string destinationDirectory = Path.Combine(_settings.DestinationFolderTV, file.ShowName, string.Format("Season {0}", file.Season));
+                string destinationFilePath = Path.Combine(destinationDirectory, file.NewFileName + Path.GetExtension(file.SourceFilePath));
+                if (!file.SourceFilePath.Equals(destinationFilePath))
                 {
-                    _logger.TraceMessage(string.Format("Will move with name {0}", tempEp.NewFileName), EventLevel.Verbose);
-                    return tempEp;
+                    _logger.TraceMessage(string.Format("Will move with name {0}", file.NewFileName), EventLevel.Verbose);
+                    return file;
                 }
                 else
                 {
-                    _logger.TraceMessage(string.Format("File is already in good location {0}", tempEp.SourceFilePath), EventLevel.Verbose);
+                    _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
                     return null;
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
 
             //block for writing the outputs to a list
-            var writeOutputBlock = new ActionBlock<MatchedFile>(c =>
+            var writeOutputBlock = new ActionBlock<MatchedFile>(file =>
             {
-                if (c != null)
+                if (file != null)
                 {
                     //TODO make threadsafe
-                    scannedEpisodes.Add(c);
+                    scannedEpisodes.Add(file);
                 }
             });
 
@@ -215,34 +215,34 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             List<MatchedFile> scannedMovies = new List<MatchedFile>();
 
             //for each file
-            var searchFilesAsyncBlock = new TransformBlock<MatchedFile, MatchedFile>(async (tempMovie) =>
+            var searchFilesAsyncBlock = new TransformBlock<MatchedFile, MatchedFile>(async (file) =>
             {
                 ct.ThrowIfCancellationRequested();
 
-                tempMovie = await _movieMatcher.ScrapeDetailsAsync(tempMovie);
+                file = await _movieMatcher.ScrapeDetailsAsync(file);
 
                 //only add the file if it needs renaming/moving
-                string movieDirectory = Path.Combine(_settings.DestinationFolderMovie, $"{tempMovie.ShowName} ({tempMovie.Season})");
-                string destinationFilePath = Path.Combine(movieDirectory, tempMovie.ShowName + Path.GetExtension(tempMovie.SourceFilePath));
-                if (!tempMovie.SourceFilePath.Equals(destinationFilePath))
+                string movieDirectory = Path.Combine(_settings.DestinationFolderMovie, $"{file.ShowName} ({file.Season})");
+                string destinationFilePath = Path.Combine(movieDirectory, file.ShowName + Path.GetExtension(file.SourceFilePath));
+                if (!file.SourceFilePath.Equals(destinationFilePath))
                 {
-                    _logger.TraceMessage(string.Format("Will move with name {0}", tempMovie.NewFileName), EventLevel.Verbose);
-                    return tempMovie;
+                    _logger.TraceMessage(string.Format("Will move with name {0}", file.NewFileName), EventLevel.Verbose);
+                    return file;
                 }
                 else
                 {
-                    _logger.TraceMessage(string.Format("File is already in good location {0}", tempMovie.SourceFilePath), EventLevel.Verbose);
+                    _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
                     return null;
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
 
             //block for writing the outputs to a list
-            var writeOutputBlock = new ActionBlock<MatchedFile>(c =>
+            var writeOutputBlock = new ActionBlock<MatchedFile>(file =>
             {
-                if (c != null)
+                if (file != null)
                 {
                     //TODO make threadsafe
-                    scannedMovies.Add(c);
+                    scannedMovies.Add(file);
                 }
             });
 
