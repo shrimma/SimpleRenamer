@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using RestSharp;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
@@ -18,6 +19,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         private IRetryHelper _retryHelper;
         private string posterBaseUri;
         private RestClient _restClient;
+        private JsonSerializerSettings _jsonSerializerSettings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TmdbManager"/> class.
@@ -40,6 +42,14 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             _retryHelper = retryHelper ?? throw new ArgumentNullException(nameof(retryHelper));
             _restClient = new RestClient("https://api.themoviedb.org");
             _restClient.AddDefaultHeader("content-type", "application/json");
+            _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
+        }
+
+        public void HandleDeserializationError(object sender, ErrorEventArgs errorArgs)
+        {
+            //TODO log the error
+            //errorArgs.ErrorContext.Error.Message;
+            errorArgs.ErrorContext.Handled = true;
         }
 
         /// <summary>
@@ -67,7 +77,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                return JsonConvert.DeserializeObject<SearchContainer<SearchMovie>>(response.Content);
+                return JsonConvert.DeserializeObject<SearchContainer<SearchMovie>>(response.Content, _jsonSerializerSettings);
             }
             else
             {
@@ -89,7 +99,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                movie = JsonConvert.DeserializeObject<Common.Movie.Model.Movie>(response.Content);
+                movie = JsonConvert.DeserializeObject<Common.Movie.Model.Movie>(response.Content, _jsonSerializerSettings);
             }
             else
             {
@@ -101,7 +111,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                movie.Credits = JsonConvert.DeserializeObject<Credits>(response.Content);
+                movie.Credits = JsonConvert.DeserializeObject<Credits>(response.Content, _jsonSerializerSettings);
             }
 
             return movie;
@@ -121,7 +131,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                return JsonConvert.DeserializeObject<SearchMovie>(response.Content);
+                return JsonConvert.DeserializeObject<SearchMovie>(response.Content, _jsonSerializerSettings);
             }
             else
             {
@@ -146,7 +156,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    TMDbConfig tmdbConfig = JsonConvert.DeserializeObject<TMDbConfig>(response.Content);
+                    TMDbConfig tmdbConfig = JsonConvert.DeserializeObject<TMDbConfig>(response.Content, _jsonSerializerSettings);
                     posterBaseUri = tmdbConfig.Images.BaseUrl;
                 }
                 else

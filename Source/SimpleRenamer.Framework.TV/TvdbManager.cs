@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using RestSharp;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
@@ -19,6 +20,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private string jwtToken;
         private IRetryHelper _retryHelper;
         private RestClient _restClient;
+        private JsonSerializerSettings _jsonSerializerSettings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TvdbManager"/> class.
@@ -42,6 +44,14 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             _retryHelper = retryHelper ?? throw new ArgumentNullException(nameof(retryHelper));
             _restClient = new RestClient("https://api.thetvdb.com");
             _restClient.AddDefaultHeader("content-type", "application/json");
+            _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
+        }
+
+        public void HandleDeserializationError(object sender, ErrorEventArgs errorArgs)
+        {
+            //TODO log the error
+            //errorArgs.ErrorContext.Error.Message;
+            errorArgs.ErrorContext.Handled = true;
         }
 
         /// <summary>
@@ -62,7 +72,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                Token token = JsonConvert.DeserializeObject<Token>(response.Content);
+                Token token = JsonConvert.DeserializeObject<Token>(response.Content, _jsonSerializerSettings);
                 jwtToken = token._Token;
             }
             else
@@ -245,7 +255,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                SeriesData series = JsonConvert.DeserializeObject<SeriesData>(response.Content);
+                SeriesData series = JsonConvert.DeserializeObject<SeriesData>(response.Content, _jsonSerializerSettings);
                 return series;
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -268,7 +278,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                SeriesActors actors = JsonConvert.DeserializeObject<SeriesActors>(response.Content);
+                SeriesActors actors = JsonConvert.DeserializeObject<SeriesActors>(response.Content, _jsonSerializerSettings);
                 return actors;
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -291,8 +301,15 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                SeriesEpisodes episodes = JsonConvert.DeserializeObject<SeriesEpisodes>(response.Content);
-                return episodes;
+                try
+                {
+                    SeriesEpisodes episodes = JsonConvert.DeserializeObject<SeriesEpisodes>(response.Content, _jsonSerializerSettings);
+                    return episodes;
+                }
+                catch (Exception ex)
+                {
+                    string ok = ex.Message;
+                }
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
@@ -315,7 +332,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
+                SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content, _jsonSerializerSettings);
                 return posters;
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -344,7 +361,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
+                SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content, _jsonSerializerSettings);
                 return posters;
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -373,7 +390,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content);
+                SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content, _jsonSerializerSettings);
                 return posters;
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -406,7 +423,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                SearchData data = JsonConvert.DeserializeObject<SearchData>(response.Content);
+                SearchData data = JsonConvert.DeserializeObject<SearchData>(response.Content, _jsonSerializerSettings);
                 return data.Series;
             }
             else
