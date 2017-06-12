@@ -104,9 +104,7 @@ namespace Sarjee.SimpleRenamer.Logging
         {
             //lets always trace messages
             System.Diagnostics.Trace.WriteLine("message: " + message);
-            System.Diagnostics.Trace.WriteLine("member name: " + memberName);
-            System.Diagnostics.Trace.WriteLine("source file path: " + sourceFilePath);
-            System.Diagnostics.Trace.WriteLine("source line number: " + sourceLineNumber);
+            System.Diagnostics.Trace.WriteLine(string.Format("member name: {0}, source file path: {1}, source line number: {2}.", memberName, sourceFilePath, sourceLineNumber.ToString()));
 
             switch (logType)
             {
@@ -142,18 +140,16 @@ namespace Sarjee.SimpleRenamer.Logging
         {
             //lets always trace messages
             System.Diagnostics.Trace.WriteLine("message: " + message);
-            System.Diagnostics.Trace.WriteLine("member name: " + memberName);
-            System.Diagnostics.Trace.WriteLine("source file path: " + sourceFilePath);
-            System.Diagnostics.Trace.WriteLine("source line number: " + sourceLineNumber);
-            System.Diagnostics.Trace.WriteLine("exception: " + ex.ToString());
-            System.Diagnostics.Trace.WriteLine("exception message: " + ex.Message);
+            System.Diagnostics.Trace.WriteLine(string.Format("member name: {0}, source file path: {1}, source line number: {2}.", memberName, sourceFilePath, sourceLineNumber.ToString()));
+            System.Diagnostics.Trace.WriteLine(string.Format("exceptiontype: {0}, message: {1}.", ex.GetType().ToString(), ex.Message));
+
             if (ex.InnerException != null)
             {
-                System.Diagnostics.Trace.WriteLine("inner exception message: " + ex.InnerException.Message);
+                System.Diagnostics.Trace.WriteLine(string.Format("inner exception type: {0}, message: {1}", ex.InnerException.GetType().ToString(), ex.InnerException.Message));
             }
 
-            string innerEx = ex.InnerException == null ? "" : $", InnerException: {ex.InnerException.Message}";
-            string logthis = string.Format("Message: {0}, Caller Member: {1}, Source File Path: {2}, Source Line Number: {3}, Exception: {4}, Message: {5}{6}", message, memberName, sourceFilePath, sourceLineNumber.ToString(), ex.ToString(), ex.Message, innerEx);
+            string innerEx = ex.InnerException == null ? "" : $", InnerException type: {ex.InnerException.GetType().ToString()}, message: {ex.InnerException.Message}";
+            string logthis = string.Format("Message: {0}, Caller Member: {1}, Source File Path: {2}, Source Line Number: {3}, Exception: {4}, Message: {5}{6}", message, memberName, sourceFilePath, sourceLineNumber.ToString(), ex.GetType().ToString(), ex.Message, innerEx);
             log.Fatal(logthis, ex);
         }
     }
