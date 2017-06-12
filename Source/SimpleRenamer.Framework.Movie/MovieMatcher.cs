@@ -5,26 +5,48 @@ using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Framework.Movie
 {
+    /// <summary>
+    /// Movie Matcher
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Movie.Interface.IMovieMatcher" />
     public class MovieMatcher : IMovieMatcher
     {
         private ILogger _logger;
         private ITmdbManager _tmdbManager;
+        private IHelper _helper;
+        /// <summary>
+        /// Fired whenever some noticeable progress is made
+        /// </summary>
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public MovieMatcher(ILogger logger, ITmdbManager tmdbManager)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MovieMatcher"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="tmdbManager">The TMDB manager.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// logger
+        /// or
+        /// tmdbManager
+        /// </exception>
+        public MovieMatcher(ILogger logger, ITmdbManager tmdbManager, IHelper helper)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _tmdbManager = tmdbManager ?? throw new ArgumentNullException(nameof(tmdbManager));
+            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
         }
 
+        /// <summary>
+        /// Gets the possible movies for file.
+        /// </summary>
+        /// <param name="movieName">Name of the movie.</param>
+        /// <returns></returns>
         public async Task<List<DetailView>> GetPossibleMoviesForFile(string movieName)
         {
             List<DetailView> movies = new List<DetailView>();
@@ -56,6 +78,11 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             return movies;
         }
 
+        /// <summary>
+        /// Scrapes the details asynchronous.
+        /// </summary>
+        /// <param name="movie">The movie.</param>
+        /// <returns></returns>
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie)
         {
             _logger.TraceMessage("ScrapeDetailsAsync - Start");
@@ -74,12 +101,18 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 //if theres only one match then scape the specific show
                 movie.TMDBShowId = results.Results[0].Id;
                 movie.ShowImage = results.Results[0].PosterPath;
-                movie.NewFileName = RemoveSpecialCharacters(movie.ShowName);
+                movie.NewFileName = _helper.RemoveSpecialCharacters(movie.ShowName);
             }
             _logger.TraceMessage("ScrapeDetailsAsync - End");
             return movie;
         }
 
+        /// <summary>
+        /// Updates the file with matched movie.
+        /// </summary>
+        /// <param name="movieId">The movie identifier.</param>
+        /// <param name="matchedFile">The matched file.</param>
+        /// <returns></returns>
         public async Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile)
         {
             return await Task.Run(async () =>
@@ -96,7 +129,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                     matchedFile.Year = searchedMovie.ReleaseDate.HasValue ? searchedMovie.ReleaseDate.Value.Year : 0;
                     matchedFile.ShowImage = searchedMovie.PosterPath;
                     matchedFile.FileType = FileType.Movie;
-                    matchedFile.NewFileName = RemoveSpecialCharacters(searchedMovie.Title);
+                    matchedFile.NewFileName = _helper.RemoveSpecialCharacters(searchedMovie.Title);
                 }
                 else
                 {
@@ -109,15 +142,12 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             });
         }
 
-        private string RemoveSpecialCharacters(string input)
-        {
-            _logger.TraceMessage("RemoveSpecialCharacters - Start");
-            string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
-            Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
-            _logger.TraceMessage("RemoveSpecialCharacters - End");
-            return r.Replace(input, "");
-        }
-
+        /// <summary>
+        /// Gets the movie with banner.
+        /// </summary>
+        /// <param name="movieId">The movie identifier.</param>
+        /// <param name="ct">The ct.</param>
+        /// <returns></returns>
         public async Task<(Common.Movie.Model.Movie movie, BitmapImage banner)> GetMovieWithBanner(string movieId, CancellationToken ct)
         {
             _logger.TraceMessage("GetMovieInfo - Start");

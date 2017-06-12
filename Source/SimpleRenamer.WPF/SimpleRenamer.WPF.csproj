@@ -104,6 +104,7 @@
     <Compile Include="Views\ShowDetailsWindow.xaml.cs">
       <DependentUpon>ShowDetailsWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="WpfHelper.cs" />
     <Page Include="Views\AddExtensionsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

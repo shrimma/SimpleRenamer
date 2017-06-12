@@ -10,6 +10,10 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.Core
 {
+    /// <summary>
+    /// Action Matched Files
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IActionMatchedFiles" />
     public class ActionMatchedFiles : IActionMatchedFiles
     {
         private ILogger _logger;
@@ -17,10 +21,35 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private IFileMover _fileMover;
         private IConfigurationManager _configurationManager;
         private Settings settings;
+        /// <summary>
+        /// Fired whenever a preprocessor action is completed on a file
+        /// </summary>
         public event EventHandler<FilePreProcessedEventArgs> RaiseFilePreProcessedEvent;
+        /// <summary>
+        /// Fired whenever a file is moved
+        /// </summary>
         public event EventHandler<FileMovedEventArgs> RaiseFileMovedEvent;
+        /// <summary>
+        /// Fired whenever some noticeable progress is made
+        /// </summary>
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ActionMatchedFiles"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="backgroundQueue">The background queue.</param>
+        /// <param name="fileMover">The file mover.</param>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// logger
+        /// or
+        /// backgroundQueue
+        /// or
+        /// fileMover
+        /// or
+        /// configManager
+        /// </exception>
         public ActionMatchedFiles(ILogger logger, IBackgroundQueue backgroundQueue, IFileMover fileMover, IConfigurationManager configManager)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -30,6 +59,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             settings = _configurationManager.Settings;
         }
 
+        /// <summary>
+        /// Performs preprocessor actions and then moves a list of scanned and matched episodes
+        /// </summary>
+        /// <param name="scannedEpisodes">The episodes to action</param>
+        /// <param name="ct">CancellationToken</param>
+        /// <returns></returns>
         public async Task<bool> Action(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
             return await Task.Run(async () =>
@@ -62,6 +97,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             });
         }
 
+        /// <summary>
+        /// Pres the process tv shows.
+        /// </summary>
+        /// <param name="scannedEpisodes">The scanned episodes.</param>
+        /// <param name="ct">The ct.</param>
+        /// <returns></returns>
         private async Task<List<MatchedFile>> PreProcessTVShows(List<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
             List<(string show, string season)> uniqueShowSeasons = new List<(string show, string season)>();
@@ -133,6 +174,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return ProcessFiles;
         }
 
+        /// <summary>
+        /// Pres the process movies.
+        /// </summary>
+        /// <param name="scannedMovies">The scanned movies.</param>
+        /// <param name="ct">The ct.</param>
+        /// <returns></returns>
         private async Task<List<MatchedFile>> PreProcessMovies(List<MatchedFile> scannedMovies, CancellationToken ct)
         {
             List<MatchedFile> ProcessFiles = new List<MatchedFile>();
@@ -172,6 +219,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return ProcessFiles;
         }
 
+        /// <summary>
+        /// Moves the files.
+        /// </summary>
+        /// <param name="filesToMove">The files to move.</param>
+        /// <param name="ct">The ct.</param>
+        /// <returns></returns>
         private async Task<bool> MoveFiles(List<MatchedFile> filesToMove, CancellationToken ct)
         {
             //actually move/copy the files one at a time

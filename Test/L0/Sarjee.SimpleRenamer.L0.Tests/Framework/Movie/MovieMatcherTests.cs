@@ -15,17 +15,19 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
         private Mock<ILogger> mockLogger;
         private Mock<ITmdbManager> mockTmdbManager;
+        private Mock<IHelper> mockHelper;
 
         [TestInitialize]
         public void TestInitialize()
         {
             mockLogger = mockRepository.Create<ILogger>();
             mockTmdbManager = mockRepository.Create<ITmdbManager>();
+            mockHelper = mockRepository.Create<IHelper>();
         }
 
         private IMovieMatcher GetMovieMatcher()
         {
-            IMovieMatcher movieMatcher = new MovieMatcher(mockLogger.Object, mockTmdbManager.Object);
+            IMovieMatcher movieMatcher = new MovieMatcher(mockLogger.Object, mockTmdbManager.Object, mockHelper.Object);
             movieMatcher.Should().NotBeNull();
             return movieMatcher;
         }
@@ -35,11 +37,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void MovieMatcherCtor_NullArguments_ThrowsArgumentNullException()
         {
-            Action action1 = () => new MovieMatcher(null, null);
-            Action action2 = () => new MovieMatcher(mockLogger.Object, null);
+            Action action1 = () => new MovieMatcher(null, null, null);
+            Action action2 = () => new MovieMatcher(mockLogger.Object, null, null);
+            Action action3 = () => new MovieMatcher(mockLogger.Object, mockTmdbManager.Object, null);
 
             action1.ShouldThrow<ArgumentNullException>();
             action2.ShouldThrow<ArgumentNullException>();
+            action3.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]

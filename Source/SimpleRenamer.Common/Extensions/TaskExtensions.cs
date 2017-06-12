@@ -6,8 +6,17 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common.Extensions
 {
+    /// <summary>
+    /// TaskExtensions
+    /// </summary>
     public static class TaskExtensions
     {
+        /// <summary>
+        /// Ins the completion order.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
         public static IEnumerable<Task<T>> InCompletionOrder<T>(this IEnumerable<Task<T>> source)
         {
             var inputs = source.ToList();
@@ -29,6 +38,10 @@ namespace Sarjee.SimpleRenamer.Common.Extensions
         /// Propagates the status of the given task (which must be completed) to a task completion source
         /// (which should not be).
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="completedTask">The completed task.</param>
+        /// <param name="completionSource">The completion source.</param>
+        /// <exception cref="System.ArgumentException">Task was not completed</exception>
         private static void PropagateResult<T>(Task<T> completedTask,
             TaskCompletionSource<T> completionSource)
         {

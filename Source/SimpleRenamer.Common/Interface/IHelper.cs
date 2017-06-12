@@ -22,5 +22,12 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <param name="listTwo">The list two.</param>
         /// <returns></returns>
         bool AreListsEqual<T>(List<T> listOne, List<T> listTwo);
+
+        /// <summary>
+        /// Removes any special characters.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        string RemoveSpecialCharacters(string input);
     }
 }

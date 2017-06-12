@@ -7,17 +7,14 @@ using System.Reflection;
 
 namespace Sarjee.SimpleRenamer.DependencyInjection
 {
-    public class DependencyInjectionContext : IDependencyInjectionContext
+    /// <summary>
+    /// Dependency Injection Context
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IDependencyInjectionContext" />
+    /// <seealso cref="System.IDisposable" />
+    public class DependencyInjectionContext : IDependencyInjectionContext, IDisposable
     {
         private IKernel _kernel;
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-
-            GC.SuppressFinalize(this);
-        }
 
         /// <summary>
         /// Starts the process of setting up dependency injection
@@ -30,12 +27,27 @@ namespace Sarjee.SimpleRenamer.DependencyInjection
             _kernel.Bind<IDependencyInjectionContext>().ToConstant<DependencyInjectionContext>(this);
         }
 
+        /// <summary>
+        /// Gets the service object of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of service</typeparam>
+        /// <returns>
+        /// The service if it exists
+        /// </returns>
         /// <inheritdoc />
         public T GetService<T>()
         {
             return _kernel.Get<T>();
         }
 
+        /// <summary>
+        /// Gets the service object of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of service</typeparam>
+        /// <param name="constructorArguments">List of key value pair for any constructor arguments - Key is argument name and value is argument value</param>
+        /// <returns>
+        /// The service if it exists
+        /// </returns>
         /// <inheritdoc />
         public T GetService<T>(List<KeyValuePair<string, object>> constructorArguments)
         {
@@ -48,11 +60,21 @@ namespace Sarjee.SimpleRenamer.DependencyInjection
             return _kernel.Get<T>(arguments.ToArray());
         }
 
+        /// <summary>
+        /// Bind a context to a constant
+        /// </summary>
+        /// <typeparam name="T">Type to bind to</typeparam>
+        /// <param name="context">Context to use for the constant binding</param>
         public void BindConstant<T>(T context)
         {
             _kernel.Bind<T>().ToConstant(context);
         }
 
+        /// <summary>
+        /// Releases the service object
+        /// </summary>
+        /// <param name="serviceToRelease">The service to release</param>
+        /// <exception cref="System.ArgumentNullException">serviceToRelease</exception>
         /// <inheritdoc />
         public void ReleaseService(object serviceToRelease)
         {
@@ -64,18 +86,33 @@ namespace Sarjee.SimpleRenamer.DependencyInjection
             _kernel.Release(serviceToRelease);
         }
 
-        /// <inheritdoc />
-        protected void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (_kernel != null)
-                {
-                    _kernel.Dispose();
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
 
-                    _kernel = null;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    if (_kernel != null)
+                    {
+                        _kernel.Dispose();
+                        _kernel = null;
+                    }
                 }
+
+                disposedValue = true;
             }
         }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion        
     }
 }

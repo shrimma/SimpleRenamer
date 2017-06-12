@@ -1,6 +1,7 @@
 ﻿using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Model;
+using Sarjee.SimpleRenamer.WPF;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -55,24 +56,12 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            UpdateColumnsWidth(sender as ListView);
+            WpfHelper.UpdateColumnsWidth(sender as ListView);
         }
 
         private void ListView_Loaded(object sender, RoutedEventArgs e)
         {
-            UpdateColumnsWidth(sender as ListView);
-        }
-
-        private void UpdateColumnsWidth(ListView listView)
-        {
-            int autoFillColumnIndex = (listView.View as GridView).Columns.Count - 1;
-            if (listView.ActualWidth == Double.NaN)
-                listView.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
-            double remainingSpace = listView.ActualWidth;
-            for (int i = 0; i < (listView.View as GridView).Columns.Count; i++)
-                if (i != autoFillColumnIndex)
-                    remainingSpace -= (listView.View as GridView).Columns[i].ActualWidth;
-            (listView.View as GridView).Columns[autoFillColumnIndex].Width = remainingSpace >= 0 ? remainingSpace : 0;
+            WpfHelper.UpdateColumnsWidth(sender as ListView);
         }
 
         public async Task GetSeriesInfo(string showId)

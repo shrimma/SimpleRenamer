@@ -6,34 +6,54 @@ using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Framework.TV
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.TV.Interface.ITVShowMatcher" />
     public class TVShowMatcher : ITVShowMatcher
     {
         private ILogger _logger;
         private IConfigurationManager _configurationManager;
         private Settings settings;
         private ITvdbManager _tvdbManager;
+        private IHelper _helper;
+        /// <summary>
+        /// Fired whenever some noticeable progress is made
+        /// </summary>
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
-        public TVShowMatcher(ILogger logger, IConfigurationManager configManager, ITvdbManager tvdbManager)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TVShowMatcher"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <param name="tvdbManager">The TVDB manager.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// logger
+        /// or
+        /// configManager
+        /// or
+        /// tvdbManager
+        /// </exception>
+        public TVShowMatcher(ILogger logger, IConfigurationManager configManager, ITvdbManager tvdbManager, IHelper helper)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
             _tvdbManager = tvdbManager ?? throw new ArgumentNullException(nameof(tvdbManager));
             settings = _configurationManager.Settings;
+            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
         }
 
         /// <summary>
         /// Scrape the TVDB and use the results for a better file name
         /// </summary>
-        /// <param name="episode"></param>
+        /// <param name="episode">Episode to scrape</param>
         /// <returns></returns>
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile episode)
         {
@@ -62,7 +82,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <summary>
         /// If user has selected a specific show in the past then lets find and automatically use this
         /// </summary>
-        /// <param name="episode"></param>
+        /// <param name="episode">The episode.</param>
         /// <returns></returns>
         private MatchedFile FixMismatchTitles(MatchedFile episode)
         {
@@ -118,6 +138,13 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             return episode;
         }
 
+        /// <summary>
+        /// Scrapes the specific show.
+        /// </summary>
+        /// <param name="episode">The episode.</param>
+        /// <param name="seriesId">The series identifier.</param>
+        /// <param name="newMatch">if set to <c>true</c> [new match].</param>
+        /// <returns></returns>
         private async Task<MatchedFile> ScrapeSpecificShow(MatchedFile episode, string seriesId, bool newMatch)
         {
             _logger.TraceMessage("ScrapeSpecificShow - Start");
@@ -142,6 +169,13 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             return episode;
         }
 
+        /// <summary>
+        /// Gets a list of possible series that a TVEpisode name could relate to
+        /// </summary>
+        /// <param name="showName">The showname to be searched</param>
+        /// <returns>
+        /// A list of series
+        /// </returns>
         public async Task<List<DetailView>> GetPossibleShowsForEpisode(string showName)
         {
             return await Task.Run(async () =>
@@ -185,6 +219,14 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             });
         }
 
+        /// <summary>
+        /// Updates a TV episode with the details of a selected series
+        /// </summary>
+        /// <param name="selectedSeriesId">The TVDB show id selected</param>
+        /// <param name="episode">Episode to be updated</param>
+        /// <returns>
+        /// The updated TV episode
+        /// </returns>
         public async Task<MatchedFile> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, MatchedFile episode)
         {
             return await Task.Run(async () =>
@@ -225,7 +267,6 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// Generate the new file name based on the details we have scraped
         /// </summary>
         /// <param name="episode">The episode to rename</param>
-        /// <param name="settings">Our current settings</param>
         /// <returns></returns>
         private MatchedFile GenerateFileName(MatchedFile episode)
         {
@@ -248,22 +289,17 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {
                 temp = temp.Replace("{EpisodeName}", string.IsNullOrEmpty(episode.EpisodeName) ? "" : episode.EpisodeName);
             }
-            episode.NewFileName = RemoveSpecialCharacters(temp);
+            episode.NewFileName = _helper.RemoveSpecialCharacters(temp);
 
             _logger.TraceMessage("GenerateFileName - End");
             return episode;
         }
 
-        //TODO move this to common lib
-        private string RemoveSpecialCharacters(string input)
-        {
-            _logger.TraceMessage("RemoveSpecialCharacters - Start");
-            string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
-            Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
-            _logger.TraceMessage("RemoveSpecialCharacters - End");
-            return r.Replace(input, "");
-        }
-
+        /// <summary>
+        /// Gets the show with banner asynchronous.
+        /// </summary>
+        /// <param name="showId">The show identifier.</param>
+        /// <returns></returns>
         public async Task<(CompleteSeries series, BitmapImage banner)> GetShowWithBannerAsync(string showId)
         {
             _logger.TraceMessage("GetSeriesInfo - Start");

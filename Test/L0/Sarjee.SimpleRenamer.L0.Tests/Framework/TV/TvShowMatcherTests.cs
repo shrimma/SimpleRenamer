@@ -15,6 +15,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         private Mock<ILogger> mockLogger;
         private Mock<IConfigurationManager> mockConfigurationManager;
         private Mock<ITvdbManager> mockTvdbManager;
+        private Mock<IHelper> mockHelper;
 
         [TestInitialize]
         public void TestInitialize()
@@ -22,11 +23,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             mockLogger = mockRepository.Create<ILogger>();
             mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
             mockTvdbManager = mockRepository.Create<ITvdbManager>();
+            mockHelper = mockRepository.Create<IHelper>();
         }
 
         private ITVShowMatcher GetTVShowMatcher()
         {
-            ITVShowMatcher tvShowMatcher = new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object);
+            ITVShowMatcher tvShowMatcher = new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, mockHelper.Object);
             tvShowMatcher.Should().NotBeNull();
             return tvShowMatcher;
         }
@@ -36,13 +38,15 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         [TestCategory(TestCategories.TV)]
         public void TVShowMatcherCtor_NullArguments_ThrowsArgumentNullException()
         {
-            Action action1 = () => new TVShowMatcher(null, null, null);
-            Action action2 = () => new TVShowMatcher(mockLogger.Object, null, null);
-            Action action3 = () => new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, null);
+            Action action1 = () => new TVShowMatcher(null, null, null, null);
+            Action action2 = () => new TVShowMatcher(mockLogger.Object, null, null, null);
+            Action action3 = () => new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, null, null);
+            Action action4 = () => new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, null);
 
             action1.ShouldThrow<ArgumentNullException>();
             action2.ShouldThrow<ArgumentNullException>();
             action3.ShouldThrow<ArgumentNullException>();
+            action4.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]

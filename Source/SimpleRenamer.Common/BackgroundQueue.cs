@@ -5,10 +5,19 @@ using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common
 {
+    /// <summary>
+    /// BackgroundQueue
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IBackgroundQueue" />
     public class BackgroundQueue : IBackgroundQueue
     {
         private Task previousTask = Task.FromResult(true);
         private object key = new object();
+        /// <summary>
+        /// Queue Task
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
         public Task QueueTask(Action action)
         {
             lock (key)
@@ -21,6 +30,12 @@ namespace Sarjee.SimpleRenamer.Common
             }
         }
 
+        /// <summary>
+        /// Queue Task
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="work"></param>
+        /// <returns></returns>
         public Task<T> QueueTask<T>(Func<T> work)
         {
             lock (key)
