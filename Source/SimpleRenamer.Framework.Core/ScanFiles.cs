@@ -136,13 +136,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             //for each file
             Parallel.ForEach(matchedFiles, po, (tempEp) =>
             {
+                string originalShowName = tempEp.ShowName;
                 //scrape the episode name and incorporate this in the filename (if setting allows)
                 if (_settings.RenameFiles)
                 {
                     tempEp = _tvShowMatcher.ScrapeDetailsAsync(tempEp).GetAwaiter().GetResult();
                     if (!string.IsNullOrWhiteSpace(tempEp.TVDBShowId))
                     {
-                        Mapping map = new Mapping(tempEp.ShowName, tempEp.ShowName, tempEp.TVDBShowId);
+                        Mapping map = new Mapping(originalShowName, tempEp.ShowName, tempEp.TVDBShowId);
                         if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                         {
                             lock (lockList)

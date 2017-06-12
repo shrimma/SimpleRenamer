@@ -231,6 +231,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             return await Task.Run(async () =>
             {
+                string originalShowName = episode.ShowName;
                 //if user selected a match then scrape the details
                 if (!string.IsNullOrEmpty(selectedSeriesId))
                 {
@@ -244,7 +245,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     if (!string.IsNullOrWhiteSpace(episode.TVDBShowId))
                     {
                         ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
-                        Mapping map = new Mapping(episode.ShowName, episode.ShowName, episode.TVDBShowId);
+                        Mapping map = new Mapping(originalShowName, episode.ShowName, episode.TVDBShowId);
                         if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                         {
                             showNameMapping.Mappings.Add(map);
