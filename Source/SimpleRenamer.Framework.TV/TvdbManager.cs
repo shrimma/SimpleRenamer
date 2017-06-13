@@ -106,27 +106,28 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 await Login();
             }
 
-            //setup the datablock
+            //get series
             Task<SeriesData> getSeriesTask = GetSeries(tmdbId);
-
             //get actors
             Task<SeriesActors> getActorsTask = GetActors(tmdbId);
+            //wait for series and actors
+            await Task.WhenAll(getSeriesTask, getActorsTask);
 
             //get episodes                        
             Task<SeriesEpisodes> getEpisodesTask = GetEpisodes(tmdbId);
-
             //get series posters            
             Task<SeriesImageQueryResults> getSeriesPostersTask = GetSeriesPosters(tmdbId);
+            //wait for episodes and series posters
+            await Task.WhenAll(getEpisodesTask, getSeriesPostersTask);
 
             //get season specific posters                        
             Task<SeriesImageQueryResults> getSeasonPostersTask = GetSeasonPosters(tmdbId);
-
             //get series banners            
             Task<SeriesImageQueryResults> getSeriesBannersTask = GetSeriesBanners(tmdbId);
+            //wait for season and series posters
+            await Task.WhenAll(getSeasonPostersTask, getSeasonPostersTask);
 
-            //await completion of all tasks
-            Task[] getTasks = new Task[] { getSeriesTask, getActorsTask, getEpisodesTask, getSeriesPostersTask, getSeasonPostersTask, getSeriesBannersTask };
-            await Task.WhenAll(getTasks);
+            //get results from all tasks            
             SeriesData series = getSeriesTask.Result;
             SeriesActors actors = getActorsTask.Result;
             SeriesEpisodes episodes = getEpisodesTask.Result;
