@@ -65,15 +65,15 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     //if episode is not null then we matched so add to the output list
                     _logger.TraceMessage(string.Format("Matched {0}", matchedFile.SourceFilePath));
-                    RaiseProgressEvent(this, new ProgressTextEventArgs($"Grabbed show or movie details from file names"));
+                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Matched file {0} with one of the regular expressions", matchedFile.SourceFilePath)));
                     return matchedFile;
                 }
                 else
                 {
                     //else we couldn't match the file so add a file with just filepath so user can manually match
-                    _logger.TraceMessage(string.Format("Couldn't find a match!"));
+                    _logger.TraceMessage(string.Format("Couldn't find a match for {0}!", matchedFile.SourceFilePath));
                     matchedFile = new MatchedFile(file, Path.GetFileNameWithoutExtension(file));
-                    RaiseProgressEvent(this, new ProgressTextEventArgs($"Grabbed show or movie details from file names"));
+                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Couldn't find a match for {0}!", matchedFile.SourceFilePath)));
                     return matchedFile;
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });

@@ -10,13 +10,10 @@ namespace Sarjee.SimpleRenamer.Common.TV.Interface
 {
     public interface ITVShowMatcher
     {
-        /// <summary>
-        /// Scrapes the TVDB for episode information on a specific episode and show
-        /// </summary>
-        /// <param name="episode">Episode to scrape</param>
-        /// <param name="showNameMapping">Show to scrape</param>
-        /// <returns></returns>
-        Task<MatchedFile> ScrapeDetailsAsync(MatchedFile episode);
+        Task<CompleteSeries> SearchShowByNameAsync(string showName);
+        Task<CompleteSeries> SearchShowByIdAsync(string showId);
+        MatchedFile UpdateFileWithSeriesDetails(MatchedFile file, CompleteSeries series);
+        MatchedFile FixShowsFromMappings(MatchedFile file);
 
         /// <summary>
         /// Gets a list of possible series that a TVEpisode name could relate to

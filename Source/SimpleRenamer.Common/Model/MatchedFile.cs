@@ -425,8 +425,8 @@ namespace Sarjee.SimpleRenamer.Common.Model
             Season = season;
             EpisodeNumber = episode;
             FileType = FileType.TvShow;
-            SkippedExactSelection = false;
-            ActionThis = true;
+            SkippedExactSelection = true;
+            ActionThis = false;
         }
 
         /// <summary>
@@ -450,8 +450,8 @@ namespace Sarjee.SimpleRenamer.Common.Model
             Year = year;
             Season = year.ToString();
             FileType = FileType.Movie;
-            SkippedExactSelection = false;
-            ActionThis = true;
+            SkippedExactSelection = true;
+            ActionThis = false;
         }
     }
 }
