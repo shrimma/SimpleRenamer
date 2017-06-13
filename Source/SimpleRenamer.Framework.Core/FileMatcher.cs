@@ -2,9 +2,11 @@
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,11 +56,10 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         public async Task<List<MatchedFile>> SearchFilesAsync(List<string> files, CancellationToken ct)
         {
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Parsing file names for show or movie details"));
-            object lockList = new object();
-            List<MatchedFile> matchedFiles = new List<MatchedFile>();
+            ConcurrentBag<MatchedFile> matchedFiles = new ConcurrentBag<MatchedFile>();
 
             //block for searching the files
-            var searchFilesAsyncBlock = new TransformBlock<string, MatchedFile>((file) =>
+            var searchFilesAsyncBlock = new ActionBlock<string>((file) =>
             {
                 MatchedFile matchedFile = SearchFileName(file, ct);
                 if (matchedFile != null)
@@ -66,7 +67,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     //if episode is not null then we matched so add to the output list
                     _logger.TraceMessage(string.Format("Matched {0}", matchedFile.SourceFilePath));
                     RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Matched file {0} with one of the regular expressions", matchedFile.SourceFilePath)));
-                    return matchedFile;
+                    matchedFiles.Add(matchedFile);
                 }
                 else
                 {
@@ -74,14 +75,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     _logger.TraceMessage(string.Format("Couldn't find a match for {0}!", file));
                     matchedFile = new MatchedFile(file, Path.GetFileNameWithoutExtension(file));
                     RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Couldn't find a match for {0}!", file)));
-                    return matchedFile;
+                    matchedFiles.Add(matchedFile);
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
-
-            //block for writing the outputs to a list
-            var writeOutputBlock = new ActionBlock<MatchedFile>(c => matchedFiles.Add(c));
-            //link the writing to completion of search
-            searchFilesAsyncBlock.LinkTo(writeOutputBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
             //post all our files to our dataflow
             foreach (string file in files)
@@ -89,9 +85,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 searchFilesAsyncBlock.Post(file);
             }
             searchFilesAsyncBlock.Complete();
-            await writeOutputBlock.Completion;
+            await searchFilesAsyncBlock.Completion;
 
-            return matchedFiles;
+            return matchedFiles.ToList();
         }
 
         /// <summary>

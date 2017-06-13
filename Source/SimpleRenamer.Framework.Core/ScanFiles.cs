@@ -186,11 +186,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             searchShowNamesAsyncBlock.Complete();
             await searchShowNamesAsyncBlock.Completion;
 
+            ParallelOptions parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
             //for each series we matched
-            Parallel.ForEach(matchedSeries, (series) =>
+            foreach (CompleteSeries series in matchedSeries)
             {
                 ct.ThrowIfCancellationRequested();
-                Parallel.ForEach(matchedFiles, (file) =>
+                Parallel.ForEach(matchedFiles, parallelOptions, (file) =>
                 {
                     ct.ThrowIfCancellationRequested();
                     //if the file had showid set
@@ -215,7 +216,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                         _tvShowMatcher.UpdateFileWithSeriesDetails(file, series);
                     }
                 });
-            });
+            };
 
             //final check that files need moving and are not already in correct location
             var ensureFileNeedsMovingBlock = new ActionBlock<MatchedFile>((file) =>
