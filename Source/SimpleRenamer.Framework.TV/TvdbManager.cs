@@ -7,7 +7,6 @@ using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace Sarjee.SimpleRenamer.Framework.TV
 {
@@ -107,122 +106,33 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 await Login();
             }
 
-            SeriesData series = null;
-            SeriesActors actors = null;
-            SeriesEpisodes episodes = null;
-            SeriesImageQueryResults seriesPosters = null;
-            SeriesImageQueryResults seasonPosters = null;
-            SeriesImageQueryResults seriesBanners = null;
-
             //setup the datablock
-            var seriesDataFlowBlock = new TransformBlock<string, SeriesData>(async (seriesId) =>
-            {
-                return await GetSeries(seriesId);
-            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
+            Task<SeriesData> getSeriesTask = GetSeries(tmdbId);
 
             //get actors
-            currentRetry = 0;
-            while (actors == null)
-            {
-                try
-                {
-                    actors = await GetActors(tmdbId);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    //we only want to try and login 3 times
-                    currentRetry++;
-                    if (currentRetry > 3)
-                    {
-                        throw;
-                    }
-                    await Login();
-                }
-            }
+            Task<SeriesActors> getActorsTask = GetActors(tmdbId);
 
-            //get episodes
-            currentRetry = 0;
-            while (episodes == null)
-            {
-                try
-                {
-                    episodes = await GetEpisodes(tmdbId);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    //we only want to try and login 3 times
-                    currentRetry++;
-                    if (currentRetry > 3)
-                    {
-                        throw;
-                    }
-                    await Login();
-                }
-            }
+            //get episodes                        
+            Task<SeriesEpisodes> getEpisodesTask = GetEpisodes(tmdbId);
 
-            //get series posters
-            currentRetry = 0;
-            while (seriesPosters == null)
-            {
-                try
-                {
-                    seriesPosters = await GetSeriesPosters(tmdbId);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    //we only want to try and login 3 times
-                    currentRetry++;
-                    if (currentRetry > 3)
-                    {
-                        throw;
-                    }
-                    await Login();
-                }
-            }
+            //get series posters            
+            Task<SeriesImageQueryResults> getSeriesPostersTask = GetSeriesPosters(tmdbId);
 
-            //get season specific posters
-            currentRetry = 0;
-            while (seasonPosters == null)
-            {
-                try
-                {
-                    seasonPosters = await GetSeasonPosters(tmdbId);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    //we only want to try and login 3 times
-                    currentRetry++;
-                    if (currentRetry > 3)
-                    {
-                        throw;
-                    }
-                    await Login();
-                }
-            }
+            //get season specific posters                        
+            Task<SeriesImageQueryResults> getSeasonPostersTask = GetSeasonPosters(tmdbId);
 
-            //get series banners
-            currentRetry = 0;
-            while (seriesBanners == null)
-            {
-                try
-                {
-                    seriesBanners = await GetSeriesBanners(tmdbId);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    //we only want to try and login 3 times
-                    currentRetry++;
-                    if (currentRetry > 3)
-                    {
-                        throw;
-                    }
-                    await Login();
-                }
-            }
+            //get series banners            
+            Task<SeriesImageQueryResults> getSeriesBannersTask = GetSeriesBanners(tmdbId);
 
-            //post to the datablocks and await completion
-            seriesDataFlowBlock.Post(tmdbId);
-            seriesDataFlowBlock.Complete();
+            //await completion of all tasks
+            Task[] getTasks = new Task[] { getSeriesTask, getActorsTask, getEpisodesTask, getSeriesPostersTask, getSeasonPostersTask, getSeriesBannersTask };
+            await Task.WhenAll(getTasks);
+            SeriesData series = getSeriesTask.Result;
+            SeriesActors actors = getActorsTask.Result;
+            SeriesEpisodes episodes = getEpisodesTask.Result;
+            SeriesImageQueryResults seriesPosters = getSeriesPostersTask.Result;
+            SeriesImageQueryResults seasonPosters = getSeasonPostersTask.Result;
+            SeriesImageQueryResults seriesBanners = getSeriesBannersTask.Result;
 
             if (series != null && actors != null && episodes != null && seriesPosters != null && seasonPosters != null && seriesBanners != null)
             {
@@ -251,7 +161,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     RestRequest request = new RestRequest($"series/{tmdbId}", Method.GET);
                     request.AddHeader("Authorization", $"Bearer {_jwtToken}");
-                    IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         SeriesData series = JsonConvert.DeserializeObject<SeriesData>(response.Content, _jsonSerializerSettings);
@@ -260,6 +170,10 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
                         throw new UnauthorizedAccessException();
+                    }
+                    else
+                    {
+                        return null;
                     }
                 }
                 catch (UnauthorizedAccessException)
@@ -293,7 +207,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     RestRequest request = new RestRequest($"/series/{tmdbId}/actors", Method.GET);
                     request.AddHeader("Authorization", $"Bearer {_jwtToken}");
-                    IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         SeriesActors actors = JsonConvert.DeserializeObject<SeriesActors>(response.Content, _jsonSerializerSettings);
@@ -302,6 +216,10 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
                         throw new UnauthorizedAccessException();
+                    }
+                    else
+                    {
+                        return null;
                     }
                 }
                 catch (UnauthorizedAccessException)
@@ -335,7 +253,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     RestRequest request = new RestRequest($"/series/{tmdbId}/episodes", Method.GET);
                     request.AddHeader("Authorization", $"Bearer {_jwtToken}");
-                    IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
 
@@ -346,6 +264,10 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
                         throw new UnauthorizedAccessException();
+                    }
+                    else
+                    {
+                        return null;
                     }
                 }
                 catch (UnauthorizedAccessException)
@@ -380,7 +302,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
                     request.AddHeader("Authorization", $"Bearer {_jwtToken}");
                     request.AddParameter("keyType", "poster", ParameterType.QueryString);
-                    IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content, _jsonSerializerSettings);
@@ -390,7 +312,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     {
                         throw new UnauthorizedAccessException();
                     }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    else
                     {
                         //not found
                         return new SeriesImageQueryResults();
@@ -408,7 +330,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     //TODO exponential backoff
                 }
             }
-            return null;
+            return new SeriesImageQueryResults();
         }
 
         /// <summary>
@@ -428,7 +350,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
                     request.AddHeader("Authorization", $"Bearer {_jwtToken}");
                     request.AddParameter("keyType", "season", ParameterType.QueryString);
-                    IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content, _jsonSerializerSettings);
@@ -438,7 +360,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     {
                         throw new UnauthorizedAccessException();
                     }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    else
                     {
                         //not found
                         return new SeriesImageQueryResults();
@@ -456,7 +378,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     //TODO exponential backoff
                 }
             }
-            return null;
+            return new SeriesImageQueryResults();
         }
 
         /// <summary>
@@ -476,7 +398,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
                     request.AddHeader("Authorization", $"Bearer {_jwtToken}");
                     request.AddParameter("keyType", "series", ParameterType.QueryString);
-                    IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content, _jsonSerializerSettings);
@@ -486,7 +408,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     {
                         throw new UnauthorizedAccessException();
                     }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    else
                     {
                         //not found
                         return new SeriesImageQueryResults();
@@ -504,7 +426,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     //TODO exponential backoff
                 }
             }
-            return null;
+            return new SeriesImageQueryResults();
         }
 
         /// <summary>
@@ -528,11 +450,19 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     RestRequest request = new RestRequest("/search/series", Method.GET);
                     request.AddHeader("Authorization", $"Bearer {_jwtToken}");
                     request.AddParameter("name", seriesName, ParameterType.QueryString);
-                    IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         SearchData data = JsonConvert.DeserializeObject<SearchData>(response.Content, _jsonSerializerSettings);
                         return data.Series;
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        throw new UnauthorizedAccessException();
+                    }
+                    else
+                    {
+                        return null;
                     }
                 }
                 catch (UnauthorizedAccessException)
