@@ -29,6 +29,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private IMovieMatcher _movieMatcher;
         private IFileMatcher _fileMatcher;
         private Settings _settings;
+        private ParallelOptions parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
         /// <summary>
         /// Fired whenever some noticeable progress is made
         /// </summary>
@@ -94,12 +95,18 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 List<string> videoFiles = await _fileWatcher.SearchTheseFoldersAsync(ct);
                 //use regex to attempt to figure out some details about the files ie showname, episode number, etc
                 List<MatchedFile> matchedFiles = await _fileMatcher.SearchFilesAsync(videoFiles, ct);
+
                 //try and match the tv shows with any TV scrapers we have available
-                List<MatchedFile> scannedEpisodes = await MatchTVShows(matchedFiles.Where(x => x.FileType == FileType.TvShow).ToList(), ct);
+                Task<List<MatchedFile>> scanTvShowsTask = MatchTVShows(matchedFiles.Where(x => x.FileType == FileType.TvShow).ToList(), ct);
                 //try and match movies with TMDB
-                List<MatchedFile> scannedMovies = await MatchMovies(matchedFiles.Where(x => x.FileType == FileType.Movie).ToList(), ct);
+                Task<List<MatchedFile>> scanMovieTask = MatchMovies(matchedFiles.Where(x => x.FileType == FileType.Movie).ToList(), ct);
                 //check there aren't any completely unmatched files (due to undecypherable filenames)
                 List<MatchedFile> otherVideoFiles = matchedFiles.Where(x => x.FileType == FileType.Unknown).ToList();
+
+                //wait for tv and movie scanning to complete
+                await Task.WhenAll(scanTvShowsTask, scanMovieTask);
+                List<MatchedFile> scannedEpisodes = scanTvShowsTask.Result;
+                List<MatchedFile> scannedMovies = scanMovieTask.Result;
 
                 //add the tv shows and movies to the same list and return this
                 List<MatchedFile> scannedFiles = new List<MatchedFile>();
@@ -136,10 +143,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             ShowNameMapping originalMapping = _configurationManager.ShowNameMappings;
 
             //fixup mismatch titles
-            foreach (MatchedFile file in matchedFiles)
+            parallelOptions.CancellationToken = ct;
+            Parallel.ForEach(matchedFiles, parallelOptions, (file) =>
             {
                 _tvShowMatcher.FixShowsFromMappings(file);
-            }
+            });
 
             //ONLY DO ALL THIS STUFF IF WE ARE RENAMING FILES
             //find unique show ids or show names                        
@@ -186,7 +194,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             searchShowNamesAsyncBlock.Complete();
             await searchShowNamesAsyncBlock.Completion;
 
-            ParallelOptions parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
             //for each series we matched
             foreach (CompleteSeries series in matchedSeries)
             {

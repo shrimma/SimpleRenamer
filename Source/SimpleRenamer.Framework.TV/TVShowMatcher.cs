@@ -4,6 +4,7 @@ using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -23,6 +24,8 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private Settings settings;
         private ITvdbManager _tvdbManager;
         private IHelper _helper;
+        private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
+
         /// <summary>
         /// Fired whenever some noticeable progress is made
         /// </summary>
@@ -168,12 +171,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             return await Task.Run(async () =>
             {
                 _logger.TraceMessage("GetPossibleShowsForEpisode - Start");
-                var series = await _tvdbManager.SearchSeriesByNameAsync(showName);
+                ConcurrentBag<DetailView> shows = new ConcurrentBag<DetailView>();
+                List<SeriesSearchData> series = await _tvdbManager.SearchSeriesByNameAsync(showName);
                 string airedDate;
-                List<DetailView> shows = new List<DetailView>();
                 if (series != null)
                 {
-                    foreach (SeriesSearchData s in series)
+                    Parallel.ForEach(series, _parallelOptions, (s) =>
                     {
                         try
                         {
@@ -198,11 +201,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                         {
                             //TODO just swallow this?
                         }
-                    }
+                    });
                 }
 
                 _logger.TraceMessage("SelectShowFromListGetPossibleShowsForEpisode - End");
-                return shows;
+                return shows.ToList();
             });
         }
 
