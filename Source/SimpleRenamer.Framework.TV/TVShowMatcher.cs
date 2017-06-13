@@ -197,7 +197,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                             airedDate = parsed ? dt.Year.ToString() : "N/A";
                             shows.Add(new DetailView(s.Id.ToString(), s.SeriesName, airedDate, desc));
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             //TODO just swallow this?
                         }

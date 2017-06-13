@@ -63,17 +63,17 @@ namespace Sarjee.SimpleRenamer.Views
             AccentItem currentAccentItem = accentItems.Where(x => x.AccentName.Equals(currentTheme.Item2.Name)).FirstOrDefault();
             ChangeThemeCombo.SelectedItem = currentAccentItem;
             //grab the current settings from the factory and populate our UI
-            originalSettings = new Settings();
-            originalSettings.CopyFiles = configurationManager.Settings.CopyFiles;
-            originalSettings.DestinationFolderMovie = configurationManager.Settings.DestinationFolderMovie;
-            originalSettings.DestinationFolderTV = configurationManager.Settings.DestinationFolderTV;
-            originalSettings.NewFileNameFormat = configurationManager.Settings.NewFileNameFormat;
-            originalSettings.RenameFiles = configurationManager.Settings.RenameFiles;
-            originalSettings.SubDirectories = configurationManager.Settings.SubDirectories;
-            originalSettings.ValidExtensions = configurationManager.Settings.ValidExtensions;
-            originalSettings.WatchFolders = configurationManager.Settings.WatchFolders;
-
-
+            originalSettings = new Settings()
+            {
+                CopyFiles = configurationManager.Settings.CopyFiles,
+                DestinationFolderMovie = configurationManager.Settings.DestinationFolderMovie,
+                DestinationFolderTV = configurationManager.Settings.DestinationFolderTV,
+                NewFileNameFormat = configurationManager.Settings.NewFileNameFormat,
+                RenameFiles = configurationManager.Settings.RenameFiles,
+                SubDirectories = configurationManager.Settings.SubDirectories,
+                ValidExtensions = configurationManager.Settings.ValidExtensions,
+                WatchFolders = configurationManager.Settings.WatchFolders
+            };
             this.DataContext = configurationManager.Settings;
             watchFolders = new ObservableCollection<string>(configurationManager.Settings.WatchFolders);
             WatchListBox.ItemsSource = watchFolders;
@@ -282,7 +282,7 @@ namespace Sarjee.SimpleRenamer.Views
                 AccentItem selectedColor = (AccentItem)ChangeThemeCombo.SelectedItem;
                 ThemeManager.ChangeAppStyle(System.Windows.Application.Current, selectedColor.Accent, currentTheme.Item1);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //TODO log this!
             }
