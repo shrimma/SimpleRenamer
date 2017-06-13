@@ -14,17 +14,19 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
         private Mock<IConfigurationManager> mockConfigurationManager;
         private Mock<IRetryHelper> mockRetryHelper;
+        private Mock<IHelper> mockHelper;
 
         [TestInitialize]
         public void TestInitialize()
         {
             mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
             mockRetryHelper = mockRepository.Create<IRetryHelper>();
+            mockHelper = mockRepository.Create<IHelper>();
         }
 
         private ITvdbManager GetTvdbManager()
         {
-            ITvdbManager tvdbManager = new TvdbManager(mockConfigurationManager.Object, mockRetryHelper.Object);
+            ITvdbManager tvdbManager = new TvdbManager(mockConfigurationManager.Object, mockRetryHelper.Object, mockHelper.Object);
             tvdbManager.Should().NotBeNull();
             return tvdbManager;
         }
@@ -34,11 +36,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         [TestCategory(TestCategories.TV)]
         public void TvdbManagerCtor_NullArguments_ThrowsArgumentNullException()
         {
-            Action action1 = () => new TvdbManager(null, null);
-            Action action2 = () => new TvdbManager(mockConfigurationManager.Object, null);
+            Action action1 = () => new TvdbManager(null, null, null);
+            Action action2 = () => new TvdbManager(mockConfigurationManager.Object, null, null);
+            Action action3 = () => new TvdbManager(mockConfigurationManager.Object, mockRetryHelper.Object, null);
 
             action1.ShouldThrow<ArgumentNullException>();
             action2.ShouldThrow<ArgumentNullException>();
+            action3.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]

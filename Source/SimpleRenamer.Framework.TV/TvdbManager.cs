@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RestSharp;
+using Sarjee.SimpleRenamer.Common.Helpers;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Model;
@@ -21,6 +22,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private int _maxRetryCount = 10;
         private int _maxBackoffSeconds = 2;
         private IRetryHelper _retryHelper;
+        private IHelper _helper;
         private RestClient _restClient;
         private JsonSerializerSettings _jsonSerializerSettings;
 
@@ -34,7 +36,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// or
         /// retryHelper
         /// </exception>
-        public TvdbManager(IConfigurationManager configManager, IRetryHelper retryHelper)
+        public TvdbManager(IConfigurationManager configManager, IRetryHelper retryHelper, IHelper helper)
         {
             if (configManager == null)
             {
@@ -43,6 +45,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
             _apiKey = configManager.TvDbApiKey;
             _jwtToken = "";
+            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
             _retryHelper = retryHelper ?? throw new ArgumentNullException(nameof(retryHelper));
             _restClient = new RestClient("https://api.thetvdb.com");
             _restClient.AddDefaultHeader("content-type", "application/json");
@@ -155,7 +158,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<SeriesData> GetSeries(string tmdbId)
         {
             int currentRetry = 0;
-            int offset = 50;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
             while (currentRetry < _maxRetryCount)
             {
                 try
@@ -181,12 +184,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     await Login();
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
                 catch (Exception)
                 {
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
             }
             return null;
@@ -201,7 +204,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<SeriesActors> GetActors(string tmdbId)
         {
             int currentRetry = 0;
-            int offset = 50;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
             while (currentRetry < _maxRetryCount)
             {
                 try
@@ -227,12 +230,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     await Login();
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
                 catch (Exception)
                 {
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
             }
             return null;
@@ -247,7 +250,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<SeriesEpisodes> GetEpisodes(string tmdbId)
         {
             int currentRetry = 0;
-            int offset = 50;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
             while (currentRetry < _maxRetryCount)
             {
                 try
@@ -275,12 +278,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     await Login();
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
                 catch (Exception)
                 {
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
             }
             return null;
@@ -295,7 +298,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<SeriesImageQueryResults> GetSeriesPosters(string tmdbId)
         {
             int currentRetry = 0;
-            int offset = 50;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
             while (currentRetry < _maxRetryCount)
             {
                 try
@@ -323,12 +326,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     await Login();
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
                 catch (Exception)
                 {
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
             }
             return new SeriesImageQueryResults();
@@ -343,7 +346,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<SeriesImageQueryResults> GetSeasonPosters(string tmdbId)
         {
             int currentRetry = 0;
-            int offset = 50;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
             while (currentRetry < _maxRetryCount)
             {
                 try
@@ -371,12 +374,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     await Login();
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
                 catch (Exception)
                 {
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
             }
             return new SeriesImageQueryResults();
@@ -391,7 +394,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<SeriesImageQueryResults> GetSeriesBanners(string tmdbId)
         {
             int currentRetry = 0;
-            int offset = 50;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
             while (currentRetry < _maxRetryCount)
             {
                 try
@@ -419,12 +422,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     await Login();
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
                 catch (Exception)
                 {
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
             }
             return new SeriesImageQueryResults();
@@ -438,7 +441,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName)
         {
             int currentRetry = 0;
-            int offset = 50;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
             if (string.IsNullOrEmpty(_jwtToken))
             {
                 await Login();
@@ -470,12 +473,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 {
                     await Login();
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
                 catch (Exception)
                 {
                     currentRetry++;
-                    //TODO exponential backoff
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
                 }
             }
             return null;
