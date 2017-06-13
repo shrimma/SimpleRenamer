@@ -94,24 +94,36 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         public async Task<Common.Movie.Model.Movie> GetMovieAsync(string movieId)
         {
             Common.Movie.Model.Movie movie = null;
-            RestRequest request = new RestRequest($"/3/movie/{movieId}?api_key={apiKey}", Method.GET);
-            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+
+            //spawn task to get movie details
+            RestRequest movieRequest = new RestRequest($"/3/movie/{movieId}?api_key={apiKey}", Method.GET);
+            movieRequest.AddParameter("application/json", "{}", ParameterType.RequestBody);
+            Task<IRestResponse> movieTask = _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(movieRequest));
+
+            //spawn task to get credit details
+            RestRequest creditsRequest = new RestRequest($"/3/movie/{movieId}/credits?api_key={apiKey}", Method.GET);
+            creditsRequest.AddParameter("application/json", "{}", ParameterType.RequestBody);
+            Task<IRestResponse> creditsTask = _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(creditsRequest));
+
+            //wait for the tasks to complete
+            await Task.WhenAll(movieTask, creditsTask);
+
+            //get the movie details from response
+            IRestResponse movieResponse = movieTask.Result;
+            if (movieResponse.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                movie = JsonConvert.DeserializeObject<Common.Movie.Model.Movie>(response.Content, _jsonSerializerSettings);
+                movie = JsonConvert.DeserializeObject<Common.Movie.Model.Movie>(movieResponse.Content, _jsonSerializerSettings);
             }
             else
             {
                 //TODO THROW
             }
 
-            request = new RestRequest($"/3/movie/{movieId}/credits?api_key={apiKey}", Method.GET);
-            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            //get credit details from response
+            IRestResponse creditsResponse = creditsTask.Result;
+            if (creditsResponse.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                movie.Credits = JsonConvert.DeserializeObject<Credits>(response.Content, _jsonSerializerSettings);
+                movie.Credits = JsonConvert.DeserializeObject<Credits>(creditsResponse.Content, _jsonSerializerSettings);
             }
 
             return movie;

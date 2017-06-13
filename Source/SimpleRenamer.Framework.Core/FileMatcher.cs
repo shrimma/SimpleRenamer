@@ -71,9 +71,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 else
                 {
                     //else we couldn't match the file so add a file with just filepath so user can manually match
-                    _logger.TraceMessage(string.Format("Couldn't find a match for {0}!", matchedFile.SourceFilePath));
+                    _logger.TraceMessage(string.Format("Couldn't find a match for {0}!", file));
                     matchedFile = new MatchedFile(file, Path.GetFileNameWithoutExtension(file));
-                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Couldn't find a match for {0}!", matchedFile.SourceFilePath)));
+                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Couldn't find a match for {0}!", file)));
                     return matchedFile;
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
