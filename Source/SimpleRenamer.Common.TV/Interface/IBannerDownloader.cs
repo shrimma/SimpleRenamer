@@ -14,7 +14,5 @@ namespace Sarjee.SimpleRenamer.Common.TV.Interface
         /// <param name="destinationFolder">The destination folder to save the banner</param>
         /// <returns></returns>
         Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder);
-
-        //TODO move this to a core class and genericize
     }
 }

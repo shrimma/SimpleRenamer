@@ -2,6 +2,7 @@
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -106,11 +107,10 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private async Task<List<MatchedFile>> PreProcessTVShows(List<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
-            List<(string show, string season)> uniqueShowSeasons = new List<(string show, string season)>();
-            List<MatchedFile> ProcessFiles = new List<MatchedFile>();
+            ConcurrentBag<MatchedFile> processFiles = new ConcurrentBag<MatchedFile>();
             ShowNameMapping snm = _configurationManager.ShowNameMappings;
 
-            var actionFilesAsyncBlock = new TransformBlock<MatchedFile, MatchedFile>(async (file) =>
+            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
                 ct.ThrowIfCancellationRequested();
                 Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(file.TVDBShowId)).FirstOrDefault();
@@ -120,27 +120,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
                 {
                     _logger.TraceMessage(string.Format("Successfully processed file and downloaded banners: {0}", result.SourceFilePath));
-                    return result;
+                    processFiles.Add(result);
                 }
                 else
                 {
                     _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
-                    return null;
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
-
-            //block for writing the outputs to a list
-            var writeOutputBlock = new ActionBlock<MatchedFile>(file =>
-            {
-                if (file != null)
-                {
-                    //TODO make threadsafe
-                    ProcessFiles.Add(file);
-                }
-            });
-
-            //link the writing to completion of search
-            actionFilesAsyncBlock.LinkTo(writeOutputBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
             //post all our files to our dataflow
             foreach (MatchedFile file in scannedEpisodes)
@@ -148,9 +134,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 actionFilesAsyncBlock.Post(file);
             }
             actionFilesAsyncBlock.Complete();
-            await writeOutputBlock.Completion;
+            await actionFilesAsyncBlock.Completion;
 
-            return ProcessFiles;
+            return processFiles.ToList();
         }
 
         /// <summary>
@@ -161,8 +147,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private async Task<List<MatchedFile>> PreProcessMovies(List<MatchedFile> scannedMovies, CancellationToken ct)
         {
-            List<MatchedFile> ProcessFiles = new List<MatchedFile>();
-            var actionFilesAsyncBlock = new TransformBlock<MatchedFile, MatchedFile>(async (file) =>
+            ConcurrentBag<MatchedFile> processFiles = new ConcurrentBag<MatchedFile>();
+            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
                 ct.ThrowIfCancellationRequested();
                 MatchedFile result = await _fileMover.CreateDirectoriesAndDownloadBannersAsync(file, null, false);
@@ -171,27 +157,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
                 {
                     _logger.TraceMessage(string.Format("Successfully processed file: {0}", result.SourceFilePath));
-                    return result;
+                    processFiles.Add(result);
                 }
                 else
                 {
                     _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
-                    return null;
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
-
-            //block for writing the outputs to a list
-            var writeOutputBlock = new ActionBlock<MatchedFile>(file =>
-            {
-                if (file != null)
-                {
-                    //TODO make threadsafe
-                    ProcessFiles.Add(file);
-                }
-            });
-
-            //link the writing to completion of search
-            actionFilesAsyncBlock.LinkTo(writeOutputBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
             //post all our files to our dataflow
             foreach (MatchedFile file in scannedMovies)
@@ -199,9 +171,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 actionFilesAsyncBlock.Post(file);
             }
             actionFilesAsyncBlock.Complete();
-            await writeOutputBlock.Completion;
+            await actionFilesAsyncBlock.Completion;
 
-            return ProcessFiles;
+            return processFiles.ToList();
         }
 
         /// <summary>
