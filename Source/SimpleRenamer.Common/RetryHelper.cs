@@ -1,7 +1,5 @@
 ﻿using Sarjee.SimpleRenamer.Common.Interface;
 using System;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -73,23 +71,10 @@ namespace Sarjee.SimpleRenamer.Common
         /// <returns></returns>
         private static bool IsTransient(Exception originalException)
         {
-            // If the exception is an HTTP request exception then assume it is transient
-            HttpRequestException httpException = originalException as HttpRequestException;
-            if (httpException != null)
+            // If the exception is an HTTP request exception then assume it is transient            
+            if (originalException is HttpRequestException)
             {
                 return true;
-            }
-
-            WebException webException = originalException as WebException;
-            if (webException != null)
-            {
-                // If the web exception contains one of the following status values  it may be transient.
-                return new[]
-                {
-                    WebExceptionStatus.ConnectionClosed,
-                    WebExceptionStatus.Timeout,
-                    WebExceptionStatus.RequestCanceled
-                }.Contains(webException.Status);
             }
 
             return false;
