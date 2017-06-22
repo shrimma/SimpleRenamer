@@ -67,7 +67,6 @@
   <ItemGroup>
     <Compile Include="Common\BackgroundQueueTests.cs" />
     <Compile Include="Common\HelperTests.cs" />
-    <Compile Include="Common\RetryHelperTests.cs" />
     <Compile Include="Framework\Core\ActionMatchedFilesTests.cs" />
     <Compile Include="Framework\Core\AppConfigurationManagerTests.cs" />
     <Compile Include="Framework\Core\FileMatcherTests.cs" />

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RestSharp;
+using Sarjee.SimpleRenamer.Common.Helpers;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
@@ -15,10 +16,12 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Movie.Interface.ITmdbManager" />
     public class TmdbManager : ITmdbManager
     {
-        private string apiKey;
-        private IRetryHelper _retryHelper;
-        private string posterBaseUri;
-        private RestClient _restClient;
+        private string _apiKey;
+        private string _posterBaseUri;
+        private int _maxRetryCount = 10;
+        private int _maxBackoffSeconds = 2;
+        private IRestClient _restClient;
+        private IHelper _helper;
         private JsonSerializerSettings _jsonSerializerSettings;
 
         /// <summary>
@@ -31,18 +34,18 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// or
         /// retryHelper
         /// </exception>
-        public TmdbManager(IConfigurationManager configManager, IRetryHelper retryHelper)
+        public TmdbManager(IConfigurationManager configManager, IHelper helper)
         {
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
 
-            apiKey = configManager.TmDbApiKey;
-            _retryHelper = retryHelper ?? throw new ArgumentNullException(nameof(retryHelper));
+            _apiKey = configManager.TmDbApiKey;
             _restClient = new RestClient("https://api.themoviedb.org");
             _restClient.AddDefaultHeader("content-type", "application/json");
             _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
+            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
         }
 
         public void HandleDeserializationError(object sender, ErrorEventArgs errorArgs)
@@ -60,32 +63,50 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <returns></returns>
         public async Task<SearchContainer<SearchMovie>> SearchMovieByNameAsync(string movieName, int movieYear)
         {
+            return await GetSearchContainerMoviesAsync(movieName, movieYear);
+        }
+        private async Task<SearchContainer<SearchMovie>> GetSearchContainerMoviesAsync(string movieName, int movieYear)
+        {
+            int currentRetry = 0;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
             string resource = string.Empty;
             //if no movie year then don't include in the query
             if (movieYear == 0)
             {
-                resource = $"/3/search/movie?&query={movieName}&language=en-US&api_key={apiKey}";
+                resource = $"/3/search/movie?&query={movieName}&language=en-US&api_key={_apiKey}";
             }
             else
             {
-                resource = $"/3/search/movie?year={movieYear}&query={movieName}&language=en-US&api_key={apiKey}";
+                resource = $"/3/search/movie?year={movieYear}&query={movieName}&language=en-US&api_key={_apiKey}";
             }
 
-            RestRequest request = new RestRequest(resource, Method.GET);
+            //create the request
+            IRestRequest request = new RestRequest(resource, Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
 
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            while (currentRetry < _maxRetryCount)
             {
-                return JsonConvert.DeserializeObject<SearchContainer<SearchMovie>>(response.Content, _jsonSerializerSettings);
+                try
+                {
+                    //execute the request
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        return JsonConvert.DeserializeObject<SearchContainer<SearchMovie>>(response.Content, _jsonSerializerSettings);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception)
+                {
+                    currentRetry++;
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
+                }
             }
-            else
-            {
-                //TODO throw
-                return null;
-            }
+            return null;
         }
-
         /// <summary>
         /// Gets the movie asynchronous.
         /// </summary>
@@ -93,40 +114,88 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <returns></returns>
         public async Task<Common.Movie.Model.Movie> GetMovieAsync(string movieId)
         {
-            Common.Movie.Model.Movie movie = null;
-
-            //spawn task to get movie details
-            RestRequest movieRequest = new RestRequest($"/3/movie/{movieId}?api_key={apiKey}", Method.GET);
-            movieRequest.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            Task<IRestResponse> movieTask = _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(movieRequest));
-
-            //spawn task to get credit details
-            RestRequest creditsRequest = new RestRequest($"/3/movie/{movieId}/credits?api_key={apiKey}", Method.GET);
-            creditsRequest.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            Task<IRestResponse> creditsTask = _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(creditsRequest));
+            //spawn tasks for getting movie and credit info
+            Task<Common.Movie.Model.Movie> movieTask = GetMovieDetailsAsync(movieId);
+            Task<Credits> creditsTask = GetCreditsAsync(movieId);
 
             //wait for the tasks to complete
             await Task.WhenAll(movieTask, creditsTask);
 
-            //get the movie details from response
-            IRestResponse movieResponse = movieTask.Result;
-            if (movieResponse.StatusCode == System.Net.HttpStatusCode.OK)
+            Common.Movie.Model.Movie movie = movieTask.Result;
+            if (movie != null)
             {
-                movie = JsonConvert.DeserializeObject<Common.Movie.Model.Movie>(movieResponse.Content, _jsonSerializerSettings);
-            }
-            else
-            {
-                //TODO THROW
-            }
-
-            //get credit details from response
-            IRestResponse creditsResponse = creditsTask.Result;
-            if (creditsResponse.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                movie.Credits = JsonConvert.DeserializeObject<Credits>(creditsResponse.Content, _jsonSerializerSettings);
+                movie.Credits = creditsTask.Result;
             }
 
             return movie;
+        }
+
+        private async Task<Common.Movie.Model.Movie> GetMovieDetailsAsync(string movieId)
+        {
+            int currentRetry = 0;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
+
+            //create the request
+            IRestRequest request = new RestRequest($"/3/movie/{movieId}?api_key={_apiKey}", Method.GET);
+            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
+
+            while (currentRetry < _maxRetryCount)
+            {
+                try
+                {
+                    //execute the request
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        return JsonConvert.DeserializeObject<Common.Movie.Model.Movie>(response.Content, _jsonSerializerSettings);
+                    }
+                    else
+                    {
+                        //TODO throw
+                        return null;
+                    }
+                }
+                catch (Exception)
+                {
+                    currentRetry++;
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
+                }
+            }
+            return null;
+        }
+
+        private async Task<Credits> GetCreditsAsync(string movieId)
+        {
+            int currentRetry = 0;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
+
+            //create the request
+            IRestRequest request = new RestRequest($"/3/movie/{movieId}/credits?api_key={_apiKey}", Method.GET);
+            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
+
+            while (currentRetry < _maxRetryCount)
+            {
+                try
+                {
+                    //execute the request
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        return JsonConvert.DeserializeObject<Credits>(response.Content, _jsonSerializerSettings);
+                    }
+                    else
+                    {
+                        //TODO THROW
+                        return null;
+                    }
+                }
+                catch (Exception)
+                {
+                    currentRetry++;
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -136,20 +205,42 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <returns></returns>
         public async Task<SearchMovie> SearchMovieByIdAsync(string movieId)
         {
-            var request = new RestRequest($"/3/movie/{movieId}?api_key={apiKey}", Method.GET);
+            return await GetSearchMovieAsync(movieId);
+        }
+
+        private async Task<SearchMovie> GetSearchMovieAsync(string movieId)
+        {
+            int currentRetry = 0;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
+
+            //create request
+            IRestRequest request = new RestRequest($"/3/movie/{movieId}?api_key={_apiKey}", Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
 
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            while (currentRetry < _maxRetryCount)
             {
-                return JsonConvert.DeserializeObject<SearchMovie>(response.Content, _jsonSerializerSettings);
+                try
+                {
+                    //execute the request
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        return JsonConvert.DeserializeObject<SearchMovie>(response.Content, _jsonSerializerSettings);
+                    }
+                    else
+                    {
+                        //TODO THROW
+                        return null;
+                    }
+                }
+                catch (Exception)
+                {
+                    currentRetry++;
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
+                }
             }
-            else
-            {
-                //TODO THROW
-                return null;
-            }
+            return null;
         }
 
         /// <summary>
@@ -160,24 +251,53 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         public async Task<string> GetPosterUriAsync(string posterPath)
         {
             //if we havent grabbed the base uri yet this session
-            if (string.IsNullOrEmpty(posterBaseUri))
+            if (string.IsNullOrEmpty(_posterBaseUri))
             {
-                RestRequest request = new RestRequest($"/3/configuration?api_key={apiKey}", Method.GET);
-                request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-                IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
-
-                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                string posterUri = await GetPosterBaseUriAsync();
+                if (!string.IsNullOrEmpty(posterUri))
                 {
-                    TMDbConfig tmdbConfig = JsonConvert.DeserializeObject<TMDbConfig>(response.Content, _jsonSerializerSettings);
-                    posterBaseUri = tmdbConfig.Images.BaseUrl;
+                    _posterBaseUri = posterUri;
                 }
                 else
                 {
-                    //TODO THROW
+                    return string.Empty;
                 }
             }
 
-            return $"{posterBaseUri}w342{posterPath}";
+            return $"{_posterBaseUri}w342{posterPath}";
+        }
+        private async Task<string> GetPosterBaseUriAsync()
+        {
+            int currentRetry = 0;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
+
+            IRestRequest request = new RestRequest($"/3/configuration?api_key={_apiKey}", Method.GET);
+            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
+
+            while (currentRetry < _maxRetryCount)
+            {
+                try
+                {
+                    //execute the request
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        TMDbConfig tmdbConfig = JsonConvert.DeserializeObject<TMDbConfig>(response.Content, _jsonSerializerSettings);
+                        return tmdbConfig.Images.BaseUrl;
+                    }
+                    else
+                    {
+                        //TODO THROW
+                        return string.Empty;
+                    }
+                }
+                catch (Exception)
+                {
+                    currentRetry++;
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
+                }
+            }
+            return string.Empty;
         }
     }
 }

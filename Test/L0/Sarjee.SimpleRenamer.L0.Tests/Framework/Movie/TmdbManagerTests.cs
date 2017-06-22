@@ -13,18 +13,18 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
     {
         private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
         private Mock<IConfigurationManager> mockConfigurationManager;
-        private Mock<IRetryHelper> mockRetryHelper;
+        private Mock<IHelper> mockHelper;
 
         [TestInitialize]
         public void TestInitialize()
         {
             mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
-            mockRetryHelper = mockRepository.Create<IRetryHelper>();
+            mockHelper = mockRepository.Create<IHelper>();
         }
 
         private ITmdbManager GetTmdbManager()
         {
-            ITmdbManager tmdbManager = new TmdbManager(mockConfigurationManager.Object, mockRetryHelper.Object);
+            ITmdbManager tmdbManager = new TmdbManager(mockConfigurationManager.Object, mockHelper.Object);
             tmdbManager.Should().NotBeNull();
             return tmdbManager;
         }
