@@ -52,7 +52,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns>
         /// A list of file paths of video files
         /// </returns>
-        public async Task<List<string>> SearchTheseFoldersAsync(CancellationToken ct)
+        public async Task<List<string>> SearchFoldersAsync(CancellationToken ct)
         {
             _logger.TraceMessage("SearchTheseFoldersAsync - Start");
             List<string> foundFiles = new List<string>();

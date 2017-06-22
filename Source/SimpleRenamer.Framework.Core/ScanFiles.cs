@@ -92,7 +92,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return await Task.Run(async () =>
             {
                 //search folders for a list of video file paths
-                List<string> videoFiles = await _fileWatcher.SearchTheseFoldersAsync(ct);
+                List<string> videoFiles = await _fileWatcher.SearchFoldersAsync(ct);
                 //use regex to attempt to figure out some details about the files ie showname, episode number, etc
                 List<MatchedFile> matchedFiles = await _fileMatcher.SearchFilesAsync(videoFiles, ct);
 

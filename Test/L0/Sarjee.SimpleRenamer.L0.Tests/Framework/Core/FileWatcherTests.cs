@@ -140,16 +140,17 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         }
         #endregion Constructor
 
+        #region SearchFoldersAsync
         [TestMethod]
         [TestCategory(TestCategories.Core)]
-        public void FileWatcher_SearchTheseFoldersAsync_NoWatchFolders_ReturnsEmptyList()
+        public void FileWatcher_SearchFoldersAsync_NoWatchFolders_ReturnsEmptyList()
         {
             mockConfigurationManager.SetupGet(x => x.Settings).Returns(new Settings() { WatchFolders = new List<string>() });
             IFileWatcher fileWatcher = GetFileWatcher();
 
             List<string> emptyList = new List<string>();
             List<string> filesFound = null;
-            Func<Task> action1 = async () => filesFound = await fileWatcher.SearchTheseFoldersAsync(new System.Threading.CancellationToken());
+            Func<Task> action1 = async () => filesFound = await fileWatcher.SearchFoldersAsync(new System.Threading.CancellationToken());
             action1.ShouldNotThrow();
 
             filesFound.Count.Should().Be(emptyList.Count);
@@ -158,17 +159,18 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
         [TestMethod]
         [TestCategory(TestCategories.Core)]
-        public void FileWatcher_SearchTheseFoldersAsync_Success()
+        public void FileWatcher_SearchFoldersAsync_Success()
         {
             mockConfigurationManager.SetupGet(x => x.Settings).Returns(new Settings() { WatchFolders = new List<string> { _path }, ValidExtensions = new List<string> { ".mkv" } });
             mockConfigurationManager.SetupGet(x => x.IgnoredFiles).Returns(new IgnoreList());
             IFileWatcher fileWatcher = GetFileWatcher();
 
             List<string> filesFound = null;
-            Func<Task> action1 = async () => filesFound = await fileWatcher.SearchTheseFoldersAsync(new System.Threading.CancellationToken());
+            Func<Task> action1 = async () => filesFound = await fileWatcher.SearchFoldersAsync(new System.Threading.CancellationToken());
             action1.ShouldNotThrow();
 
             filesFound.Count.Should().Be(1);
         }
+        #endregion SearchFoldersAsync
     }
 }
