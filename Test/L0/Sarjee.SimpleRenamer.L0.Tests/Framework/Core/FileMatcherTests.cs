@@ -78,6 +78,19 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         #region SearchFilesAsync
         [TestMethod]
         [TestCategory(TestCategories.Core)]
+        public void FileMatcher_SearchFilesAsync_NullFile_ThrowsArgumentNullException()
+        {
+            mockConfigurationManager.Setup(x => x.RegexExpressions).Returns(regexFile);
+            IFileMatcher fileMatcher = GetFileMatcher();
+            List<string> input = new List<string>() { null };
+
+            List<MatchedFile> output = null;
+            Func<Task> action1 = async () => output = await fileMatcher.SearchFilesAsync(input, new System.Threading.CancellationToken());
+            action1.ShouldThrow<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Core)]
         public void FileMatcher_SearchFilesAsync_Success()
         {
             mockConfigurationManager.Setup(x => x.RegexExpressions).Returns(regexFile);
