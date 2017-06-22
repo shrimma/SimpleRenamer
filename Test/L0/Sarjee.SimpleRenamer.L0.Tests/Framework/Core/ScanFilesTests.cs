@@ -6,6 +6,7 @@ using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Framework.Core;
 using System;
+using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 {
@@ -35,7 +36,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         {
             IScanFiles scanFiles = new ScanFiles(mockLogger.Object, mockConfigurationManager.Object, mockFileWatcher.Object, mockShowMatcher.Object, mockMovieMatcher.Object, mockFileMatcher.Object);
             scanFiles.Should().NotBeNull();
+            scanFiles.RaiseProgressEvent += ScanFiles_RaiseProgressEvent;
             return scanFiles;
+        }
+
+        private void ScanFiles_RaiseProgressEvent(object sender, SimpleRenamer.Common.EventArguments.ProgressTextEventArgs e)
+        {
+            //DONT DO ANYTHING WE JUST NEED THIS
         }
 
         #region Constructor
@@ -69,5 +76,17 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             scanFiles.Should().NotBeNull();
         }
         #endregion Constructor
+
+        #region Scan
+        [TestMethod]
+        [TestCategory(TestCategories.Core)]
+        public void ScanFiles_Scan_Success()
+        {
+            IScanFiles scanFiles = GetScanFiles(); ;
+            Func<Task> action1 = async () => await scanFiles.Scan(new System.Threading.CancellationToken());
+
+            action1.ShouldNotThrow();
+        }
+        #endregion Scan
     }
 }
