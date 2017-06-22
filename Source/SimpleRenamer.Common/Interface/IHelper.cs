@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common.Interface
 {
@@ -29,5 +30,14 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <param name="input">The input.</param>
         /// <returns></returns>
         string RemoveSpecialCharacters(string input);
+
+        /// <summary>
+        /// Adds asynchronous exponential delay
+        /// </summary>
+        /// <param name="offsetMilliseconds">The offset milliseconds.</param>
+        /// <param name="retryCount">The retry count.</param>
+        /// <param name="maxBackoffSeconds">The maximum backoff seconds.</param>
+        /// <returns></returns>
+        Task ExponentialDelayAsync(int offsetMilliseconds, int retryCount, int maxBackoffSeconds);
     }
 }

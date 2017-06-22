@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Sarjee.SimpleRenamer.Common.Interface
 {
     /// <summary>
     /// DependencyInjectionContext Interface
     /// </summary>
-    public interface IDependencyInjectionContext
+    public interface IDependencyInjectionContext : IDisposable
     {
         /// <summary>
         /// Initializes the dependency injection context

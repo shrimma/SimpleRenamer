@@ -4,7 +4,9 @@ using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -20,6 +22,8 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         private ILogger _logger;
         private ITmdbManager _tmdbManager;
         private IHelper _helper;
+        private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
+
         /// <summary>
         /// Fired whenever some noticeable progress is made
         /// </summary>
@@ -49,33 +53,36 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <returns></returns>
         public async Task<List<DetailView>> GetPossibleMoviesForFile(string movieName)
         {
-            List<DetailView> movies = new List<DetailView>();
+            ConcurrentBag<DetailView> movies = new ConcurrentBag<DetailView>();
             SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName, 0);
-            foreach (var s in results.Results)
+            if (results != null)
             {
-                try
+                Parallel.ForEach(results.Results, _parallelOptions, (s) =>
                 {
-                    string desc = string.Empty;
-                    if (!string.IsNullOrEmpty(s.Overview))
+                    try
                     {
-                        if (s.Overview.Length > 50)
+                        string desc = string.Empty;
+                        if (!string.IsNullOrEmpty(s.Overview))
                         {
-                            desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                            if (s.Overview.Length > 50)
+                            {
+                                desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                            }
+                            else
+                            {
+                                desc = s.Overview;
+                            }
                         }
-                        else
-                        {
-                            desc = s.Overview;
-                        }
+                        movies.Add(new DetailView(s.Id.ToString(), s.Title, s.ReleaseDate.HasValue ? s.ReleaseDate.Value.Year.ToString() : "N/A", desc));
                     }
-                    movies.Add(new DetailView(s.Id.ToString(), s.Title, s.ReleaseDate.HasValue ? s.ReleaseDate.Value.Year.ToString() : "N/A", desc));
-                }
-                catch (Exception ex)
-                {
-                    //TODO just swalow this?
-                }
+                    catch (Exception)
+                    {
+                        //TODO just swalow this?
+                    }
+                });
             }
 
-            return movies;
+            return movies.ToList();
         }
 
         /// <summary>

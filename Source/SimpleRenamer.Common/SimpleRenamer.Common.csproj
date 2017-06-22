@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Sarjee.SimpleRenamer.Common</RootNamespace>
     <AssemblyName>Sarjee.SimpleRenamer.Common</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BackgroundQueue.cs" />
+    <Compile Include="Helpers\ThreadLocalRandom.cs" />
     <Compile Include="Model\FileType.cs" />
     <Compile Include="Model\IgnoreList.cs" />
     <Compile Include="Model\Mapping.cs" />
@@ -76,15 +77,14 @@
     <Compile Include="Model\RegexFile.cs" />
     <Compile Include="RetryHelper.cs" />
     <Compile Include="Model\Settings.cs" />
-    <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Model\MatchedFile.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
     <Content Include="RegexExpressions.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

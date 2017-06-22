@@ -3,12 +3,16 @@ using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
+using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace Sarjee.SimpleRenamer.Framework.Core
 {
@@ -25,6 +29,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private IMovieMatcher _movieMatcher;
         private IFileMatcher _fileMatcher;
         private Settings _settings;
+        private ParallelOptions parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
         /// <summary>
         /// Fired whenever some noticeable progress is made
         /// </summary>
@@ -90,12 +95,18 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 List<string> videoFiles = await _fileWatcher.SearchTheseFoldersAsync(ct);
                 //use regex to attempt to figure out some details about the files ie showname, episode number, etc
                 List<MatchedFile> matchedFiles = await _fileMatcher.SearchFilesAsync(videoFiles, ct);
+
                 //try and match the tv shows with any TV scrapers we have available
-                List<MatchedFile> scannedEpisodes = await MatchTVShows(matchedFiles.Where(x => x.FileType == FileType.TvShow).ToList(), ct);
+                Task<List<MatchedFile>> scanTvShowsTask = MatchTVShows(matchedFiles.Where(x => x.FileType == FileType.TvShow).ToList(), ct);
                 //try and match movies with TMDB
-                List<MatchedFile> scannedMovies = await MatchMovies(matchedFiles.Where(x => x.FileType == FileType.Movie).ToList(), ct);
+                Task<List<MatchedFile>> scanMovieTask = MatchMovies(matchedFiles.Where(x => x.FileType == FileType.Movie).ToList(), ct);
                 //check there aren't any completely unmatched files (due to undecypherable filenames)
                 List<MatchedFile> otherVideoFiles = matchedFiles.Where(x => x.FileType == FileType.Unknown).ToList();
+
+                //wait for tv and movie scanning to complete
+                await Task.WhenAll(scanTvShowsTask, scanMovieTask);
+                List<MatchedFile> scannedEpisodes = scanTvShowsTask.Result;
+                List<MatchedFile> scannedMovies = scanMovieTask.Result;
 
                 //add the tv shows and movies to the same list and return this
                 List<MatchedFile> scannedFiles = new List<MatchedFile>();
@@ -126,23 +137,82 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private async Task<List<MatchedFile>> MatchTVShows(List<MatchedFile> matchedFiles, CancellationToken ct)
         {
             object lockList = new object();
-            List<MatchedFile> scannedEpisodes = new List<MatchedFile>();
+            ConcurrentBag<CompleteSeries> matchedSeries = new ConcurrentBag<CompleteSeries>();
+            ConcurrentBag<MatchedFile> outputEpisodes = new ConcurrentBag<MatchedFile>();
             ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
             ShowNameMapping originalMapping = _configurationManager.ShowNameMappings;
-            ParallelOptions po = new ParallelOptions()
+
+            //fixup mismatch titles
+            parallelOptions.CancellationToken = ct;
+            Parallel.ForEach(matchedFiles, parallelOptions, (file) =>
             {
-                CancellationToken = ct
-            };
-            //for each file
-            Parallel.ForEach(matchedFiles, po, (tempEp) =>
+                _tvShowMatcher.FixShowsFromMappings(file);
+            });
+
+            //ONLY DO ALL THIS STUFF IF WE ARE RENAMING FILES
+            //find unique show ids or show names                        
+            List<string> uniqueShowIds = matchedFiles.Where(x => !string.IsNullOrEmpty(x.TVDBShowId)).Select(x => x.TVDBShowId).Distinct().ToList();
+            List<string> uniqueShowNames = matchedFiles.Where(x => string.IsNullOrEmpty(x.TVDBShowId)).Select(x => x.ShowName).Distinct().ToList();
+
+            //block for searching unique show ids
+            var searchShowIdsAsyncBlock = new ActionBlock<string>(async (showId) =>
             {
-                //scrape the episode name and incorporate this in the filename (if setting allows)
-                if (_settings.RenameFiles)
+                ct.ThrowIfCancellationRequested();
+                CompleteSeries series = await _tvShowMatcher.SearchShowByIdAsync(showId);
+                if (series != null)
                 {
-                    tempEp = _tvShowMatcher.ScrapeDetailsAsync(tempEp).GetAwaiter().GetResult();
-                    if (!string.IsNullOrWhiteSpace(tempEp.TVDBShowId))
+                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Found data for {0}", series.Series.SeriesName)));
+                    matchedSeries.Add(series);
+                }
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2 });
+
+            //block for searching unique shownames
+            var searchShowNamesAsyncBlock = new ActionBlock<string>(async (showName) =>
+            {
+                ct.ThrowIfCancellationRequested();
+                CompleteSeries series = await _tvShowMatcher.SearchShowByNameAsync(showName);
+                if (series != null)
+                {
+                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Found data for {0}", series.Series.SeriesName)));
+                    matchedSeries.Add(series);
+                }
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2 });
+
+            //execute for each unique showId
+            foreach (string showId in uniqueShowIds)
+            {
+                searchShowIdsAsyncBlock.Post(showId);
+            }
+            searchShowIdsAsyncBlock.Complete();
+            await searchShowIdsAsyncBlock.Completion;
+
+            ///execute for each unique showname
+            foreach (string showName in uniqueShowNames)
+            {
+                searchShowNamesAsyncBlock.Post(showName);
+            }
+            searchShowNamesAsyncBlock.Complete();
+            await searchShowNamesAsyncBlock.Completion;
+
+            //for each series we matched
+            foreach (CompleteSeries series in matchedSeries)
+            {
+                ct.ThrowIfCancellationRequested();
+                Parallel.ForEach(matchedFiles, parallelOptions, (file) =>
+                {
+                    ct.ThrowIfCancellationRequested();
+                    //if the file had showid set
+                    if (file.TVDBShowId != null)
                     {
-                        Mapping map = new Mapping(tempEp.ShowName, tempEp.ShowName, tempEp.TVDBShowId);
+                        if (series.Series.Id.ToString().Equals(file.TVDBShowId))
+                        {
+                            _tvShowMatcher.UpdateFileWithSeriesDetails(file, series);
+                        }
+                    }
+                    else if (series.Series.SeriesName.Equals(file.ShowName))
+                    {
+                        //update the mapping as found something
+                        Mapping map = new Mapping(file.ShowName, series.Series.SeriesName, series.Series.Id.ToString());
                         if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                         {
                             lock (lockList)
@@ -150,37 +220,44 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                                 showNameMapping.Mappings.Add(map);
                             }
                         }
+                        _tvShowMatcher.UpdateFileWithSeriesDetails(file, series);
                     }
-                }
-                else
-                {
-                    tempEp.NewFileName = Path.GetFileNameWithoutExtension(tempEp.SourceFilePath);
-                }
-                _logger.TraceMessage(string.Format("Matched: {0} - S{1}E{2} - {3}", tempEp.ShowName, tempEp.Season, tempEp.EpisodeNumber, tempEp.EpisodeName));
-                //only add the file if it needs renaming/moving
-                string destinationDirectory = Path.Combine(_settings.DestinationFolderTV, tempEp.ShowName, string.Format("Season {0}", tempEp.Season));
-                string destinationFilePath = Path.Combine(destinationDirectory, tempEp.NewFileName + Path.GetExtension(tempEp.SourceFilePath));
-                if (!tempEp.SourceFilePath.Equals(destinationFilePath))
-                {
-                    _logger.TraceMessage(string.Format("Will move with name {0}", tempEp.NewFileName));
-                    lock (lockList)
-                    {
-                        scannedEpisodes.Add(tempEp);
-                    }
-                }
-                else
-                {
-                    _logger.TraceMessage(string.Format("File is already in good location {0}", tempEp.SourceFilePath));
-                }
+                });
+            };
+
+            //final check that files need moving and are not already in correct location
+            var ensureFileNeedsMovingBlock = new ActionBlock<MatchedFile>((file) =>
+            {
                 ct.ThrowIfCancellationRequested();
-            });
+                //only add the file if it needs renaming/moving
+                string destinationDirectory = Path.Combine(_settings.DestinationFolderTV, file.ShowName, string.Format("Season {0}", file.Season));
+                string destinationFilePath = Path.Combine(destinationDirectory, file.NewFileName + Path.GetExtension(file.SourceFilePath));
+                if (!file.SourceFilePath.Equals(destinationFilePath))
+                {
+                    _logger.TraceMessage(string.Format("Will move file {0} to {1}", file.SourceFilePath, file.NewFileName), EventLevel.Verbose);
+                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Will move file {0} to {1}.", file.SourceFilePath, file.NewFileName)));
+                    outputEpisodes.Add(file);
+                }
+                else
+                {
+                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("File {0} will be ignored as already in correct location.", file.SourceFilePath, file.NewFileName)));
+                    _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
+                }
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
+
+            foreach (MatchedFile file in matchedFiles)
+            {
+                ensureFileNeedsMovingBlock.Post(file);
+            }
+            ensureFileNeedsMovingBlock.Complete();
+            await ensureFileNeedsMovingBlock.Completion;
 
             if (showNameMapping.Mappings != originalMapping.Mappings || showNameMapping.Mappings.Count != originalMapping.Mappings.Count)
             {
                 _configurationManager.ShowNameMappings = showNameMapping;
             }
 
-            return scannedEpisodes;
+            return outputEpisodes.ToList();
         }
 
         /// <summary>
@@ -191,37 +268,39 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private async Task<List<MatchedFile>> MatchMovies(List<MatchedFile> matchedFiles, CancellationToken ct)
         {
-            object lockList = new object();
-            List<MatchedFile> scannedMovies = new List<MatchedFile>();
+            ConcurrentBag<MatchedFile> scannedMovies = new ConcurrentBag<MatchedFile>();
 
-            ParallelOptions po = new ParallelOptions()
-            {
-                CancellationToken = ct
-            };
             //for each file
-            Parallel.ForEach(matchedFiles, po, (tempMovie) =>
+            var searchFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
-                tempMovie = _movieMatcher.ScrapeDetailsAsync(tempMovie).GetAwaiter().GetResult();
+                ct.ThrowIfCancellationRequested();
+                file = await _movieMatcher.ScrapeDetailsAsync(file);
 
                 //only add the file if it needs renaming/moving
-                string movieDirectory = Path.Combine(_settings.DestinationFolderMovie, $"{tempMovie.ShowName} ({tempMovie.Season})");
-                string destinationFilePath = Path.Combine(movieDirectory, tempMovie.ShowName + Path.GetExtension(tempMovie.SourceFilePath));
-                if (!tempMovie.SourceFilePath.Equals(destinationFilePath))
+                string movieDirectory = Path.Combine(_settings.DestinationFolderMovie, $"{file.ShowName} ({file.Season})");
+                string destinationFilePath = Path.Combine(movieDirectory, file.ShowName + Path.GetExtension(file.SourceFilePath));
+                if (!file.SourceFilePath.Equals(destinationFilePath))
                 {
-                    _logger.TraceMessage(string.Format("Will move with name {0}", tempMovie.NewFileName));
-                    lock (lockList)
-                    {
-                        scannedMovies.Add(tempMovie);
-                    }
+                    _logger.TraceMessage(string.Format("Will move file {0} to {1}", file.SourceFilePath, file.NewFileName), EventLevel.Verbose);
+                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Will move file {0} to {1}.", file.SourceFilePath, file.NewFileName)));
+                    scannedMovies.Add(file);
                 }
                 else
                 {
-                    _logger.TraceMessage(string.Format("File is already in good location {0}", tempMovie.SourceFilePath));
+                    _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
+                    _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
                 }
-                ct.ThrowIfCancellationRequested();
-            });
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
 
-            return scannedMovies;
+            //post all our files to our dataflow
+            foreach (MatchedFile file in matchedFiles)
+            {
+                searchFilesAsyncBlock.Post(file);
+            }
+            searchFilesAsyncBlock.Complete();
+            await searchFilesAsyncBlock.Completion;
+
+            return scannedMovies.ToList();
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common
 {
@@ -77,6 +78,28 @@ namespace Sarjee.SimpleRenamer.Common
         public string RemoveSpecialCharacters(string input)
         {
             return specialCharacterRegex.Replace(input, "");
+        }
+
+        /// <summary>
+        /// Adds asynchronous exponential delay
+        /// </summary>
+        /// <param name="offsetMilliseconds">The offset milliseconds.</param>
+        /// <param name="retryCount">The retry count.</param>
+        /// <param name="maxBackoffSeconds">The maximum backoff seconds.</param>
+        /// <returns></returns>
+        public async Task ExponentialDelayAsync(int offsetMilliseconds, int retryCount, int maxBackoffSeconds)
+        {
+            //generate a TimeSpan to use for backoff based on offset * 2^retries
+            TimeSpan backoff = TimeSpan.FromMilliseconds(offsetMilliseconds * (int)Math.Pow(2, retryCount));
+
+            //if the back off in seconds exceeds our max backoff then set the backoff to maxbackoff
+            if (backoff.Seconds > maxBackoffSeconds)
+            {
+                backoff = TimeSpan.FromSeconds(maxBackoffSeconds);
+            }
+
+            //await the backoff delay
+            await Task.Delay(backoff);
         }
     }
 }

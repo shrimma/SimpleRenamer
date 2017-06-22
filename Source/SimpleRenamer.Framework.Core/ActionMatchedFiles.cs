@@ -2,11 +2,13 @@
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace Sarjee.SimpleRenamer.Framework.Core
 {
@@ -105,73 +107,36 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private async Task<List<MatchedFile>> PreProcessTVShows(List<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
-            List<(string show, string season)> uniqueShowSeasons = new List<(string show, string season)>();
-            List<MatchedFile> ProcessFiles = new List<MatchedFile>();
+            ConcurrentBag<MatchedFile> processFiles = new ConcurrentBag<MatchedFile>();
             ShowNameMapping snm = _configurationManager.ShowNameMappings;
-            foreach (MatchedFile ep in scannedEpisodes)
+
+            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
-                if (settings.RenameFiles)
+                ct.ThrowIfCancellationRequested();
+                Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(file.TVDBShowId)).FirstOrDefault();
+                MatchedFile result = await _fileMover.CreateDirectoriesAndDownloadBannersAsync(file, mapping, true);
+                //fire event here
+                RaiseFilePreProcessedEvent(this, new FilePreProcessedEventArgs());
+                if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
                 {
-                    Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(ep.TVDBShowId)).FirstOrDefault();
-                    //check if this show season combo is already going to be processed
-                    (string show, string season) = (ep.ShowName, ep.Season);
-                    bool alreadyGrabbedBanners = false;
-                    foreach ((string show, string season) unique in uniqueShowSeasons)
-                    {
-                        if (unique.season.Equals(ep.Season) && unique.show.Equals(ep.ShowName))
-                        {
-                            alreadyGrabbedBanners = true;
-                            break;
-                        }
-                    }
-                    if (alreadyGrabbedBanners)
-                    {
-                        //if we have already processed this show season combo then dont download the banners again
-                        MatchedFile result = await await _backgroundQueue.QueueTask(() => _fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, false));
-                        if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
-                        {
-                            ProcessFiles.Add(result);
-                            _logger.TraceMessage(string.Format("Successfully processed file without banners: {0}", result.SourceFilePath));
-                        }
-                        else
-                        {
-                            _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
-                        }
-                    }
-                    else
-                    {
-                        MatchedFile result = await await _backgroundQueue.QueueTask(() => _fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, mapping, true));
-                        if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
-                        {
-                            ProcessFiles.Add(result);
-                            uniqueShowSeasons.Add((ep.ShowName, ep.Season));
-                            _logger.TraceMessage(string.Format("Successfully processed file and downloaded banners: {0}", result.SourceFilePath));
-                        }
-                        else
-                        {
-                            _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
-                        }
-                    }
+                    _logger.TraceMessage(string.Format("Successfully processed file and downloaded banners: {0}", result.SourceFilePath));
+                    processFiles.Add(result);
                 }
                 else
                 {
-                    MatchedFile result = await await _backgroundQueue.QueueTask(() => _fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false));
-                    if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
-                    {
-                        ProcessFiles.Add(result);
-                        _logger.TraceMessage(string.Format("Successfully processed file without renaming: {0}", result.SourceFilePath));
-                    }
-                    else
-                    {
-                        _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
-                    }
+                    _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
                 }
-                ct.ThrowIfCancellationRequested();
-                //fire event here
-                RaiseFilePreProcessedEvent(this, new FilePreProcessedEventArgs());
-            }
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
 
-            return ProcessFiles;
+            //post all our files to our dataflow
+            foreach (MatchedFile file in scannedEpisodes)
+            {
+                actionFilesAsyncBlock.Post(file);
+            }
+            actionFilesAsyncBlock.Complete();
+            await actionFilesAsyncBlock.Completion;
+
+            return processFiles.ToList();
         }
 
         /// <summary>
@@ -182,41 +147,33 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private async Task<List<MatchedFile>> PreProcessMovies(List<MatchedFile> scannedMovies, CancellationToken ct)
         {
-            List<MatchedFile> ProcessFiles = new List<MatchedFile>();
-            foreach (MatchedFile ep in scannedMovies)
+            ConcurrentBag<MatchedFile> processFiles = new ConcurrentBag<MatchedFile>();
+            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
-                if (settings.RenameFiles)
+                ct.ThrowIfCancellationRequested();
+                MatchedFile result = await _fileMover.CreateDirectoriesAndDownloadBannersAsync(file, null, false);
+                //fire event here
+                RaiseFilePreProcessedEvent(this, new FilePreProcessedEventArgs());
+                if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
                 {
-                    MatchedFile result = await await _backgroundQueue.QueueTask(() => _fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false));
-                    if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
-                    {
-                        ProcessFiles.Add(result);
-                        _logger.TraceMessage(string.Format("Successfully processed file and downloaded banners: {0}", result.SourceFilePath));
-                    }
-                    else
-                    {
-                        _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
-                    }
-
+                    _logger.TraceMessage(string.Format("Successfully processed file: {0}", result.SourceFilePath));
+                    processFiles.Add(result);
                 }
                 else
                 {
-                    MatchedFile result = await await _backgroundQueue.QueueTask(() => _fileMover.CreateDirectoriesAndDownloadBannersAsync(ep, null, false));
-                    if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
-                    {
-                        ProcessFiles.Add(result);
-                        _logger.TraceMessage(string.Format("Successfully processed file without renaming: {0}", result.SourceFilePath));
-                    }
-                    else
-                    {
-                        _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
-                    }
+                    _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
                 }
-                //fire event here
-                RaiseFilePreProcessedEvent(this, new FilePreProcessedEventArgs());
-                ct.ThrowIfCancellationRequested();
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
+
+            //post all our files to our dataflow
+            foreach (MatchedFile file in scannedMovies)
+            {
+                actionFilesAsyncBlock.Post(file);
             }
-            return ProcessFiles;
+            actionFilesAsyncBlock.Complete();
+            await actionFilesAsyncBlock.Completion;
+
+            return processFiles.ToList();
         }
 
         /// <summary>
@@ -227,9 +184,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private async Task<bool> MoveFiles(List<MatchedFile> filesToMove, CancellationToken ct)
         {
-            //actually move/copy the files one at a time
-            foreach (MatchedFile file in filesToMove)
+            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
+                ct.ThrowIfCancellationRequested();
                 RaiseProgressEvent(this, new ProgressTextEventArgs($"Moving file {file.SourceFilePath} to {file.DestinationFilePath}."));
                 bool result = await await _backgroundQueue.QueueTask(() => _fileMover.MoveFileAsync(file, ct));
                 if (result)
@@ -242,8 +199,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     _logger.TraceMessage(string.Format("Failed to {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, settings.CopyFiles ? "copy" : "move"));
                 }
-                ct.ThrowIfCancellationRequested();
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
+            //actually move/copy the files one at a time
+            foreach (MatchedFile file in filesToMove)
+            {
+                actionFilesAsyncBlock.Post(file);
             }
+            actionFilesAsyncBlock.Complete();
+            await actionFilesAsyncBlock.Completion;
 
             return true;
         }
