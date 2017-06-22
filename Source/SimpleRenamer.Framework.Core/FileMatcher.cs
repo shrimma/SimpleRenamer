@@ -20,7 +20,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IFileMatcher" />
     public class FileMatcher : IFileMatcher
     {
-        private RegexFile regexExpressions;
+        private RegexFile _regexExpressions;
+        private List<(Regex regex, bool isForTv)> _activeRegex;
         private ILogger _logger;
         /// <summary>
         /// Fired whenever some noticeable progress is made
@@ -44,7 +45,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 throw new ArgumentNullException(nameof(configManager));
             }
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            regexExpressions = configManager.RegexExpressions;
+            _regexExpressions = configManager.RegexExpressions;
         }
 
         /// <summary>
@@ -57,6 +58,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         {
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Parsing file names for show or movie details"));
             ConcurrentBag<MatchedFile> matchedFiles = new ConcurrentBag<MatchedFile>();
+
+            //grab the current active regularexpressions
+            Initialize();
 
             //block for searching the files
             var searchFilesAsyncBlock = new ActionBlock<string>((file) =>
@@ -90,6 +94,19 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return matchedFiles.ToList();
         }
 
+        private void Initialize()
+        {
+            //add only the active regexp
+            _activeRegex = new List<(Regex regex, bool isForTv)>();
+            foreach (RegexExpression exp in _regexExpressions.RegexExpressions)
+            {
+                if (exp.IsEnabled)
+                {
+                    _activeRegex.Add((new Regex(exp.Expression, RegexOptions.IgnoreCase), exp.IsForTvShow));
+                }
+            }
+        }
+
         /// <summary>
         /// Searches the file name.
         /// </summary>
@@ -106,51 +123,47 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             string yearString = null;
             int year = 0;
 
-            foreach (RegexExpression exp in regexExpressions.RegexExpressions)
+            foreach ((Regex regex, bool isForTv) regEx in _activeRegex)
             {
                 ct.ThrowIfCancellationRequested();
                 try
                 {
-                    if (exp.IsEnabled)
+                    //if this expression is enabled then match against the filename                    
+                    Match fileMatch = regEx.regex.Match(Path.GetFileNameWithoutExtension(fileName));
+
+                    //match for tv show regexp
+                    if (regEx.isForTv)
                     {
-                        //if this expression is enabled then match against the filename
-                        Regex regexStandard = new Regex(exp.Expression, RegexOptions.IgnoreCase);
-                        Match fileMatch = regexStandard.Match(Path.GetFileNameWithoutExtension(fileName));
+                        showname = SanitizeFileName(fileMatch.Groups["series_name"].Value);
+                        season = fileMatch.Groups["season_num"].Value;
+                        episode = fileMatch.Groups["ep_num"].Value;
 
-                        //match for tv show regexp
-                        if (exp.IsForTvShow)
+                        if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
                         {
-                            showname = SanitizeFileName(fileMatch.Groups["series_name"].Value);
-                            season = fileMatch.Groups["season_num"].Value;
-                            episode = fileMatch.Groups["ep_num"].Value;
-
-                            if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
-                            {
-                                //if we found a showname, season, and episode in the filename then this is a match
-                                _logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
-                                return new MatchedFile(fileName, showname, season, episode);
-                            }
+                            //if we found a showname, season, and episode in the filename then this is a match
+                            _logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
+                            return new MatchedFile(fileName, showname, season, episode);
                         }
-                        //else match for movie regexp
-                        else
-                        {
-                            movieTitle = SanitizeFileName(fileMatch.Groups["movie_title"].Value);
-                            yearString = fileMatch.Groups["movie_year"].Value;
-                            int.TryParse(yearString, out year);
+                    }
+                    //else match for movie regexp
+                    else
+                    {
+                        movieTitle = SanitizeFileName(fileMatch.Groups["movie_title"].Value);
+                        yearString = fileMatch.Groups["movie_year"].Value;
+                        int.TryParse(yearString, out year);
 
-                            if (!string.IsNullOrEmpty(movieTitle) && !string.IsNullOrEmpty(yearString))
-                            {
-                                //if we found a movie title and year then this is a match
-                                _logger.TraceMessage("SearchFileNameAsync - Found movietitle, and year in file name");
-                                return new MatchedFile(fileName, movieTitle, year);
-                            }
+                        if (!string.IsNullOrEmpty(movieTitle) && !string.IsNullOrEmpty(yearString))
+                        {
+                            //if we found a movie title and year then this is a match
+                            _logger.TraceMessage("SearchFileNameAsync - Found movietitle, and year in file name");
+                            return new MatchedFile(fileName, movieTitle, year);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
                     //we don't really care if one of the regex fails so swallow this exception
-                    _logger.TraceException(ex, $"The RegularExpression {exp.Expression} failed on {fileName}.");
+                    _logger.TraceException(ex, $"The RegularExpression {regEx.regex.ToString()} failed on {fileName}.");
                 }
                 ct.ThrowIfCancellationRequested();
             }
@@ -174,7 +187,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             {
                 if (IsJoiningWord(word.ToLowerInvariant()) && i > 1)
                 {
-                    output += word + " ";
+                    output += word.ToLowerInvariant() + " ";
                 }
                 else
                 {
