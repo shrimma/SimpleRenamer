@@ -82,7 +82,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         [TestCategory(TestCategories.Core)]
         public void ScanFiles_Scan_Success()
         {
-            IScanFiles scanFiles = GetScanFiles(); ;
+            IScanFiles scanFiles = GetScanFiles();
             Func<Task> action1 = async () => await scanFiles.Scan(new System.Threading.CancellationToken());
 
             action1.ShouldNotThrow();

@@ -2,6 +2,7 @@
 using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using System;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,7 +54,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         public async Task<MatchedFile> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner)
         {
-            _logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - Start");
+            _logger.TraceMessage($"Creating Directories for {episode.SourceFilePath}", EventLevel.Verbose);
             string ext = Path.GetExtension(episode.SourceFilePath);
             if (episode.FileType == FileType.TvShow)
             {
@@ -74,12 +75,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 if (!Directory.Exists(seasonDirectory))
                 {
                     Directory.CreateDirectory(seasonDirectory);
+                    _logger.TraceMessage($"Created Directory {seasonDirectory}", EventLevel.Verbose);
                 }
 
                 try
                 {
                     if (downloadBanner)
                     {
+                        _logger.TraceMessage($"Downloading images for {episode.SourceFilePath}", EventLevel.Verbose);
                         bool bannerResult;
                         if (!string.IsNullOrEmpty(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
                         {
@@ -108,10 +111,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 if (!Directory.Exists(movieDirectory))
                 {
                     Directory.CreateDirectory(movieDirectory);
+                    _logger.TraceMessage($"Created Directory {movieDirectory}", EventLevel.Verbose);
                 }
             }
 
-            _logger.TraceMessage("CreateDirectoriesAndDownloadBannersAsync - End");
+            _logger.TraceMessage($"Created Directories and Downloaded Banners for {episode.SourceFilePath}.", EventLevel.Verbose);
             return episode;
         }
 
@@ -123,7 +127,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         public async Task<bool> MoveFileAsync(MatchedFile episode, CancellationToken ct)
         {
-            _logger.TraceMessage("MoveFileAsync - Start");
+            _logger.TraceMessage($"Moving File {episode.SourceFilePath} to {episode.DestinationFilePath}.", EventLevel.Verbose);
             FileInfo fromFile = new FileInfo(episode.SourceFilePath);
             FileInfo toFile = new FileInfo(episode.DestinationFilePath);
             if (QuickOperation(fromFile, toFile))
@@ -135,7 +139,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 CopyItOurself(settings, fromFile, toFile, ct);
             }
 
-            _logger.TraceMessage("MoveFileAsync - End");
+            _logger.TraceMessage($"Moved File {episode.SourceFilePath} to {episode.DestinationFilePath}.", EventLevel.Verbose);
             return true;
         }
 
@@ -147,13 +151,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private bool QuickOperation(FileInfo fromFile, FileInfo toFile)
         {
-            _logger.TraceMessage("QuickOperation - Start");
+            _logger.TraceMessage("QuickOperation - Start", EventLevel.Verbose);
             if ((fromFile == null) || (toFile == null) || (fromFile.Directory == null) || (toFile.Directory == null))
             {
                 return false;
             }
 
-            _logger.TraceMessage("QuickOperation - End");
+            _logger.TraceMessage("QuickOperation - End", EventLevel.Verbose);
             return (settings.RenameFiles && !settings.CopyFiles && (fromFile.Directory.Root.FullName.ToLower() == toFile.Directory.Root.FullName.ToLower())); // same device ... TODO: UNC paths?
         }
 
@@ -200,7 +204,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <param name="toFile">To file.</param>
         private void OSMoveRename(FileInfo fromFile, FileInfo toFile)
         {
-            _logger.TraceMessage("OSMoveRename - Start");
+            _logger.TraceMessage("OSMoveRename - Start", EventLevel.Verbose);
             if (FileIsSame(fromFile, toFile))
             {
                 // XP won't actually do a rename if its only a case difference
@@ -213,7 +217,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 fromFile.MoveTo(toFile.FullName);
             }
             KeepTimestamps(fromFile, toFile);
-            _logger.TraceMessage("OSMoveRename - End");
+            _logger.TraceMessage("OSMoveRename - End", EventLevel.Verbose);
         }
 
         /// <summary>
@@ -247,7 +251,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <param name="ct">The ct.</param>
         private void CopyItOurself(Settings settings, FileInfo fromFile, FileInfo toFile, CancellationToken ct)
         {
-            _logger.TraceMessage("CopyItOurself - Start");
+            _logger.TraceMessage("CopyItOurself - Start", EventLevel.Verbose);
             const int kArrayLength = 1 * 1024 * 1024;
             Byte[] dataArray = new Byte[kArrayLength];
 
@@ -374,7 +378,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 throw;
             }
 
-            _logger.TraceMessage("CopyItOurself - End");
+            _logger.TraceMessage("CopyItOurself - End", EventLevel.Verbose);
         }
 
         /// <summary>

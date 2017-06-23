@@ -6,6 +6,7 @@ using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,6 +54,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <returns></returns>
         public async Task<List<DetailView>> GetPossibleMoviesForFile(string movieName)
         {
+            _logger.TraceMessage($"Get possible matches for movie: {movieName}.", EventLevel.Verbose);
             ConcurrentBag<DetailView> movies = new ConcurrentBag<DetailView>();
             SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName, 0);
             if (results != null)
@@ -82,6 +84,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 });
             }
 
+            _logger.TraceMessage($"Found {movies.Count} possible matches for movie: {movieName}.", EventLevel.Verbose);
             return movies.ToList();
         }
 
@@ -92,25 +95,25 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <returns></returns>
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie)
         {
-            _logger.TraceMessage("ScrapeDetailsAsync - Start");
+            _logger.TraceMessage($"Scraping Movie Details for {movie.SourceFilePath}.", EventLevel.Verbose);
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.SourceFilePath}"));
 
             SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movie.ShowName, movie.Year);
-
-            //IF we have more than 1 result then flag the file to be manually matched
-            if (results.Results.Count > 1)
-            {
-                movie.ActionThis = false;
-                movie.SkippedExactSelection = true;
-            }
-            else if (results.Results.Count == 1)
+            //if only one result then we can safely match
+            if (results?.Results?.Count == 1)
             {
                 //if theres only one match then scape the specific show
                 movie.TMDBShowId = results.Results[0].Id;
                 movie.ShowImage = results.Results[0].PosterPath;
                 movie.NewFileName = _helper.RemoveSpecialCharacters(movie.ShowName);
+                _logger.TraceMessage($"Found exactly one result so can safely match {movie.SourceFilePath} with MovieId {movie.TMDBShowId}.", EventLevel.Verbose);
             }
-            _logger.TraceMessage("ScrapeDetailsAsync - End");
+            else
+            {
+                movie.ActionThis = false;
+                movie.SkippedExactSelection = true;
+                _logger.TraceMessage($"Found {results?.Results?.Count} possible matches for {movie.SourceFilePath}. So must be manually matched by user.", EventLevel.Verbose);
+            }
             return movie;
         }
 
@@ -124,7 +127,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         {
             return await Task.Run(async () =>
             {
-                _logger.TraceMessage("UpdateFileWithMatchedMovie - Start");
+                _logger.TraceMessage($"Updating File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
 
                 if (!string.IsNullOrEmpty(movieId))
                 {
@@ -144,7 +147,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                     matchedFile.SkippedExactSelection = true;
                 }
 
-                _logger.TraceMessage("UpdateFileWithMatchedMovie - End");
+                _logger.TraceMessage($"Updated File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
                 return matchedFile;
             });
         }
@@ -157,7 +160,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <returns></returns>
         public async Task<(Common.Movie.Model.Movie movie, BitmapImage banner)> GetMovieWithBanner(string movieId, CancellationToken ct)
         {
-            _logger.TraceMessage("GetMovieInfo - Start");
+            _logger.TraceMessage($"Getting MovieInfo for MovieId: {movieId}.", EventLevel.Verbose);
             Common.Movie.Model.Movie matchedMovie = await _tmdbManager.GetMovieAsync(movieId);
             BitmapImage bannerImage = new BitmapImage();
 
@@ -172,7 +175,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 //TODO add a not found poster
             }
 
-            _logger.TraceMessage("GetMovieInfo - End");
+            _logger.TraceMessage("Got MovieInfo for MovieId: {movieId}", EventLevel.Verbose);
             return (matchedMovie, bannerImage);
         }
     }

@@ -4,6 +4,7 @@ using Sarjee.SimpleRenamer.Common.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -54,7 +55,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// </returns>
         public async Task<List<string>> SearchFoldersAsync(CancellationToken ct)
         {
-            _logger.TraceMessage("SearchTheseFoldersAsync - Start");
+            _logger.TraceMessage("SearchTheseFoldersAsync - Start", EventLevel.Verbose);
             List<string> foundFiles = new List<string>();
             //grab the list of ignored files
 
@@ -81,7 +82,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
 
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Searched all watch folders for video files"));
-            _logger.TraceMessage("SearchTheseFoldersAsync - End");
+            _logger.TraceMessage($"Found {foundFiles.Count} across all watch folders.", EventLevel.Verbose);
 
             return foundFiles;
         }
@@ -94,7 +95,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private async Task<List<string>> SearchThisFolder(string dir, CancellationToken ct)
         {
-            _logger.TraceMessage("SearchThisFolder - Start");
+            _logger.TraceMessage($"Searching Folder {dir} for valid video files.", EventLevel.Verbose);
             ConcurrentBag<string> foundFiles = new ConcurrentBag<string>();
             _parallelOptions.CancellationToken = ct;
             Task result = Task.Run(() => Parallel.ForEach(Directory.GetFiles(dir, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly), _parallelOptions, (file) =>
@@ -109,7 +110,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
             await result;
 
-            _logger.TraceMessage("SearchThisFolder - End");
+            _logger.TraceMessage($"Found {foundFiles.Count} video files in {dir}.", EventLevel.Verbose);
             return foundFiles.ToList();
         }
 
@@ -122,17 +123,16 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// </returns>
         private bool IsValidExtension(string input)
         {
-            _logger.TraceMessage("SearchThisFolderIsValidExtension - Start");
             foreach (string extension in settings.ValidExtensions)
             {
                 if (input.ToLowerInvariant().Equals(extension.ToLowerInvariant()))
                 {
-                    _logger.TraceMessage("SearchThisFolderIsValidExtension - True");
+                    _logger.TraceMessage($"{input} IsValidExtension == True", EventLevel.Verbose);
                     return true;
                 }
             }
 
-            _logger.TraceMessage("SearchThisFolderIsValidExtension - False");
+            _logger.TraceMessage($"{input} IsValidExtension == False", EventLevel.Verbose);
             return false;
         }
     }

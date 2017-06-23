@@ -1,6 +1,7 @@
 ﻿using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using System;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -41,7 +42,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <inheritdoc />
         public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder)
         {
-            _logger.TraceMessage("SaveBannerAsync - Start");
+            _logger.TraceMessage($"Downloading banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
             string fullBannerPath = Path.Combine(destinationFolder, "Folder.jpg");
             if (!File.Exists(fullBannerPath))
             {
@@ -51,7 +52,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 }
             }
 
-            _logger.TraceMessage("SaveBannerAsync - End");
+            _logger.TraceMessage($"Downloaded banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
             return true;
         }
     }

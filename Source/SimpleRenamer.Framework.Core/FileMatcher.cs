@@ -56,6 +56,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         public async Task<List<MatchedFile>> SearchFilesAsync(List<string> files, CancellationToken ct)
         {
+            _logger.TraceMessage($"Parsing all found files against the regular expressions.", EventLevel.Verbose);
             RaiseProgressEvent(this, new ProgressTextEventArgs($"Parsing file names for show or movie details"));
             ConcurrentBag<MatchedFile> matchedFiles = new ConcurrentBag<MatchedFile>();
 
@@ -68,15 +69,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 MatchedFile matchedFile = SearchFileName(file, ct);
                 if (matchedFile != null)
                 {
-                    //if episode is not null then we matched so add to the output list
-                    _logger.TraceMessage(string.Format("Matched {0}", matchedFile.SourceFilePath));
+                    //if episode is not null then we matched so add to the output list                    
                     RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Matched file {0} with one of the regular expressions", matchedFile.SourceFilePath)));
                     matchedFiles.Add(matchedFile);
                 }
                 else
                 {
-                    //else we couldn't match the file so add a file with just filepath so user can manually match
-                    _logger.TraceMessage(string.Format("Couldn't find a match for {0}!", file));
+                    //else we couldn't match the file so add a file with just filepath so user can manually match                    
                     matchedFile = new MatchedFile(file, Path.GetFileNameWithoutExtension(file));
                     RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Couldn't find a match for {0}!", file)));
                     matchedFiles.Add(matchedFile);
@@ -91,6 +90,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             searchFilesAsyncBlock.Complete();
             await searchFilesAsyncBlock.Completion;
 
+            _logger.TraceMessage($"Parsed all found files against the regular expressions.", EventLevel.Verbose);
             return matchedFiles.ToList();
         }
 
@@ -115,7 +115,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private MatchedFile SearchFileName(string fileName, CancellationToken ct)
         {
-            _logger.TraceMessage("SearchFileNameAsync - Start");
+            _logger.TraceMessage($"Checking {fileName} against regular expressions.", EventLevel.Verbose);
             string showname = null;
             string season = null;
             string episode = null;
@@ -141,7 +141,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                         if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
                         {
                             //if we found a showname, season, and episode in the filename then this is a match
-                            _logger.TraceMessage("SearchFileNameAsync - Found showname, season, and episode in file name");
+                            _logger.TraceMessage($"Matched show details for {fileName}.", EventLevel.Verbose);
                             return new MatchedFile(fileName, showname, season, episode);
                         }
                     }
@@ -155,7 +155,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                         if (!string.IsNullOrEmpty(movieTitle) && !string.IsNullOrEmpty(yearString))
                         {
                             //if we found a movie title and year then this is a match
-                            _logger.TraceMessage("SearchFileNameAsync - Found movietitle, and year in file name");
+                            _logger.TraceMessage($"Matched movie details for {fileName}.", EventLevel.Verbose);
                             return new MatchedFile(fileName, movieTitle, year);
                         }
                     }
@@ -168,7 +168,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 ct.ThrowIfCancellationRequested();
             }
 
-            _logger.TraceMessage("SearchFileName - No regex could match the file - End");
+            _logger.TraceMessage($"No regex could match {fileName}.", EventLevel.Warning);
             return null;
         }
 
@@ -179,7 +179,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private string SanitizeFileName(string input)
         {
-            _logger.TraceMessage("SanitizeFileName - Start", EventLevel.Verbose);
+            _logger.TraceMessage($"Sanitizing FileName {input}.", EventLevel.Verbose);
             string output = null;
             string[] words = input.Split('.');
             int i = 1;
@@ -196,7 +196,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 i++;
             }
 
-            _logger.TraceMessage("SanitizeFileName - End", EventLevel.Verbose);
+            _logger.TraceMessage($"Sanitized FileName {input} to {output.Trim()}.", EventLevel.Verbose);
             return output.Trim();
         }
 
@@ -209,16 +209,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// </returns>
         private bool IsJoiningWord(string input)
         {
-            _logger.TraceMessage("IsJoiningWord - Start", EventLevel.Verbose);
             foreach (string word in JoiningWords)
             {
                 if (input.Equals(word.ToLowerInvariant()))
                 {
-                    _logger.TraceMessage("IsJoiningWord - True", EventLevel.Verbose);
+                    _logger.TraceMessage($"{input} IsJoiningWord - True", EventLevel.Verbose);
                     return true;
                 }
             }
-            _logger.TraceMessage("IsJoiningWord - False", EventLevel.Verbose);
             return false;
         }
         private string[] JoiningWords

@@ -6,6 +6,7 @@ using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -55,27 +56,34 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         public async Task<CompleteSeries> SearchShowByNameAsync(string showName)
         {
+            _logger.TraceMessage($"Searching for Show by Name: {showName}.", EventLevel.Verbose);
             List<SeriesSearchData> searchResults = await _tvdbManager.SearchSeriesByNameAsync(showName);
             //if theres only one match then scape the specific show and return this
             if (searchResults?.Count == 1)
             {
+                _logger.TraceMessage($"Found only one show for Name: {showName}. So will grab all series data.", EventLevel.Verbose);
                 string seriesId = searchResults[0].Id.ToString();
                 return await _tvdbManager.GetSeriesByIdAsync(seriesId);
             }
 
             //else there were no matches or more than 1 possible match so return null
+            _logger.TraceMessage($"Found {searchResults?.Count} shows for Name: {showName}. So cannot match this accurately, must be matched by user.", EventLevel.Verbose);
             return null;
         }
 
         public async Task<CompleteSeries> SearchShowByIdAsync(string showId)
         {
+            _logger.TraceMessage($"Searching for Show details by ShowId: {showId}.", EventLevel.Verbose);
             CompleteSeries series = await _tvdbManager.GetSeriesByIdAsync(showId);
             return series;
         }
 
         public MatchedFile UpdateFileWithSeriesDetails(MatchedFile file, CompleteSeries series)
         {
+            _logger.TraceMessage($"Updating File {file.SourceFilePath} with SeriesInfo {series.Series.SeriesName}.", EventLevel.Verbose);
             RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Matching {0} with data", file.SourceFilePath)));
+            bool seasonBannerFound = false;
+            bool seriesBannerFound = false;
             int.TryParse(file.EpisodeNumber, out int episodeNumber);
             int.TryParse(file.Season, out int seasonAsInt);
             file.TVDBShowId = series.Series.Id.ToString();
@@ -85,15 +93,18 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             if (seasonBanners != null && seasonBanners.Count > 0)
             {
                 file.SeasonImage = seasonBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName;
+                seasonBannerFound = true;
             }
             if (series.Posters != null && series.Posters.Count > 0)
             {
                 file.ShowImage = series.Posters.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName;
+                seriesBannerFound = true;
             }
             file.NewFileName = GenerateFileName(file.ShowName, file.Season, file.EpisodeNumber, file.EpisodeName);
             file.ActionThis = true;
             file.SkippedExactSelection = false;
 
+            _logger.TraceMessage($"Updated File {file.SourceFilePath} with SeriesInfo {series.Series.SeriesName}. Season Image Found {seasonBannerFound}. Show Image Found {seriesBannerFound}.", EventLevel.Verbose);
             return file;
         }
 
@@ -104,7 +115,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         private string GenerateFileName(string showName, string season, string episodeNumber, string episodeName)
         {
-            _logger.TraceMessage("GenerateFileName - Start");
+            _logger.TraceMessage($"Generating FileName for Show: {showName}, Season: {season}, Episode: {episodeNumber}.", EventLevel.Verbose);
 
             string temp = settings.NewFileNameFormat;
             if (temp.Contains("{ShowName}"))
@@ -123,7 +134,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {
                 temp = temp.Replace("{EpisodeName}", string.IsNullOrEmpty(episodeName) ? "" : episodeName);
             }
-            _logger.TraceMessage("GenerateFileName - End");
+            _logger.TraceMessage("Generated FileName {temp}.", EventLevel.Verbose);
             return _helper.RemoveSpecialCharacters(temp);
         }
 
@@ -134,14 +145,15 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public MatchedFile FixShowsFromMappings(MatchedFile episode)
         {
+            _logger.TraceMessage($"FixShowName based on Mappings for {episode.SourceFilePath}.", EventLevel.Verbose);
             ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
-            _logger.TraceMessage("FixMismatchTitles - Start");
             if (showNameMapping != null && showNameMapping.Mappings != null && showNameMapping.Mappings.Count > 0)
             {
                 foreach (Mapping m in showNameMapping.Mappings)
                 {
                     if (m.FileShowName.Equals(episode.ShowName))
                     {
+                        _logger.TraceMessage($"FixShowName found match {m.TVDBShowName} for {episode.SourceFilePath}.", EventLevel.Verbose);
                         if (!string.IsNullOrEmpty(m.TVDBShowID))
                         {
                             episode.TVDBShowId = m.TVDBShowID;
@@ -155,7 +167,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 }
             }
 
-            _logger.TraceMessage("FixMismatchTitles - End");
+            _logger.TraceMessage($"FixShowName finished for {episode.SourceFilePath}.", EventLevel.Verbose);
             return episode;
         }
 
@@ -170,7 +182,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             return await Task.Run(async () =>
             {
-                _logger.TraceMessage("GetPossibleShowsForEpisode - Start");
+                _logger.TraceMessage($"Get possible matches for show: {showName}.", EventLevel.Verbose);
                 ConcurrentBag<DetailView> shows = new ConcurrentBag<DetailView>();
                 List<SeriesSearchData> series = await _tvdbManager.SearchSeriesByNameAsync(showName);
                 string airedDate;
@@ -204,7 +216,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     });
                 }
 
-                _logger.TraceMessage("SelectShowFromListGetPossibleShowsForEpisode - End");
+                _logger.TraceMessage($"Found {shows.Count} possible matches for show: {showName}.", EventLevel.Verbose);
                 return shows.ToList();
             });
         }
@@ -221,6 +233,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             return await Task.Run(async () =>
             {
+                _logger.TraceMessage($"Updating {episode.SourceFilePath} with Matched SeriesId {selectedSeriesId}.", EventLevel.Verbose);
                 string originalShowName = episode.ShowName;
                 //if user selected a match then scrape the details
                 if (!string.IsNullOrEmpty(selectedSeriesId))
@@ -246,6 +259,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     episode.SkippedExactSelection = true;
                 }
 
+                _logger.TraceMessage($"Updated {episode.SourceFilePath} with Matched SeriesId {selectedSeriesId}.", EventLevel.Verbose);
                 return episode;
             });
         }
@@ -257,7 +271,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public async Task<(CompleteSeries series, BitmapImage banner)> GetShowWithBannerAsync(string showId)
         {
-            _logger.TraceMessage("GetSeriesInfo - Start");
+            _logger.TraceMessage($"Getting show and banner for ShowId: {showId}.", EventLevel.Verbose);
             CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(showId);
             BitmapImage bannerImage = new BitmapImage();
             if (matchedSeries.SeriesBanners != null && matchedSeries.SeriesBanners.Count > 0)
@@ -271,7 +285,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 //TODO create a no image found banner
             }
 
-            _logger.TraceMessage("GetSeriesInfo - End");
+            _logger.TraceMessage($"Got show and banner for ShowId: {showId}.", EventLevel.Verbose);
             return (matchedSeries, bannerImage);
         }
     }

@@ -108,8 +108,10 @@ namespace Sarjee.SimpleRenamer.Logging
 
             switch (logType)
             {
-                case EventLevel.LogAlways:
                 case EventLevel.Verbose:
+                    Verbose(message);
+                    break;
+                case EventLevel.LogAlways:
                 case EventLevel.Informational:
                     log.Info(message);
                     break;
@@ -123,6 +125,11 @@ namespace Sarjee.SimpleRenamer.Logging
                     log.Fatal(string.Format("Fatal: {0}, Member Name {1}, Source File {2}, Source Line {3}", message, memberName, sourceFilePath, sourceLineNumber));
                     break;
             }
+        }
+
+        private void Verbose(string message, Exception exception = null)
+        {
+            log.Logger.Log(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, log4net.Core.Level.Verbose, message, exception);
         }
 
         /// <summary>
