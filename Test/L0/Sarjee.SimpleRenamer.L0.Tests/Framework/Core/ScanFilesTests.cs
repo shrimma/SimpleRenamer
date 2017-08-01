@@ -45,7 +45,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             return scanFiles;
         }
 
-        private void ScanFiles_RaiseProgressEvent(object sender, SimpleRenamer.Common.EventArguments.ProgressTextEventArgs e)
+        private void ScanFiles_RaiseProgressEvent(object sender, ProgressTextEventArgs e)
         {
             //DONT DO ANYTHING WE JUST NEED THIS
         }
@@ -126,6 +126,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
             scannedFiles.Count.Should().Be(1);
+
+            mockMovieMatcher.Verify(x => x.ScrapeDetailsAsync(It.IsAny<MatchedFile>()), Times.Exactly(2));
         }
 
         [TestMethod]
@@ -157,6 +159,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
             scannedFiles.Count.Should().Be(1);
+
+            mockShowMatcher.Verify(x => x.FixShowsFromMappings(It.IsAny<MatchedFile>()), Times.Exactly(2));
+            mockShowMatcher.Verify(x => x.SearchShowByIdAsync(It.IsAny<string>()), Times.Exactly(1));
+            mockShowMatcher.Verify(x => x.SearchShowByNameAsync(It.IsAny<string>()), Times.Exactly(1));
+            mockShowMatcher.Verify(x => x.UpdateFileWithSeriesDetails(It.IsAny<MatchedFile>(), It.IsAny<CompleteSeries>()), Times.Exactly(2));
         }
 
         [TestMethod]
@@ -182,6 +189,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
             scannedFiles.Count.Should().Be(2);
+
+            mockShowMatcher.Verify(x => x.FixShowsFromMappings(It.IsAny<MatchedFile>()), Times.Never);
+            mockShowMatcher.Verify(x => x.SearchShowByIdAsync(It.IsAny<string>()), Times.Never);
+            mockShowMatcher.Verify(x => x.SearchShowByNameAsync(It.IsAny<string>()), Times.Never);
+            mockShowMatcher.Verify(x => x.UpdateFileWithSeriesDetails(It.IsAny<MatchedFile>(), It.IsAny<CompleteSeries>()), Times.Never);
+            mockMovieMatcher.Verify(x => x.ScrapeDetailsAsync(It.IsAny<MatchedFile>()), Times.Never);
         }
 
         [TestMethod]
@@ -225,6 +238,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
             scannedFiles.Count.Should().Be(4);
+
+            mockShowMatcher.Verify(x => x.FixShowsFromMappings(It.IsAny<MatchedFile>()), Times.Exactly(2));
+            mockShowMatcher.Verify(x => x.SearchShowByIdAsync(It.IsAny<string>()), Times.Exactly(1));
+            mockShowMatcher.Verify(x => x.SearchShowByNameAsync(It.IsAny<string>()), Times.Exactly(1));
+            mockShowMatcher.Verify(x => x.UpdateFileWithSeriesDetails(It.IsAny<MatchedFile>(), It.IsAny<CompleteSeries>()), Times.Exactly(2));
+            mockMovieMatcher.Verify(x => x.ScrapeDetailsAsync(It.IsAny<MatchedFile>()), Times.Exactly(2));
         }
         #endregion Scan
     }

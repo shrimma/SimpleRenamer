@@ -196,7 +196,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             await Task.WhenAll(searchShowIdsAsyncBlock.Completion, searchShowNamesAsyncBlock.Completion);
 
             //for each series we matched
-            foreach (CompleteSeries series in matchedSeries)
+            foreach (CompleteSeries series in matchedSeries.Distinct())
             {
                 ct.ThrowIfCancellationRequested();
                 Parallel.ForEach(matchedFiles, parallelOptions, (file) =>
