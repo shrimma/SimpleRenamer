@@ -2,10 +2,13 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
+using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Framework.Core;
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
@@ -80,12 +83,47 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         #region Scan
         [TestMethod]
         [TestCategory(TestCategories.Core)]
-        public void ScanFiles_Scan_Success()
+        public void ScanFiles_Scan_NoFiles_Success()
         {
+            //setup the mocks
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
+            mockFileWatcher.Setup(x => x.SearchFoldersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<string>());
+            mockFileMatcher.Setup(x => x.SearchFilesAsync(It.IsAny<List<string>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<MatchedFile>());
             IScanFiles scanFiles = GetScanFiles();
-            Func<Task> action1 = async () => await scanFiles.Scan(new System.Threading.CancellationToken());
+
+            List<MatchedFile> scannedFiles = null;
+            Func<Task> action1 = async () => scannedFiles = await scanFiles.Scan(new CancellationToken());
 
             action1.ShouldNotThrow();
+            scannedFiles.Should().NotBeNull();
+            scannedFiles.Count.Should().Be(0);
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Core)]
+        public void ScanFiles_Scan_Movies_Success()
+        {
+            //setup the mocks
+            Settings settings = new Settings { DestinationFolderMovie = @"C:\Movies" };
+            mockConfigurationManager.Setup(x => x.Settings).Returns(settings);
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
+            mockFileWatcher.Setup(x => x.SearchFoldersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<string>());
+            //file that needs moving
+            MatchedFile spectre = new MatchedFile(@"C:\Spectre.mkv", "Spectre", 2015);
+            //file that doesnt need moving
+            MatchedFile pomPoko = new MatchedFile(@"C:\Movies\Pom Poko (1994)\Pom Poko.mkv", "Pom Poko", 1994);
+            mockFileMatcher.Setup(x => x.SearchFilesAsync(It.IsAny<List<string>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<MatchedFile> { spectre, pomPoko });
+            mockMovieMatcher.Setup(x => x.ScrapeDetailsAsync(It.Is<MatchedFile>(i => i == spectre))).ReturnsAsync(spectre);
+            mockMovieMatcher.Setup(x => x.ScrapeDetailsAsync(It.Is<MatchedFile>(i => i == pomPoko))).ReturnsAsync(pomPoko);
+
+            IScanFiles scanFiles = GetScanFiles();
+
+            List<MatchedFile> scannedFiles = null;
+            Func<Task> action1 = async () => scannedFiles = await scanFiles.Scan(new CancellationToken());
+
+            action1.ShouldNotThrow();
+            scannedFiles.Should().NotBeNullOrEmpty();
+            scannedFiles.Count.Should().Be(1);
         }
         #endregion Scan
     }
