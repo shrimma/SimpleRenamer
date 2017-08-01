@@ -70,8 +70,8 @@
   <ItemGroup>
     <Compile Include="Common\BackgroundQueueTests.cs" />
     <Compile Include="Common\EventArguments\FileMovedEventArgsTests.cs" />
-    <Compile Include="Common\EventArguments\FilePreProcessedEventArgs.cs" />
-    <Compile Include="Common\EventArguments\ProgressTextEventArgs.cs" />
+    <Compile Include="Common\EventArguments\FilePreProcessedEventArgsTests.cs" />
+    <Compile Include="Common\EventArguments\ProgressTextEventArgsTests.cs" />
     <Compile Include="Common\HelperTests.cs" />
     <Compile Include="Framework\Core\ActionMatchedFilesTests.cs" />
     <Compile Include="Framework\Core\AppConfigurationManagerTests.cs" />
