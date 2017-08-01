@@ -32,7 +32,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         #region Constructor
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
-        public void TmdbManagerCtor_NullConfigManager_ThrowsArgumentNullException()
+        public void TmdbManagerCtor_NullArguments_ThrowsArgumentNullException()
         {
             Action action1 = () => new TmdbManager(null, null);
             Action action2 = () => new TmdbManager(mockConfigurationManager.Object, null);
