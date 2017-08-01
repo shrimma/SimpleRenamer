@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 
 namespace Sarjee.SimpleRenamer.Common.Model
 {
@@ -42,6 +43,10 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <param name="isTvShow">if set to <c>true</c> [is tv show].</param>
         public RegexExpression(string expression, bool enabled, bool isTvShow)
         {
+            if (string.IsNullOrEmpty(expression))
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
             Expression = expression;
             IsEnabled = enabled;
             IsForTvShow = isTvShow;

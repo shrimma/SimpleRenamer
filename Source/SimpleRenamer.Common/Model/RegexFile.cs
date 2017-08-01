@@ -13,6 +13,14 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <value>
         /// The regex expressions.
         /// </value>
-        public List<RegexExpression> RegexExpressions { get; set; }
+        public List<RegexExpression> RegexExpressions { get; set; } = new List<RegexExpression>();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegexFile"/> class.
+        /// </summary>
+        public RegexFile()
+        {
+
+        }
     }
 }

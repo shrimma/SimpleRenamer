@@ -10,16 +10,20 @@ namespace Sarjee.SimpleRenamer.Common.Model
     public class ShowNameMapping
     {
         /// <summary>
-        /// The mappings
-        /// </summary>
-        private List<Mapping> mappings = new List<Mapping>();
-        /// <summary>
         /// Gets the mappings.
         /// </summary>
         /// <value>
         /// The mappings.
         /// </value>
         [JsonProperty("mappings")]
-        public List<Mapping> Mappings { get { return mappings; } }
+        public List<Mapping> Mappings { get; } = new List<Mapping>();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ShowNameMapping"/> class.
+        /// </summary>
+        public ShowNameMapping()
+        {
+
+        }
     }
 }

@@ -43,7 +43,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// The name of the custom folder.
         /// </value>
         [JsonProperty("customFolderName")]
-        public string CustomFolderName { get; set; }
+        public string CustomFolderName { get; set; } = string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Mapping"/> class.
@@ -68,7 +68,6 @@ namespace Sarjee.SimpleRenamer.Common.Model
             FileShowName = fileShowName;
             TVDBShowName = tvdbShowName;
             TVDBShowID = tvdbShowID;
-            CustomFolderName = string.Empty;
         }
     }
 }

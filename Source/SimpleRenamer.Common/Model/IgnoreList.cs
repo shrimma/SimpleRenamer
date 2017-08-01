@@ -16,14 +16,14 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// The ignore files.
         /// </value>
         [JsonProperty("ignoreFiles")]
-        public List<string> IgnoreFiles { get; set; }
+        public List<string> IgnoreFiles { get; set; } = new List<string>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IgnoreList"/> class.
         /// </summary>
         public IgnoreList()
         {
-            IgnoreFiles = new List<string>();
+
         }
     }
 }
