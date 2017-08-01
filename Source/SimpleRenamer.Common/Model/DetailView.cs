@@ -5,7 +5,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
     /// <summary>
     /// DetailView
     /// </summary>
-    public class DetailView
+    public class DetailView : IEquatable<DetailView>
     {
         /// <summary>
         /// Gets or sets the identifier.
@@ -66,5 +66,62 @@ namespace Sarjee.SimpleRenamer.Common.Model
             Year = year;
             Description = description;
         }
+
+        #region Equality
+        /// <summary>
+        /// Determines whether two <see cref="DetailView"/> contain the same values
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(DetailView other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            return
+                string.Equals(Id, other.Id) &&
+                string.Equals(ShowName, other.ShowName) &&
+                string.Equals(Year, other.Year) &&
+                string.Equals(Description, other.Description);
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals(obj as DetailView);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hashCode = (int)2166136261;
+                if (!string.IsNullOrEmpty(Id))
+                {
+                    hashCode = (hashCode * 16777619) + Id.GetHashCode();
+                }
+                if (!string.IsNullOrEmpty(ShowName))
+                {
+                    hashCode = (hashCode * 16777619) + ShowName.GetHashCode();
+                }
+                if (!string.IsNullOrEmpty(Year))
+                {
+                    hashCode = (hashCode * 16777619) + Year.GetHashCode();
+                }
+                if (!string.IsNullOrEmpty(Description))
+                {
+                    hashCode = (hashCode * 16777619) + Description.GetHashCode();
+                }
+
+                return hashCode;
+            }
+        }
+        #endregion Equality
     }
 }

@@ -7,7 +7,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
     /// Matched File
     /// </summary>
     /// <seealso cref="System.ComponentModel.INotifyPropertyChanged" />
-    public class MatchedFile : INotifyPropertyChanged
+    public class MatchedFile : INotifyPropertyChanged, IEquatable<MatchedFile>
     {
         #region INotifyPropertyChanged implementation
         /// <summary>
@@ -453,5 +453,152 @@ namespace Sarjee.SimpleRenamer.Common.Model
             SkippedExactSelection = true;
             ActionThis = false;
         }
+
+        #region Equality
+        /// <summary>
+        /// Determines whether two <see cref="MatchedFile"/> contain the same values
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(MatchedFile other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            return
+                (
+                    SourceFilePath == other.SourceFilePath ||
+                    SourceFilePath != null &&
+                    SourceFilePath.Equals(other.SourceFilePath)
+                ) &&
+                (
+                    DestinationFilePath == other.DestinationFilePath ||
+                    DestinationFilePath != null &&
+                    DestinationFilePath.Equals(other.DestinationFilePath)
+                ) &&
+                (
+                    TVDBShowId == other.TVDBShowId ||
+                    TVDBShowId != null &&
+                    TVDBShowId.Equals(other.TVDBShowId)
+                ) &&
+                (
+                    TMDBShowId == other.TMDBShowId
+                ) &&
+                (
+                    ShowName == other.ShowName ||
+                    ShowName != null &&
+                    ShowName.Equals(other.ShowName)
+                ) &&
+                (
+                    Season == other.Season ||
+                    Season != null &&
+                    Season.Equals(other.Season)
+                ) &&
+                (
+                    EpisodeNumber == other.EpisodeNumber ||
+                    EpisodeNumber != null &&
+                    EpisodeNumber.Equals(other.EpisodeNumber)
+                ) &&
+                (
+                    EpisodeName == other.EpisodeName ||
+                    EpisodeName != null &&
+                    EpisodeName.Equals(other.EpisodeName)
+                ) &&
+                (
+                    NewFileName == other.NewFileName ||
+                    NewFileName != null &&
+                    NewFileName.Equals(other.NewFileName)
+                ) &&
+                (
+                    SkippedExactSelection == other.SkippedExactSelection
+                ) &&
+                (
+                    SeasonImage == other.SeasonImage ||
+                    SeasonImage != null &&
+                    SeasonImage.Equals(other.SeasonImage)
+                ) &&
+                (
+                    ShowImage == other.ShowImage ||
+                    ShowImage != null &&
+                    ShowImage.Equals(other.ShowImage)
+                ) &&
+                (
+                    ActionThis == other.ActionThis
+                ) &&
+                (
+                    FileType == other.FileType
+                ) &&
+                (
+                    Year == other.Year
+                );
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals(obj as MatchedFile);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hashCode = (int)2166136261;
+                if (SourceFilePath != null)
+                {
+                    hashCode = (hashCode * 16777619) + SourceFilePath.GetHashCode();
+                }
+                if (DestinationFilePath != null)
+                {
+                    hashCode = (hashCode * 16777619) + DestinationFilePath.GetHashCode();
+                }
+                if (TVDBShowId != null)
+                {
+                    hashCode = (hashCode * 16777619) + TVDBShowId.GetHashCode();
+                }
+                if (ShowName != null)
+                {
+                    hashCode = (hashCode * 16777619) + ShowName.GetHashCode();
+                }
+                if (Season != null)
+                {
+                    hashCode = (hashCode * 16777619) + Season.GetHashCode();
+                }
+                if (EpisodeNumber != null)
+                {
+                    hashCode = (hashCode * 16777619) + EpisodeNumber.GetHashCode();
+                }
+                if (EpisodeName != null)
+                {
+                    hashCode = (hashCode * 16777619) + EpisodeName.GetHashCode();
+                }
+                if (NewFileName != null)
+                {
+                    hashCode = (hashCode * 16777619) + NewFileName.GetHashCode();
+                }
+                if (SeasonImage != null)
+                {
+                    hashCode = (hashCode * 16777619) + SeasonImage.GetHashCode();
+                }
+                if (ShowImage != null)
+                {
+                    hashCode = (hashCode * 16777619) + ShowImage.GetHashCode();
+                }
+                hashCode = (hashCode * 16777619) + TMDBShowId.GetHashCode();
+                hashCode = (hashCode * 16777619) + SkippedExactSelection.GetHashCode();
+                hashCode = (hashCode * 16777619) + ActionThis.GetHashCode();
+                hashCode = (hashCode * 16777619) + FileType.GetHashCode();
+                hashCode = (hashCode * 16777619) + Year.GetHashCode();
+
+                return hashCode;
+            }
+        }
+        #endregion Equality
     }
 }

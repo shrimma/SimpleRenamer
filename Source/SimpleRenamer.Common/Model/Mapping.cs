@@ -7,7 +7,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
     /// Mapping
     /// </summary>
     [JsonObject("mapping")]
-    public class Mapping
+    public class Mapping : IEquatable<Mapping>
     {
         /// <summary>
         /// Gets or sets the name of the file show.
@@ -69,5 +69,62 @@ namespace Sarjee.SimpleRenamer.Common.Model
             TVDBShowName = tvdbShowName;
             TVDBShowID = tvdbShowID;
         }
+
+        #region Equality
+        /// <summary>
+        /// Determines whether two <see cref="Mapping"/> contain the same values
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(Mapping other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            return
+                string.Equals(FileShowName, other.FileShowName) &&
+                string.Equals(TVDBShowName, other.TVDBShowName) &&
+                string.Equals(TVDBShowID, other.TVDBShowID) &&
+                string.Equals(CustomFolderName, other.CustomFolderName);
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals(obj as Mapping);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hashCode = (int)2166136261;
+                if (!string.IsNullOrEmpty(FileShowName))
+                {
+                    hashCode = (hashCode * 16777619) + FileShowName.GetHashCode();
+                }
+                if (!string.IsNullOrEmpty(TVDBShowName))
+                {
+                    hashCode = (hashCode * 16777619) + TVDBShowName.GetHashCode();
+                }
+                if (!string.IsNullOrEmpty(TVDBShowID))
+                {
+                    hashCode = (hashCode * 16777619) + TVDBShowID.GetHashCode();
+                }
+                if (!string.IsNullOrEmpty(CustomFolderName))
+                {
+                    hashCode = (hashCode * 16777619) + CustomFolderName.GetHashCode();
+                }
+
+                return hashCode;
+            }
+        }
+        #endregion Equality
     }
 }
