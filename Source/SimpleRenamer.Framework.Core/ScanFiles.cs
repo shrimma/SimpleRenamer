@@ -184,7 +184,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 searchShowIdsAsyncBlock.Post(showId);
             }
             searchShowIdsAsyncBlock.Complete();
-            await searchShowIdsAsyncBlock.Completion;
 
             ///execute for each unique showname
             foreach (string showName in uniqueShowNames)
@@ -192,7 +191,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 searchShowNamesAsyncBlock.Post(showName);
             }
             searchShowNamesAsyncBlock.Complete();
-            await searchShowNamesAsyncBlock.Completion;
+
+            //wait for both searches to complete
+            await Task.WhenAll(searchShowIdsAsyncBlock.Completion, searchShowNamesAsyncBlock.Completion);
 
             //for each series we matched
             foreach (CompleteSeries series in matchedSeries)
@@ -281,8 +282,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 string destinationFilePath = Path.Combine(movieDirectory, file.ShowName + Path.GetExtension(file.SourceFilePath));
                 if (!file.SourceFilePath.Equals(destinationFilePath))
                 {
-                    _logger.TraceMessage(string.Format("Will move file {0} to {1}", file.SourceFilePath, file.NewFileName), EventLevel.Verbose);
-                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Will move file {0} to {1}.", file.SourceFilePath, file.NewFileName)));
+                    _logger.TraceMessage(string.Format("Will move file {0} to {1}", file.SourceFilePath, destinationFilePath), EventLevel.Verbose);
+                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Will move file {0} to {1}.", file.SourceFilePath, destinationFilePath)));
                     scannedMovies.Add(file);
                 }
                 else
