@@ -210,17 +210,6 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
         }
 
         /// <summary>
-        /// Returns true if objects are equal
-        /// </summary>
-        /// <param name="obj">Object to be compared</param>
-        /// <returns>Boolean</returns>
-        public override bool Equals(object obj)
-        {
-            // credit: http://stackoverflow.com/a/10454552/677735
-            return this.Equals(obj as Series);
-        }
-
-        /// <summary>
         /// Returns true if Series instances are equal
         /// </summary>
         /// <param name="other">Instance of Series to be compared</param>
@@ -339,6 +328,15 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
                 );
         }
 
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals(obj as Series);
+        }
+
         /// <summary>
         /// Gets the hash code
         /// </summary>
@@ -348,51 +346,52 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
             // credit: http://stackoverflow.com/a/263416/677735
             unchecked // Overflow is fine, just wrap
             {
-                int hash = 41;
+
+                int hashCode = (int)2166136261;
                 // Suitable nullity checks etc, of course :)
                 if (this.Id != null)
-                    hash = hash * 59 + this.Id.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.Id.GetHashCode();
                 if (this.SeriesName != null)
-                    hash = hash * 59 + this.SeriesName.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.SeriesName.GetHashCode();
                 if (this.Aliases != null)
-                    hash = hash * 59 + this.Aliases.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.Aliases.GetHashCode();
                 if (this.Banner != null)
-                    hash = hash * 59 + this.Banner.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.Banner.GetHashCode();
                 if (this.SeriesId != null)
-                    hash = hash * 59 + this.SeriesId.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.SeriesId.GetHashCode();
                 if (this.Status != null)
-                    hash = hash * 59 + this.Status.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.Status.GetHashCode();
                 if (this.FirstAired != null)
-                    hash = hash * 59 + this.FirstAired.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.FirstAired.GetHashCode();
                 if (this.Network != null)
-                    hash = hash * 59 + this.Network.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.Network.GetHashCode();
                 if (this.NetworkId != null)
-                    hash = hash * 59 + this.NetworkId.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.NetworkId.GetHashCode();
                 if (this.Runtime != null)
-                    hash = hash * 59 + this.Runtime.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.Runtime.GetHashCode();
                 if (this.Genre != null)
-                    hash = hash * 59 + this.Genre.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.Genre.GetHashCode();
                 if (this.Overview != null)
-                    hash = hash * 59 + this.Overview.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.Overview.GetHashCode();
                 if (this.LastUpdated != null)
-                    hash = hash * 59 + this.LastUpdated.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.LastUpdated.GetHashCode();
                 if (this.AirsDayOfWeek != null)
-                    hash = hash * 59 + this.AirsDayOfWeek.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.AirsDayOfWeek.GetHashCode();
                 if (this.AirsTime != null)
-                    hash = hash * 59 + this.AirsTime.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.AirsTime.GetHashCode();
                 if (this.Rating != null)
-                    hash = hash * 59 + this.Rating.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.Rating.GetHashCode();
                 if (this.ImdbId != null)
-                    hash = hash * 59 + this.ImdbId.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.ImdbId.GetHashCode();
                 if (this.Zap2itId != null)
-                    hash = hash * 59 + this.Zap2itId.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.Zap2itId.GetHashCode();
                 if (this.Added != null)
-                    hash = hash * 59 + this.Added.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.Added.GetHashCode();
                 if (this.SiteRating != null)
-                    hash = hash * 59 + this.SiteRating.GetHashCode();
+                    hashCode = (hashCode * 16777619) + this.SiteRating.GetHashCode();
                 if (this.SiteRatingCount != null)
-                    hash = hash * 59 + this.SiteRatingCount.GetHashCode();
-                return hash;
+                    hashCode = (hashCode * 16777619) + this.SiteRatingCount.GetHashCode();
+                return hashCode;
             }
         }
     }
