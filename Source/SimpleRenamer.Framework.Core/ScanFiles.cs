@@ -240,8 +240,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 }
                 else
                 {
-                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("File {0} will be ignored as already in correct location.", file.SourceFilePath, file.NewFileName)));
                     _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
+                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("File {0} will be ignored as already in correct location.", file.SourceFilePath)));
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
 
@@ -288,7 +288,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 else
                 {
                     _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
-                    _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
+                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("File {0} will be ignored as already in correct location.", file.SourceFilePath)));
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
 
