@@ -39,17 +39,17 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// Initializes a new instance of the <see cref="RegexExpression" /> class.
         /// </summary>
         /// <param name="expression">The expression.</param>
-        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
-        /// <param name="isTvShow">if set to <c>true</c> [is tv show].</param>
-        public RegexExpression(string expression, bool enabled, bool isTvShow)
+        /// <param name="isEnabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="isForTvShow">if set to <c>true</c> [is tv show].</param>
+        public RegexExpression(string expression, bool isEnabled, bool isForTvShow)
         {
             if (string.IsNullOrEmpty(expression))
             {
                 throw new ArgumentNullException(nameof(expression));
             }
             Expression = expression;
-            IsEnabled = enabled;
-            IsForTvShow = isTvShow;
+            IsEnabled = isEnabled;
+            IsForTvShow = isForTvShow;
         }
 
         #region Equality
