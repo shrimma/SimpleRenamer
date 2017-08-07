@@ -40,18 +40,18 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// Initializes a new instance of the <see cref="DetailView"/> class.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <param name="showname">The showname.</param>
+        /// <param name="showName">The showname.</param>
         /// <param name="year">The year.</param>
         /// <param name="description">The description.</param>
-        public DetailView(string id, string showname, string year, string description)
+        public DetailView(string id, string showName, string year, string description)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
                 throw new ArgumentNullException(nameof(id));
             }
-            if (string.IsNullOrWhiteSpace(showname))
+            if (string.IsNullOrWhiteSpace(showName))
             {
-                throw new ArgumentNullException(nameof(showname));
+                throw new ArgumentNullException(nameof(showName));
             }
             if (string.IsNullOrWhiteSpace(year))
             {
@@ -62,7 +62,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 throw new ArgumentNullException(nameof(description));
             }
             Id = id;
-            ShowName = showname;
+            ShowName = showName;
             Year = year;
             Description = description;
         }
