@@ -56,6 +56,7 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
             return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
 
+        #region Equality
         /// <summary>
         /// Returns true if objects are equal
         /// </summary>
@@ -64,6 +65,9 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
         public override bool Equals(object obj)
         {
             // credit: http://stackoverflow.com/a/10454552/677735
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
             return this.Equals(obj as SeriesData);
         }
 
@@ -76,7 +80,9 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
         {
             // credit: http://stackoverflow.com/a/10454552/677735
             if (other == null)
+            {
                 return false;
+            }
 
             return
                 (
@@ -100,14 +106,19 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
             // credit: http://stackoverflow.com/a/263416/677735
             unchecked // Overflow is fine, just wrap
             {
-                int hash = 41;
+                int hash = (int)2166136261;
                 // Suitable nullity checks etc, of course :)
                 if (this.Data != null)
-                    hash = hash * 59 + this.Data.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.Data.GetHashCode();
+                }
                 if (this.Errors != null)
-                    hash = hash * 59 + this.Errors.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.Errors.GetHashCode();
+                }
                 return hash;
             }
         }
+        #endregion Equality
     }
 }

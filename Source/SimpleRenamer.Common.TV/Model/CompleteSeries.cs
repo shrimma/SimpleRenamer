@@ -4,28 +4,90 @@ using System.Linq;
 
 namespace Sarjee.SimpleRenamer.Common.TV.Model
 {
+    /// <summary>
+    /// Complete Series
+    /// </summary>
+    /// <seealso cref="System.IEquatable{Sarjee.SimpleRenamer.Common.TV.Model.CompleteSeries}" />
     public class CompleteSeries : IEquatable<CompleteSeries>
     {
+        /// <summary>
+        /// Gets or sets the series.
+        /// </summary>
+        /// <value>
+        /// The series.
+        /// </value>
         public Series Series { get; set; }
+        /// <summary>
+        /// Gets or sets the actors.
+        /// </summary>
+        /// <value>
+        /// The actors.
+        /// </value>
         public List<SeriesActorsData> Actors { get; set; }
+        /// <summary>
+        /// Gets or sets the episodes.
+        /// </summary>
+        /// <value>
+        /// The episodes.
+        /// </value>
         public List<BasicEpisode> Episodes { get; set; }
+        /// <summary>
+        /// Gets or sets the posters.
+        /// </summary>
+        /// <value>
+        /// The posters.
+        /// </value>
         public List<SeriesImageQueryResult> Posters { get; set; }
+        /// <summary>
+        /// Gets or sets the season posters.
+        /// </summary>
+        /// <value>
+        /// The season posters.
+        /// </value>
         public List<SeriesImageQueryResult> SeasonPosters { get; set; }
+        /// <summary>
+        /// Gets or sets the series banners.
+        /// </summary>
+        /// <value>
+        /// The series banners.
+        /// </value>
         public List<SeriesImageQueryResult> SeriesBanners { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompleteSeries" /> class.
+        /// </summary>
+        /// <param name="series">The series.</param>
+        /// <param name="actors">The actors.</param>
+        /// <param name="episodes">The episodes.</param>
+        /// <param name="posters">The posters.</param>
+        /// <param name="seasonPosters">The season posters.</param>
+        /// <param name="seriesBanners">The series banners.</param>
+        /// <exception cref="ArgumentNullException">
+        /// series
+        /// or
+        /// actors
+        /// or
+        /// episodes
+        /// or
+        /// posters
+        /// or
+        /// seasonPosters
+        /// or
+        /// seriesBanners
+        /// </exception>
         public CompleteSeries(Series series, List<SeriesActorsData> actors, List<BasicEpisode> episodes, List<SeriesImageQueryResult> posters, List<SeriesImageQueryResult> seasonPosters, List<SeriesImageQueryResult> seriesBanners)
         {
-            Series = series;
-            Actors = actors;
-            Episodes = episodes;
-            Posters = posters;
-            SeasonPosters = seasonPosters;
-            SeriesBanners = seriesBanners;
+            Series = series ?? throw new ArgumentNullException(nameof(series));
+            Actors = actors ?? throw new ArgumentNullException(nameof(actors));
+            Episodes = episodes ?? throw new ArgumentNullException(nameof(episodes));
+            Posters = posters ?? throw new ArgumentNullException(nameof(posters));
+            SeasonPosters = seasonPosters ?? throw new ArgumentNullException(nameof(seasonPosters));
+            SeriesBanners = seriesBanners ?? throw new ArgumentNullException(nameof(seriesBanners));
         }
 
         #region Equality
         /// <summary>
-        /// Determines whether two <see cref="DlmsCosemSession"/> contain the same values
+        /// Determines whether two <see cref="CompleteSeries"/> contain the same values
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -69,7 +131,13 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
                 );
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -78,7 +146,12 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
             return Equals(obj as CompleteSeries);
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
         public override int GetHashCode()
         {
             unchecked
