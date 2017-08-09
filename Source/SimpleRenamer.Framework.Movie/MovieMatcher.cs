@@ -63,7 +63,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 {
                     try
                     {
-                        string desc = string.Empty;
+                        string desc = "N/A";
                         if (!string.IsNullOrEmpty(s.Overview))
                         {
                             if (s.Overview.Length > 50)
