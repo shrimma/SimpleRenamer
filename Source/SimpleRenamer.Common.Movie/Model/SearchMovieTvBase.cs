@@ -28,7 +28,7 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Model
         /// The genre ids.
         /// </value>
         [JsonProperty("genre_ids")]
-        public List<int> GenreIds { get; set; }
+        public List<int> GenreIds { get; set; } = new List<int>();
 
         /// <summary>
         /// Gets or sets the original language.

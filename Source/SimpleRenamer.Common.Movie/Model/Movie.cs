@@ -279,7 +279,7 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Model
         /// The spoken languages.
         /// </value>
         [JsonProperty("spoken_languages")]
-        public List<SpokenLanguage> SpokenLanguages { get; set; }
+        public List<SpokenLanguage> SpokenLanguages { get; set; } = new List<SpokenLanguage>();
 
         /// <summary>
         /// Gets or sets the status.

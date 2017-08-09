@@ -28,7 +28,7 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Model
         /// The results.
         /// </value>
         [JsonProperty("results")]
-        public List<T> Results { get; set; }
+        public List<T> Results { get; set; } = new List<T>();
 
         /// <summary>
         /// Gets or sets the total pages.
