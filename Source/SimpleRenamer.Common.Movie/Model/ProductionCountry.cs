@@ -78,12 +78,10 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Model
                 // Suitable nullity checks etc, of course :)
                 if (this.CountryCode != null)
                 {
-
                     hash = (hash * 16777619) + this.CountryCode.GetHashCode();
                 }
                 if (this.Name != null)
                 {
-
                     hash = (hash * 16777619) + this.Name.GetHashCode();
                 }
                 return hash;

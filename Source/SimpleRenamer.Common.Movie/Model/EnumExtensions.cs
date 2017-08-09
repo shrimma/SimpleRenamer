@@ -5,8 +5,18 @@ using System.Reflection;
 
 namespace Sarjee.SimpleRenamer.Common.Movie.Model
 {
+    /// <summary>
+    /// Enum Extensions
+    /// </summary>
     public static class EnumExtensions
     {
+        /// <summary>
+        /// Gets the description.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="enumerationValue">The enumeration value.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">EnumerationValue must be of Enum type - enumerationValue</exception>
         public static string GetDescription<T>(this T enumerationValue) where T : struct
         {
             Type type = enumerationValue.GetType();
@@ -49,14 +59,28 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Model
         }
     }
 
+    /// <summary>
+    /// Enum Value Attribute
+    /// </summary>
+    /// <seealso cref="System.Attribute" />
     [AttributeUsage(AttributeTargets.Field)]
     public class EnumValueAttribute : Attribute
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnumValueAttribute"/> class.
+        /// </summary>
+        /// <param name="value">The value.</param>
         public EnumValueAttribute(string value)
         {
             Value = value;
         }
 
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <value>
+        /// The value.
+        /// </value>
         public string Value { get; }
     }
 }
