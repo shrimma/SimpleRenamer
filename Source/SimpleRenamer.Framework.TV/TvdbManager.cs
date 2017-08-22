@@ -60,7 +60,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         }
 
         private int[] httpStatusCodesWorthRetrying = { 408, 500, 502, 503, 504, 598, 599 };
-        private async Task<T> ExecuteRestRequest<T>(IRestClient restClient, IRestRequest restRequest, Func<Task> LoginCallback) where T : class
+        private async Task<T> ExecuteRestRequest<T>(IRestRequest restRequest, Func<Task> LoginCallback) where T : class
         {
             int currentRetry = 0;
             int offset = ThreadLocalRandom.Instance.Next(100, 500);
@@ -69,9 +69,9 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 try
                 {
                     //execute the request
-                    IRestResponse response = await restClient.ExecuteTaskAsync(restRequest);
+                    IRestResponse response = await _restClient.ExecuteTaskAsync(restRequest);
                     //if no errors and statuscode ok then deserialize the response
-                    if (response.ErrorException == null && response?.StatusCode == HttpStatusCode.OK)
+                    if (response?.ErrorException == null && response?.StatusCode == HttpStatusCode.OK)
                     {
                         T result = JsonConvert.DeserializeObject<T>(response.Content, _jsonSerializerSettings);
                         return result;
@@ -133,7 +133,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddParameter("application/json", auth.ToJson(), ParameterType.RequestBody);
 
             //execute the request
-            Token token = await ExecuteRestRequest<Token>(_restClient, request, Login);
+            Token token = await ExecuteRestRequest<Token>(request, Login);
             if (token != null)
             {
                 _jwtToken = token._Token;
@@ -215,7 +215,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddHeader("Authorization", $"Bearer {_jwtToken}");
 
             //execute the request
-            return await ExecuteRestRequest<SeriesData>(_restClient, request, Login);
+            return await ExecuteRestRequest<SeriesData>(request, Login);
         }
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddHeader("Authorization", $"Bearer {_jwtToken}");
 
             //execute the request
-            return await ExecuteRestRequest<SeriesActors>(_restClient, request, Login);
+            return await ExecuteRestRequest<SeriesActors>(request, Login);
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddHeader("Authorization", $"Bearer {_jwtToken}");
 
             //execute the request
-            return await ExecuteRestRequest<SeriesEpisodes>(_restClient, request, Login);
+            return await ExecuteRestRequest<SeriesEpisodes>(request, Login);
         }
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddParameter("keyType", "poster", ParameterType.QueryString);
 
             //execute the request
-            SeriesImageQueryResults results = await ExecuteRestRequest<SeriesImageQueryResults>(_restClient, request, Login);
+            SeriesImageQueryResults results = await ExecuteRestRequest<SeriesImageQueryResults>(request, Login);
             if (results == null)
             {
                 results = new SeriesImageQueryResults();
@@ -286,7 +286,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddParameter("keyType", "season", ParameterType.QueryString);
 
             //execute the request
-            SeriesImageQueryResults results = await ExecuteRestRequest<SeriesImageQueryResults>(_restClient, request, Login);
+            SeriesImageQueryResults results = await ExecuteRestRequest<SeriesImageQueryResults>(request, Login);
             if (results == null)
             {
                 results = new SeriesImageQueryResults();
@@ -308,7 +308,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddParameter("keyType", "series", ParameterType.QueryString);
 
             //execute the request
-            SeriesImageQueryResults results = await ExecuteRestRequest<SeriesImageQueryResults>(_restClient, request, Login);
+            SeriesImageQueryResults results = await ExecuteRestRequest<SeriesImageQueryResults>(request, Login);
             if (results == null)
             {
                 results = new SeriesImageQueryResults();
@@ -335,7 +335,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddParameter("name", seriesName, ParameterType.QueryString);
 
             //execute the request
-            return await ExecuteRestRequest<List<SeriesSearchData>>(_restClient, request, Login);
+            return await ExecuteRestRequest<List<SeriesSearchData>>(request, Login);
         }
     }
 }
