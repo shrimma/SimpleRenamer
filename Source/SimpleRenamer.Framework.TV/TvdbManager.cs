@@ -100,7 +100,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     //else throw the responses exception
                     else
                     {
-                        throw response.ErrorException;
+                        if (response.ErrorException != null)
+                        {
+                            throw response.ErrorException;
+                        }
+                        //if no exception then do nothing and return null
                     }
                 }
                 catch (TimeoutException)
