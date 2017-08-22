@@ -40,19 +40,35 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
+            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
 
             _apiKey = configManager.TmDbApiKey;
             _restClient = new RestClient("https://api.themoviedb.org");
             _restClient.AddDefaultHeader("content-type", "application/json");
             _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
-            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
         }
 
+        /// <summary>
+        /// Handles the deserialization error.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="errorArgs">The <see cref="ErrorEventArgs"/> instance containing the event data.</param>
         public void HandleDeserializationError(object sender, ErrorEventArgs errorArgs)
         {
             //TODO log the error
             //errorArgs.ErrorContext.Error.Message;
             errorArgs.ErrorContext.Handled = true;
+        }
+
+        /// <summary>
+        /// Executes the request asynchronous.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        /// <remarks>virtual method for testability</remarks>
+        protected virtual async Task<IRestResponse> ExecuteRequestAsync(IRestRequest request)
+        {
+            return await _restClient.ExecuteTaskAsync(request);
         }
 
         /// <summary>
@@ -89,7 +105,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 try
                 {
                     //execute the request
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
+                    IRestResponse response = await ExecuteRequestAsync(request);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         return JsonConvert.DeserializeObject<SearchContainer<SearchMovie>>(response.Content, _jsonSerializerSettings);
@@ -107,6 +123,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             }
             return null;
         }
+
         /// <summary>
         /// Gets the movie asynchronous.
         /// </summary>
@@ -144,7 +161,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 try
                 {
                     //execute the request
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
+                    IRestResponse response = await ExecuteRequestAsync(request);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         return JsonConvert.DeserializeObject<Common.Movie.Model.Movie>(response.Content, _jsonSerializerSettings);
@@ -178,7 +195,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 try
                 {
                     //execute the request
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
+                    IRestResponse response = await ExecuteRequestAsync(request);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         return JsonConvert.DeserializeObject<Credits>(response.Content, _jsonSerializerSettings);
@@ -223,7 +240,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 try
                 {
                     //execute the request
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
+                    IRestResponse response = await ExecuteRequestAsync(request);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         return JsonConvert.DeserializeObject<SearchMovie>(response.Content, _jsonSerializerSettings);
@@ -279,7 +296,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 try
                 {
                     //execute the request
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
+                    IRestResponse response = await ExecuteRequestAsync(request);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         TMDbConfig tmdbConfig = JsonConvert.DeserializeObject<TMDbConfig>(response.Content, _jsonSerializerSettings);
