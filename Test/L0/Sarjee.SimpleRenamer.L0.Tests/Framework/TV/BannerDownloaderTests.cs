@@ -4,6 +4,7 @@ using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Framework.TV;
+using Sarjee.SimpleRenamer.L0.Tests.Mocks;
 using System;
 using System.Threading.Tasks;
 
@@ -54,16 +55,32 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         }
         #endregion Constructor
 
+        #region SaveBannerAsync
         [TestMethod]
         [TestCategory(TestCategories.TV)]
-        [Ignore]
-        public async Task BannerDownloader_SaveBannerAsync_Success()
+        public void BannerDownloader_SaveBannerAsync_NullArguments_ThrowArgumentNullException()
         {
             IBannerDownloader bannerDownloader = GetBannerDownloader();
 
-            bool result = await bannerDownloader.SaveBannerAsync("", "");
+            Func<Task> action1 = async () => await bannerDownloader.SaveBannerAsync(string.Empty, string.Empty);
+            Func<Task> action2 = async () => await bannerDownloader.SaveBannerAsync("bannerPath", string.Empty);
 
-            Assert.IsTrue(result);
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
         }
+
+        [TestMethod]
+        [TestCategory(TestCategories.TV)]
+        public void BannerDownloader_SaveBannerAsync_Success()
+        {
+            IBannerDownloader bannerDownloader = new TestableBannerDownloader(mockLogger.Object, mockTvdbManager.Object);
+
+            bool result = false;
+            Func<Task> action1 = async () => result = await bannerDownloader.SaveBannerAsync("bannerPath", "destinationFolder");
+
+            action1.ShouldNotThrow();
+            result.Should().BeTrue();
+        }
+        #endregion SaveBannerAsync
     }
 }

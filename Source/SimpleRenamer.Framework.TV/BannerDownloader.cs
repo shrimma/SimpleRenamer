@@ -42,17 +42,38 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <inheritdoc />
         public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder)
         {
-            _logger.TraceMessage($"Downloading banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
+            //throw if arguments are missing
+            if (string.IsNullOrWhiteSpace(tvdbBannerPath))
+            {
+                throw new ArgumentNullException(nameof(tvdbBannerPath));
+            }
+            if (string.IsNullOrWhiteSpace(destinationFolder))
+            {
+                throw new ArgumentNullException(nameof(destinationFolder));
+            }
+
             string fullBannerPath = Path.Combine(destinationFolder, "Folder.jpg");
             if (!File.Exists(fullBannerPath))
             {
-                using (WebClient client = new WebClient())
-                {
-                    await client.DownloadFileTaskAsync(new Uri(_tvdbManager.GetBannerUri(tvdbBannerPath)), fullBannerPath);
-                }
+                _logger.TraceMessage($"Downloading banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
+                await Download(tvdbBannerPath, fullBannerPath);
+                _logger.TraceMessage($"Downloaded banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
+            }
+            else
+            {
+                _logger.TraceMessage($"No need to download as banner already exists at {destinationFolder}.", EventLevel.Verbose);
             }
 
-            _logger.TraceMessage($"Downloaded banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
+            return true;
+        }
+
+        protected virtual async Task<bool> Download(string tvdbBannerPath, string bannerPath)
+        {
+            using (WebClient client = new WebClient())
+            {
+                await client.DownloadFileTaskAsync(new Uri(_tvdbManager.GetBannerUri(tvdbBannerPath)), bannerPath);
+            }
+
             return true;
         }
     }
