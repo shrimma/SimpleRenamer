@@ -125,12 +125,17 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <returns></returns>
         public async Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile)
         {
+            if (matchedFile == null)
+            {
+                throw new ArgumentNullException(nameof(matchedFile));
+            }
+
             return await Task.Run(async () =>
             {
-                _logger.TraceMessage($"Updating File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
-
-                if (!string.IsNullOrEmpty(movieId))
+                //id can be null if user didn't select a match
+                if (!string.IsNullOrWhiteSpace(movieId))
                 {
+                    _logger.TraceMessage($"Updating File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
                     SearchMovie searchedMovie = await _tmdbManager.SearchMovieByIdAsync(movieId);
                     matchedFile.ActionThis = true;
                     matchedFile.SkippedExactSelection = false;
@@ -140,14 +145,15 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                     matchedFile.ShowImage = searchedMovie.PosterPath;
                     matchedFile.FileType = FileType.Movie;
                     matchedFile.NewFileName = _helper.RemoveSpecialCharacters(searchedMovie.Title);
+                    _logger.TraceMessage($"Updated File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
                 }
                 else
                 {
+                    _logger.TraceMessage($"Did not update File {matchedFile.SourceFilePath} as no MovieId provided.", EventLevel.Verbose);
                     matchedFile.ActionThis = false;
                     matchedFile.SkippedExactSelection = true;
                 }
 
-                _logger.TraceMessage($"Updated File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
                 return matchedFile;
             });
         }

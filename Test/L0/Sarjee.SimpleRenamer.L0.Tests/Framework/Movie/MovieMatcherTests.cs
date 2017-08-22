@@ -95,7 +95,64 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         #region ScrapeDetailsAsync
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
-        public void MovieMatcher_ScrapeDetailsAsync_Success()
+        public void MovieMatcher_ScrapeDetailsAsync_NullResponse_Success()
+        {
+            //null response                        
+            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync((SearchContainer<SearchMovie>)null);
+
+            IMovieMatcher movieMatcher = GetMovieMatcher();
+            MatchedFile result = null;
+            MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
+            Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input);
+
+            action1.ShouldNotThrow();
+            result.Should().NotBeNull();
+            result.ActionThis.Should().BeFalse();
+            result.SkippedExactSelection.Should().BeTrue();
+        }
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
+        public void MovieMatcher_ScrapeDetailsAsync_NoMatch_Success()
+        {
+            //dummy movies
+            SearchContainer<SearchMovie> output = new SearchContainer<SearchMovie>();
+
+            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(output);
+
+            IMovieMatcher movieMatcher = GetMovieMatcher();
+            MatchedFile result = null;
+            MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
+            Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input);
+
+            action1.ShouldNotThrow();
+            result.Should().NotBeNull();
+            result.ActionThis.Should().BeFalse();
+            result.SkippedExactSelection.Should().BeTrue();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
+        public void MovieMatcher_ScrapeDetailsAsync_SingleMatch_Success()
+        {
+            //dummy movies
+            SearchContainer<SearchMovie> output = new SearchContainer<SearchMovie>();
+            output.Results.Add(new SearchMovie() { Id = 1, Title = "dummyMovie1", Overview = "short and sweet" });
+
+            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(output);
+
+            IMovieMatcher movieMatcher = GetMovieMatcher();
+            MatchedFile result = null;
+            MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
+            Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input);
+
+            action1.ShouldNotThrow();
+            result.Should().NotBeNull();
+            result.TMDBShowId.Should().Be(1);
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
+        public void MovieMatcher_ScrapeDetailsAsync_MultiMatch_Success()
         {
             //dummy movies
             SearchContainer<SearchMovie> output = new SearchContainer<SearchMovie>();
@@ -112,15 +169,45 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
-            result.TMDBShowId.Should().Be(155555);
+            result.ActionThis.Should().BeFalse();
+            result.SkippedExactSelection.Should().BeTrue();
         }
         #endregion ScrapeDetailsAsync
 
         #region UpdateFileWithMatchedMovie
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
+        public void MovieMatcher_UpdateFileWithMatchedMovie_NullArgument_ThrowsException()
+        {
+            IMovieMatcher movieMatcher = GetMovieMatcher();
+            MatchedFile result = null;
+            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovie("movieId1", null);
+
+            action1.ShouldThrow<ArgumentNullException>();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
+        public void MovieMatcher_UpdateFileWithMatchedMovie_NoMovieId_Success()
+        {
+            IMovieMatcher movieMatcher = GetMovieMatcher();
+            MatchedFile result = null;
+            MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
+            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovie(string.Empty, input);
+
+            action1.ShouldNotThrow();
+            result.Should().NotBeNull();
+            result.ActionThis.Should().BeFalse();
+            result.SkippedExactSelection.Should().BeTrue();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
         public void MovieMatcher_UpdateFileWithMatchedMovie_Success()
         {
+            //dummy helper
+            mockHelper.Setup(x => x.RemoveSpecialCharacters(It.IsAny<string>())).Returns<string>(x => x);
             //dummy movie                        
             SearchMovie output = new SearchMovie() { Id = 1, Title = "dummyMovie1", Overview = "short and sweet" };
             mockTmdbManager.Setup(x => x.SearchMovieByIdAsync(It.IsAny<string>())).ReturnsAsync(output);
@@ -132,7 +219,9 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
-            result.TMDBShowId.Should().Be(155555);
+            result.TMDBShowId.Should().Be(1);
+            result.ActionThis.Should().BeTrue();
+            result.SkippedExactSelection.Should().BeFalse();
         }
         #endregion UpdateFileWithMatchedMovie
 
