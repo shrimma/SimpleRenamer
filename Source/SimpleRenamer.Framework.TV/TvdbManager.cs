@@ -43,10 +43,10 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
+            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
 
             _apiKey = configManager.TvDbApiKey;
             _jwtToken = string.Empty;
-            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
             _restClient = new RestClient("https://api.thetvdb.com");
             _restClient.AddDefaultHeader("content-type", "application/json");
             _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
