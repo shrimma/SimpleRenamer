@@ -59,6 +59,17 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             errorArgs.ErrorContext.Handled = true;
         }
 
+        /// <summary>
+        /// Executes the request asynchronous.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        /// <remarks>virtual method for testability</remarks>
+        protected virtual async Task<IRestResponse> ExecuteRequestAsync(IRestRequest request)
+        {
+            return await _restClient.ExecuteTaskAsync(request);
+        }
+
         private int[] httpStatusCodesWorthRetrying = { 408, 500, 502, 503, 504, 598, 599 };
         private async Task<T> ExecuteRestRequest<T>(IRestRequest restRequest, Func<Task> LoginCallback) where T : class
         {
@@ -69,7 +80,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 try
                 {
                     //execute the request
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(restRequest);
+                    IRestResponse response = await ExecuteRequestAsync(restRequest);
                     //if no errors and statuscode ok then deserialize the response
                     if (response?.ErrorException == null && response?.StatusCode == HttpStatusCode.OK)
                     {
