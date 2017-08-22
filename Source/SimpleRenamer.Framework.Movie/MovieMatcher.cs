@@ -56,7 +56,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         {
             _logger.TraceMessage($"Get possible matches for movie: {movieName}.", EventLevel.Verbose);
             ConcurrentBag<DetailView> movies = new ConcurrentBag<DetailView>();
-            SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName, 0);
+            SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName);
             if (results != null)
             {
                 Parallel.ForEach(results.Results, _parallelOptions, (s) =>

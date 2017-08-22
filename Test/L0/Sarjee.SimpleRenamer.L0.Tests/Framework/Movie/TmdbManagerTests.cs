@@ -72,11 +72,16 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             //get testable tmdbmanager
             ITmdbManager tmdbManager = GetTmdbManager(true);
             SearchContainer<SearchMovie> result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByNameAsync("searchByMovieName", 2015);
+            SearchContainer<SearchMovie> result2 = null;
+            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByNameAsync("searchByMovieName");
+            Func<Task> action2 = async () => result2 = await tmdbManager.SearchMovieByNameAsync("searchByMovieName", 2016);
 
             action1.ShouldNotThrow();
+            action2.ShouldNotThrow();
             result.Should().NotBeNull();
             result.TotalResults.Should().Be(2);
+            result2.Should().NotBeNull();
+            result2.TotalResults.Should().Be(2);
         }
         #endregion SearchMovieByNameAsync
 
@@ -108,11 +113,25 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
+            result.Title.Should().Be("Fight Club");
             result.Credits.Should().NotBeNull();
         }
         #endregion GetMovieAsync
 
         #region GetPosterUriAsync
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
+        public void TmdbManager_GetPosterUriAsync_Null_Success()
+        {
+            //get testable tmdbmanager
+            ITmdbManager tmdbManager = new EmptyTestableTmdbManager(mockConfigurationManager.Object, mockHelper.Object);
+            string result = null;
+            Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync("getPoster");
+
+            action1.ShouldNotThrow();
+            result.Should().BeNullOrEmpty();
+        }
+
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetPosterUriAsync_Success()
@@ -124,7 +143,49 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
+            result.Should().Contain("tmdb");
         }
         #endregion GetPosterUriAsync
+
+        #region RetryHandling
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
+        public void TmdbManager_RetryHandling_StatusCode_ReturnsNull_Success()
+        {
+            //get testable tmdbmanager
+            ITmdbManager tmdbManager = new ErrorCodeTestableTmdbManager(mockConfigurationManager.Object, mockHelper.Object);
+            SimpleRenamer.Common.Movie.Model.Movie result = null;
+            Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync("getMovie");
+
+            action1.ShouldNotThrow();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
+        public void TmdbManager_RetryHandling_WebException_ReturnsNull_Success()
+        {
+            //get testable tmdbmanager
+            ITmdbManager tmdbManager = new WebExceptionTestableTmdbManager(mockConfigurationManager.Object, mockHelper.Object);
+            SimpleRenamer.Common.Movie.Model.Movie result = null;
+            Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync("getMovie");
+
+            action1.ShouldNotThrow();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
+        public void TmdbManager_RetryHandling_ErrorException_ThrowsException_Success()
+        {
+            //get testable tmdbmanager
+            ITmdbManager tmdbManager = new ErrorExceptionTestableTmdbManager(mockConfigurationManager.Object, mockHelper.Object);
+            SimpleRenamer.Common.Movie.Model.Movie result = null;
+            Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync("getMovie");
+
+            action1.ShouldThrow<ArgumentNullException>();
+            result.Should().BeNull();
+        }
+        #endregion RetryHandling
     }
 }

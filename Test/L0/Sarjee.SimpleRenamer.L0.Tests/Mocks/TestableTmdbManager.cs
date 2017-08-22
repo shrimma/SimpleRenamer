@@ -1,6 +1,7 @@
 ﻿using RestSharp;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Framework.Movie;
+using System;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -75,6 +76,118 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
                     Content = _getPosterResponse
                 };
             }
+            return Task.FromResult(response);
+        }
+    }
+
+    internal class EmptyTestableTmdbManager : TmdbManager
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TestableTmdbManager"/> class.
+        /// </summary>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <param name="helper"></param>
+        public EmptyTestableTmdbManager(IConfigurationManager configManager, IHelper helper) : base(configManager, helper)
+        {
+        }
+
+        /// <summary>
+        /// Executes the request asynchronous.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// override for unit tests
+        /// </remarks>
+        protected override Task<IRestResponse> ExecuteRequestAsync(IRestRequest request)
+        {
+            IRestResponse response = response = new RestResponse
+            {
+                StatusCode = HttpStatusCode.OK,
+            };
+            return Task.FromResult(response);
+        }
+    }
+
+    internal class ErrorCodeTestableTmdbManager : TmdbManager
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TestableTmdbManager"/> class.
+        /// </summary>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <param name="helper"></param>
+        public ErrorCodeTestableTmdbManager(IConfigurationManager configManager, IHelper helper) : base(configManager, helper)
+        {
+        }
+
+        /// <summary>
+        /// Executes the request asynchronous.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// override for unit tests
+        /// </remarks>
+        protected override Task<IRestResponse> ExecuteRequestAsync(IRestRequest request)
+        {
+            IRestResponse response = response = new RestResponse
+            {
+                StatusCode = (HttpStatusCode)408,
+            };
+            return Task.FromResult(response);
+        }
+    }
+
+    internal class WebExceptionTestableTmdbManager : TmdbManager
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TestableTmdbManager"/> class.
+        /// </summary>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <param name="helper"></param>
+        public WebExceptionTestableTmdbManager(IConfigurationManager configManager, IHelper helper) : base(configManager, helper)
+        {
+        }
+
+        /// <summary>
+        /// Executes the request asynchronous.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// override for unit tests
+        /// </remarks>
+        protected override Task<IRestResponse> ExecuteRequestAsync(IRestRequest request)
+        {
+            throw new WebException();
+        }
+    }
+
+    internal class ErrorExceptionTestableTmdbManager : TmdbManager
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TestableTmdbManager"/> class.
+        /// </summary>
+        /// <param name="configManager">The configuration manager.</param>
+        /// <param name="helper"></param>
+        public ErrorExceptionTestableTmdbManager(IConfigurationManager configManager, IHelper helper) : base(configManager, helper)
+        {
+        }
+
+        /// <summary>
+        /// Executes the request asynchronous.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// override for unit tests
+        /// </remarks>
+        protected override Task<IRestResponse> ExecuteRequestAsync(IRestRequest request)
+        {
+            IRestResponse response = response = new RestResponse
+            {
+                ErrorException = new ArgumentNullException("dummy")
+            };
             return Task.FromResult(response);
         }
     }

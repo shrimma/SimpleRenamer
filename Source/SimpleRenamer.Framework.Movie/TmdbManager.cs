@@ -125,15 +125,15 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <param name="movieName">Name of the movie.</param>
         /// <param name="movieYear">The movie year.</param>
         /// <returns></returns>
-        public async Task<SearchContainer<SearchMovie>> SearchMovieByNameAsync(string movieName, int movieYear)
+        public async Task<SearchContainer<SearchMovie>> SearchMovieByNameAsync(string movieName, int? movieYear = null)
         {
             return await GetSearchContainerMoviesAsync(movieName, movieYear);
         }
-        private async Task<SearchContainer<SearchMovie>> GetSearchContainerMoviesAsync(string movieName, int movieYear)
+        private async Task<SearchContainer<SearchMovie>> GetSearchContainerMoviesAsync(string movieName, int? movieYear)
         {
             string resource = string.Empty;
             //if no movie year then don't include in the query
-            if (movieYear == 0)
+            if (!movieYear.HasValue)
             {
                 resource = $"/3/search/movie?&query={movieName}&language=en-US&api_key={_apiKey}";
             }

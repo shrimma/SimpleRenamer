@@ -81,6 +81,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             output.Results.Add(new SearchMovie() { Id = 3 });
 
             mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(output);
+            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), null)).ReturnsAsync(output);
 
             IMovieMatcher movieMatcher = GetMovieMatcher();
             List<DetailView> result = null;
