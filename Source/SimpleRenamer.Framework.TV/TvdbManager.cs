@@ -162,6 +162,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public string GetBannerUri(string bannerPath)
         {
+            if (string.IsNullOrWhiteSpace(bannerPath))
+            {
+                throw new ArgumentNullException(nameof(bannerPath));
+            }
+
             return $"http://thetvdb.com/banners/{bannerPath}";
         }
 
@@ -172,7 +177,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public async Task<CompleteSeries> GetSeriesByIdAsync(string tmdbId)
         {
-            if (string.IsNullOrEmpty(_jwtToken))
+            if (string.IsNullOrWhiteSpace(tmdbId))
+            {
+                throw new ArgumentNullException(nameof(tmdbId));
+            }
+
+            if (string.IsNullOrWhiteSpace(_jwtToken))
             {
                 await Login();
             }
@@ -338,8 +348,13 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName)
         {
+            if (string.IsNullOrWhiteSpace(seriesName))
+            {
+                throw new ArgumentNullException(nameof(seriesName));
+            }
+
             //login if this is the first call
-            if (string.IsNullOrEmpty(_jwtToken))
+            if (string.IsNullOrWhiteSpace(_jwtToken))
             {
                 await Login();
             }
