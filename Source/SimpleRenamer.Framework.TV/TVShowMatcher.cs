@@ -56,6 +56,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         public async Task<CompleteSeries> SearchShowByNameAsync(string showName)
         {
+            if (string.IsNullOrWhiteSpace(showName))
+            {
+                throw new ArgumentNullException(nameof(showName));
+            }
+
             _logger.TraceMessage($"Searching for Show by Name: {showName}.", EventLevel.Verbose);
             List<SeriesSearchData> searchResults = await _tvdbManager.SearchSeriesByNameAsync(showName);
             //if theres only one match then scape the specific show and return this
@@ -73,13 +78,28 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         public async Task<CompleteSeries> SearchShowByIdAsync(string showId)
         {
+            if (string.IsNullOrWhiteSpace(showId))
+            {
+                throw new ArgumentNullException(nameof(showId));
+            }
+
             _logger.TraceMessage($"Searching for Show details by ShowId: {showId}.", EventLevel.Verbose);
             CompleteSeries series = await _tvdbManager.GetSeriesByIdAsync(showId);
+            _logger.TraceMessage($"Found Show details by ShowId: {showId}.", EventLevel.Verbose);
             return series;
         }
 
         public MatchedFile UpdateFileWithSeriesDetails(MatchedFile file, CompleteSeries series)
         {
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+            if (series == null)
+            {
+                throw new ArgumentNullException(nameof(series));
+            }
+
             _logger.TraceMessage($"Updating File {file.SourceFilePath} with SeriesInfo {series.Series.SeriesName}.", EventLevel.Verbose);
             RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Matching {0} with data", file.SourceFilePath)));
             bool seasonBannerFound = false;
@@ -145,6 +165,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public MatchedFile FixShowsFromMappings(MatchedFile episode)
         {
+            if (episode == null)
+            {
+                throw new ArgumentNullException(nameof(episode));
+            }
+
             _logger.TraceMessage($"FixShowName based on Mappings for {episode.SourceFilePath}.", EventLevel.Verbose);
             ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
             if (showNameMapping != null && showNameMapping.Mappings != null && showNameMapping.Mappings.Count > 0)
@@ -180,6 +205,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// </returns>
         public async Task<List<DetailView>> GetPossibleShowsForEpisodeAsync(string showName)
         {
+            if (string.IsNullOrWhiteSpace(showName))
+            {
+                throw new ArgumentNullException(nameof(showName));
+            }
+
             return await Task.Run(async () =>
             {
                 _logger.TraceMessage($"Get possible matches for show: {showName}.", EventLevel.Verbose);
@@ -231,6 +261,15 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// </returns>
         public async Task<MatchedFile> UpdateEpisodeWithMatchedSeriesAsync(string selectedSeriesId, MatchedFile episode)
         {
+            if (string.IsNullOrWhiteSpace(selectedSeriesId))
+            {
+                throw new ArgumentNullException(nameof(selectedSeriesId));
+            }
+            if (episode == null)
+            {
+                throw new ArgumentNullException(nameof(episode));
+            }
+
             return await Task.Run(async () =>
             {
                 _logger.TraceMessage($"Updating {episode.SourceFilePath} with Matched SeriesId {selectedSeriesId}.", EventLevel.Verbose);
@@ -271,6 +310,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public async Task<(CompleteSeries series, BitmapImage banner)> GetShowWithBannerAsync(string showId)
         {
+            if (string.IsNullOrWhiteSpace(showId))
+            {
+                throw new ArgumentNullException(nameof(showId));
+            }
+
             _logger.TraceMessage($"Getting show and banner for ShowId: {showId}.", EventLevel.Verbose);
             CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(showId);
             BitmapImage bannerImage = new BitmapImage();
