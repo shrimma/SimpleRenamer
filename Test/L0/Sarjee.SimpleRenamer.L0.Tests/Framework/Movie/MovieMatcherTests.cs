@@ -33,8 +33,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         private IMovieMatcher GetMovieMatcher()
         {
             IMovieMatcher movieMatcher = new MovieMatcher(mockLogger.Object, mockTmdbManager.Object, mockHelper.Object);
-            movieMatcher.RaiseProgressEvent += MovieMatcher_RaiseProgressEvent;
             movieMatcher.Should().NotBeNull();
+            movieMatcher.RaiseProgressEvent += MovieMatcher_RaiseProgressEvent;
             return movieMatcher;
         }
 
@@ -85,7 +85,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
 
             IMovieMatcher movieMatcher = GetMovieMatcher();
             List<DetailView> result = null;
-            Func<Task> action1 = async () => result = await movieMatcher.GetPossibleMoviesForFile("showName");
+            Func<Task> action1 = async () => result = await movieMatcher.GetPossibleMoviesForFileAsync("showName");
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -182,7 +182,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         {
             IMovieMatcher movieMatcher = GetMovieMatcher();
             MatchedFile result = null;
-            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovie("movieId1", null);
+            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovieAsync("movieId1", null);
 
             action1.ShouldThrow<ArgumentNullException>();
             result.Should().BeNull();
@@ -195,7 +195,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             IMovieMatcher movieMatcher = GetMovieMatcher();
             MatchedFile result = null;
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
-            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovie(string.Empty, input);
+            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovieAsync(string.Empty, input);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -216,7 +216,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             IMovieMatcher movieMatcher = GetMovieMatcher();
             MatchedFile result = null;
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
-            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovie("movieId1", input);
+            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovieAsync("movieId1", input);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -237,7 +237,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
 
             IMovieMatcher movieMatcher = GetMovieMatcher();
             (SimpleRenamer.Common.Movie.Model.Movie movie, BitmapImage image) result = (null, null);
-            Func<Task> action1 = async () => result = await movieMatcher.GetMovieWithBanner("1", new CancellationToken());
+            Func<Task> action1 = async () => result = await movieMatcher.GetMovieWithBannerAsync("1", new CancellationToken());
 
             action1.ShouldNotThrow();
             result.movie.Should().NotBeNull();
@@ -254,7 +254,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
 
             IMovieMatcher movieMatcher = GetMovieMatcher();
             (SimpleRenamer.Common.Movie.Model.Movie movie, BitmapImage image) result = (null, null);
-            Func<Task> action1 = async () => result = await movieMatcher.GetMovieWithBanner("1", new CancellationToken());
+            Func<Task> action1 = async () => result = await movieMatcher.GetMovieWithBannerAsync("1", new CancellationToken());
 
             action1.ShouldNotThrow();
             result.movie.Should().NotBeNull();

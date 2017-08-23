@@ -71,7 +71,7 @@ namespace Sarjee.SimpleRenamer.Views
             //enable progress spinner
             LoadingProgress.IsActive = true;
             CancellationTokenSource cts = new CancellationTokenSource();
-            (Movie movie, BitmapImage banner) = await _movieMatcher.GetMovieWithBanner(movieId, cts.Token);
+            (Movie movie, BitmapImage banner) = await _movieMatcher.GetMovieWithBannerAsync(movieId, cts.Token);
 
             //set the title, show description, rating and firstaired values
             this.Title = string.Format("{0} - Rating {1} - Year {2}", movie.Title, string.IsNullOrEmpty(movie.VoteAverage.ToString()) ? "0.0" : movie.VoteAverage.ToString(), movie.ReleaseDate.HasValue ? movie.ReleaseDate.Value.Year.ToString() : "1900");

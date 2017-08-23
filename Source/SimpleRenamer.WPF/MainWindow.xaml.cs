@@ -408,7 +408,7 @@ namespace Sarjee.SimpleRenamer
                 }
                 else
                 {
-                    updatedFile = await _movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp);
+                    updatedFile = await _movieMatcher.UpdateFileWithMatchedMovieAsync(e.ID, temp);
                 }
 
                 //if selection wasn't skipped then update the selected item

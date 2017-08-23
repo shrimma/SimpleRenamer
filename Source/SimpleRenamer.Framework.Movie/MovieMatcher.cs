@@ -52,7 +52,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// </summary>
         /// <param name="movieName">Name of the movie.</param>
         /// <returns></returns>
-        public async Task<List<DetailView>> GetPossibleMoviesForFile(string movieName)
+        public async Task<List<DetailView>> GetPossibleMoviesForFileAsync(string movieName)
         {
             _logger.TraceMessage($"Get possible matches for movie: {movieName}.", EventLevel.Verbose);
             ConcurrentBag<DetailView> movies = new ConcurrentBag<DetailView>();
@@ -123,7 +123,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <param name="movieId">The movie identifier.</param>
         /// <param name="matchedFile">The matched file.</param>
         /// <returns></returns>
-        public async Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile)
+        public async Task<MatchedFile> UpdateFileWithMatchedMovieAsync(string movieId, MatchedFile matchedFile)
         {
             if (matchedFile == null)
             {
@@ -164,7 +164,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <param name="movieId">The movie identifier.</param>
         /// <param name="ct">The ct.</param>
         /// <returns></returns>
-        public async Task<(Common.Movie.Model.Movie movie, BitmapImage banner)> GetMovieWithBanner(string movieId, CancellationToken ct)
+        public async Task<(Common.Movie.Model.Movie movie, BitmapImage banner)> GetMovieWithBannerAsync(string movieId, CancellationToken ct)
         {
             _logger.TraceMessage($"Getting MovieInfo for MovieId: {movieId}.", EventLevel.Verbose);
             Common.Movie.Model.Movie matchedMovie = await _tmdbManager.GetMovieAsync(movieId);

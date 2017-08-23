@@ -165,7 +165,7 @@ namespace Sarjee.SimpleRenamer.Views
             }
             else
             {
-                possibleMatches = await movieMatcher.GetPossibleMoviesForFile(searchText);
+                possibleMatches = await movieMatcher.GetPossibleMoviesForFileAsync(searchText);
             }
 
             return possibleMatches;
