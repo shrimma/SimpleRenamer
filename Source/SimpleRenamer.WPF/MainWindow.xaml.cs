@@ -404,7 +404,7 @@ namespace Sarjee.SimpleRenamer
                 MatchedFile updatedFile;
                 if (e.Type == FileType.TvShow)
                 {
-                    updatedFile = await _tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp);
+                    updatedFile = await _tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync(e.ID, temp);
                 }
                 else
                 {

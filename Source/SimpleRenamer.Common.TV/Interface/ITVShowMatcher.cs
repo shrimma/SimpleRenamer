@@ -47,7 +47,7 @@ namespace Sarjee.SimpleRenamer.Common.TV.Interface
         /// </summary>
         /// <param name="showName">The showname to be searched</param>
         /// <returns>A list of series</returns>
-        Task<List<DetailView>> GetPossibleShowsForEpisode(string showName);
+        Task<List<DetailView>> GetPossibleShowsForEpisodeAsync(string showName);
 
         /// <summary>
         /// Updates a TV episode with the details of a selected series
@@ -55,7 +55,7 @@ namespace Sarjee.SimpleRenamer.Common.TV.Interface
         /// <param name="selectedSeriesId">The TVDB show id selected</param>
         /// <param name="episode">Episode to be updated</param>
         /// <returns>The updated TV episode</returns>
-        Task<MatchedFile> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, MatchedFile episode);
+        Task<MatchedFile> UpdateEpisodeWithMatchedSeriesAsync(string selectedSeriesId, MatchedFile episode);
 
         /// <summary>
         /// Gets a show and it's banner

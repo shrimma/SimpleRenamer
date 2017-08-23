@@ -178,7 +178,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns>
         /// A list of series
         /// </returns>
-        public async Task<List<DetailView>> GetPossibleShowsForEpisode(string showName)
+        public async Task<List<DetailView>> GetPossibleShowsForEpisodeAsync(string showName)
         {
             return await Task.Run(async () =>
             {
@@ -229,7 +229,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns>
         /// The updated TV episode
         /// </returns>
-        public async Task<MatchedFile> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, MatchedFile episode)
+        public async Task<MatchedFile> UpdateEpisodeWithMatchedSeriesAsync(string selectedSeriesId, MatchedFile episode)
         {
             return await Task.Run(async () =>
             {
