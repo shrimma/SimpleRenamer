@@ -8,11 +8,38 @@ using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Common.TV.Interface
 {
+    /// <summary>
+    /// TV Show Matcher Interface
+    /// </summary>
     public interface ITVShowMatcher
     {
+        /// <summary>
+        /// Searches the show by name asynchronous.
+        /// </summary>
+        /// <param name="showName">Name of the show.</param>
+        /// <returns></returns>
         Task<CompleteSeries> SearchShowByNameAsync(string showName);
+
+        /// <summary>
+        /// Searches the show by identifier asynchronous.
+        /// </summary>
+        /// <param name="showId">The show identifier.</param>
+        /// <returns></returns>
         Task<CompleteSeries> SearchShowByIdAsync(string showId);
+
+        /// <summary>
+        /// Updates the file with series details.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="series">The series.</param>
+        /// <returns></returns>
         MatchedFile UpdateFileWithSeriesDetails(MatchedFile file, CompleteSeries series);
+
+        /// <summary>
+        /// Fixes the shows from mappings.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <returns></returns>
         MatchedFile FixShowsFromMappings(MatchedFile file);
 
         /// <summary>
