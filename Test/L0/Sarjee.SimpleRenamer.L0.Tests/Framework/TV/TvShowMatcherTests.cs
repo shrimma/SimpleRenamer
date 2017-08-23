@@ -171,25 +171,66 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         #region UpdateFileWithSeriesDetails
         [TestMethod]
         [TestCategory(TestCategories.TV)]
-        public void TVShowMatcher_UpdateFileWithSeriesDetails_Success()
+        public void TVShowMatcher_UpdateFileWithSeriesDetails_NullArguments_ThrowANE()
         {
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
-            MatchedFile fileInput = new MatchedFile("", "");
-            CompleteSeries seriesInput = new CompleteSeries(new Series(), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>());
+
+            MatchedFile result1 = null;
+            MatchedFile result2 = null;
+            Action action1 = () => result1 = tvShowMatcher.UpdateFileWithSeriesDetails(null, null);
+            Action action2 = () => result2 = tvShowMatcher.UpdateFileWithSeriesDetails(new MatchedFile("", ""), null);
+
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
+            result1.Should().BeNull();
+            result2.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.TV)]
+        public void TVShowMatcher_UpdateFileWithSeriesDetails_Success()
+        {
+            //setup settings
+            Settings settings = new Settings() { NewFileNameFormat = "newFileName" };
+            mockConfigurationManager.Setup(x => x.Settings).Returns(settings);
+            ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
+            MatchedFile fileInput = new MatchedFile("filePath", "ShowName", "1", "1");
+            CompleteSeries seriesInput = new CompleteSeries(new Series(1, "ShowName"), new List<SeriesActorsData>(), new List<BasicEpisode>() { new BasicEpisode(1, 1, 1, 1, 1, "EpisodeName", 1, "Overview") }, new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>());
 
             MatchedFile result = null;
             Action action1 = () => result = tvShowMatcher.UpdateFileWithSeriesDetails(fileInput, seriesInput);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
+            result.ShowName.Should().Be(seriesInput.Series.SeriesName);
+            result.EpisodeName.Should().Be(seriesInput.Episodes[0].EpisodeName);
+            result.TVDBShowId.Should().Be(seriesInput.Series.Id.ToString());
+            result.ActionThis.Should().BeTrue();
+            result.SkippedExactSelection.Should().BeFalse();
         }
         #endregion UpdateFileWithSeriesDetails
 
         #region FixShowsFromMappings
         [TestMethod]
         [TestCategory(TestCategories.TV)]
+        public void TVShowMatcher_FixShowsFromMappings_NullArguments_ThrowANE()
+        {
+            ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
+
+            MatchedFile result = null;
+            Action action1 = () => result = tvShowMatcher.FixShowsFromMappings(null);
+
+            action1.ShouldThrow<ArgumentNullException>();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.TV)]
         public void TVShowMatcher_FixShowsFromMappings_Success()
         {
+            //setup settings
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
+
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
             MatchedFile fileInput = new MatchedFile("", "");
 
@@ -201,10 +242,23 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         }
         #endregion FixShowsFromMappings
 
-        #region GetPossibleShowsForEpisode
+        #region GetPossibleShowsForEpisodeAsync
         [TestMethod]
         [TestCategory(TestCategories.TV)]
-        public void TVShowMatcher_GetPossibleShowsForEpisode_Success()
+        public void TVShowMatcher_GetPossibleShowsForEpisodeAsync_NullArguments_ThrowANE()
+        {
+            ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
+
+            List<DetailView> result = null;
+            Func<Task> action1 = async () => result = await tvShowMatcher.GetPossibleShowsForEpisodeAsync(string.Empty);
+
+            action1.ShouldThrow<ArgumentNullException>();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.TV)]
+        public void TVShowMatcher_GetPossibleShowsForEpisodeAsync_Success()
         {
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
             List<DetailView> result = null;
@@ -215,10 +269,27 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         }
         #endregion GetPossibleShowsForEpisode
 
-        #region UpdateEpisodeWithMatchedSeries
+        #region UpdateEpisodeWithMatchedSeriesAsync
         [TestMethod]
         [TestCategory(TestCategories.TV)]
-        public void TVShowMatcher_UpdateEpisodeWithMatchedSeries_Success()
+        public void TVShowMatcher_UpdateEpisodeWithMatchedSeriesAsync_NullArguments_ThrowANE()
+        {
+            ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
+
+            MatchedFile result1 = null;
+            MatchedFile result2 = null;
+            Func<Task> action1 = async () => result1 = await tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync(string.Empty, null);
+            Func<Task> action2 = async () => result2 = await tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync("id", null);
+
+            action1.ShouldThrow<ArgumentNullException>();
+            action2.ShouldThrow<ArgumentNullException>();
+            result1.Should().BeNull();
+            result2.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.TV)]
+        public void TVShowMatcher_UpdateEpisodeWithMatchedSeriesAsync_Success()
         {
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
             MatchedFile fileInput = new MatchedFile("", "");
@@ -232,6 +303,20 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         #endregion UpdateEpisodeWithMatchedSeries
 
         #region GetShowWithBannerAsync
+        [TestMethod]
+        [TestCategory(TestCategories.TV)]
+        public void TVShowMatcher_GetShowWithBannerAsync_NullArguments_ThrowANE()
+        {
+            ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
+
+            (CompleteSeries series, BitmapImage banner) result = (null, null);
+            Func<Task> action1 = async () => result = await tvShowMatcher.GetShowWithBannerAsync(string.Empty);
+
+            action1.ShouldThrow<ArgumentNullException>();
+            result.series.Should().BeNull();
+            result.banner.Should().BeNull();
+        }
+
         [TestMethod]
         [TestCategory(TestCategories.TV)]
         public void TVShowMatcher_GetShowWithBannerAsync_Success()
