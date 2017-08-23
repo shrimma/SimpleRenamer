@@ -40,7 +40,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
         {
             IBackgroundQueue backgroundQueue = GetBackgroundQueue();
 
-            Func<Task> action1 = async () => await await backgroundQueue.QueueTask(() => Task.Delay(TimeSpan.FromMilliseconds(10)));
+            Func<Task> action1 = async () => await await backgroundQueue.QueueTaskAsync(() => Task.Delay(TimeSpan.FromMilliseconds(10)));
 
             action1.ShouldNotThrow();
         }
@@ -51,7 +51,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
         {
             IBackgroundQueue backgroundQueue = GetBackgroundQueue();
 
-            Func<Task> action1 = async () => await backgroundQueue.QueueTask(() => Thread.Sleep(10));
+            Func<Task> action1 = async () => await backgroundQueue.QueueTaskAsync(() => Thread.Sleep(10));
 
             action1.ShouldNotThrow();
         }

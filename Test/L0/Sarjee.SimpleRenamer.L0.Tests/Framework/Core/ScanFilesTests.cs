@@ -94,7 +94,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IScanFiles scanFiles = GetScanFiles();
 
             List<MatchedFile> scannedFiles = null;
-            Func<Task> action1 = async () => scannedFiles = await scanFiles.Scan(new CancellationToken());
+            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(new CancellationToken());
 
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNull();
@@ -121,7 +121,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IScanFiles scanFiles = GetScanFiles();
 
             List<MatchedFile> scannedFiles = null;
-            Func<Task> action1 = async () => scannedFiles = await scanFiles.Scan(new CancellationToken());
+            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(new CancellationToken());
 
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
@@ -154,7 +154,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IScanFiles scanFiles = GetScanFiles();
 
             List<MatchedFile> scannedFiles = null;
-            Func<Task> action1 = async () => scannedFiles = await scanFiles.Scan(new CancellationToken());
+            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(new CancellationToken());
 
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
@@ -184,7 +184,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IScanFiles scanFiles = GetScanFiles();
 
             List<MatchedFile> scannedFiles = null;
-            Func<Task> action1 = async () => scannedFiles = await scanFiles.Scan(new CancellationToken());
+            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(new CancellationToken());
 
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
@@ -233,7 +233,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IScanFiles scanFiles = GetScanFiles();
 
             List<MatchedFile> scannedFiles = null;
-            Func<Task> action1 = async () => scannedFiles = await scanFiles.Scan(new CancellationToken());
+            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(new CancellationToken());
 
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();

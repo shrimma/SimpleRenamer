@@ -67,7 +67,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <param name="scannedEpisodes">The episodes to action</param>
         /// <param name="ct">CancellationToken</param>
         /// <returns></returns>
-        public async Task<bool> Action(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct)
+        public async Task<bool> ActionAsync(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
             return await Task.Run(async () =>
             {
@@ -188,7 +188,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             {
                 ct.ThrowIfCancellationRequested();
                 RaiseProgressEvent(this, new ProgressTextEventArgs($"Moving file {file.SourceFilePath} to {file.DestinationFilePath}."));
-                bool result = await await _backgroundQueue.QueueTask(() => _fileMover.MoveFileAsync(file, ct));
+                bool result = await await _backgroundQueue.QueueTaskAsync(() => _fileMover.MoveFileAsync(file, ct));
                 if (result)
                 {
                     RaiseFileMovedEvent(this, new FileMovedEventArgs(file));

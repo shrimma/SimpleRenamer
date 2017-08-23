@@ -87,7 +87,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// </summary>
         /// <param name="ct">CancellationToken</param>
         /// <returns></returns>
-        public async Task<List<MatchedFile>> Scan(CancellationToken ct)
+        public async Task<List<MatchedFile>> ScanAsync(CancellationToken ct)
         {
             return await Task.Run(async () =>
             {

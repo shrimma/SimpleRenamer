@@ -17,7 +17,7 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// </summary>
         /// <param name="ct">CancellationToken</param>
         /// <returns></returns>
-        Task<List<MatchedFile>> Scan(CancellationToken ct);
+        Task<List<MatchedFile>> ScanAsync(CancellationToken ct);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

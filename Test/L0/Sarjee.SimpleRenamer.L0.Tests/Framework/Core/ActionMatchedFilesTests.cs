@@ -103,7 +103,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IActionMatchedFiles actionMatchedFiles = GetActionMatchedFiles();
 
             bool result = false;
-            Func<Task> action1 = async () => result = await actionMatchedFiles.Action(new ObservableCollection<MatchedFile>(), new CancellationToken());
+            Func<Task> action1 = async () => result = await actionMatchedFiles.ActionAsync(new ObservableCollection<MatchedFile>(), new CancellationToken());
 
             action1.ShouldNotThrow();
             result.Should().BeTrue();
@@ -125,7 +125,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IActionMatchedFiles actionMatchedFiles = GetActionMatchedFilesWithBackgroundQueue();
 
             bool result = false;
-            Func<Task> action1 = async () => result = await actionMatchedFiles.Action(new ObservableCollection<MatchedFile> { spectre, pomPoko }, new CancellationToken());
+            Func<Task> action1 = async () => result = await actionMatchedFiles.ActionAsync(new ObservableCollection<MatchedFile> { spectre, pomPoko }, new CancellationToken());
 
             action1.ShouldNotThrow();
             result.Should().BeTrue();
@@ -150,7 +150,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IActionMatchedFiles actionMatchedFiles = GetActionMatchedFilesWithBackgroundQueue();
 
             bool result = false;
-            Func<Task> action1 = async () => result = await actionMatchedFiles.Action(new ObservableCollection<MatchedFile> { castle1, castle2 }, new CancellationToken());
+            Func<Task> action1 = async () => result = await actionMatchedFiles.ActionAsync(new ObservableCollection<MatchedFile> { castle1, castle2 }, new CancellationToken());
 
             action1.ShouldNotThrow();
             result.Should().BeTrue();
@@ -179,7 +179,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IActionMatchedFiles actionMatchedFiles = GetActionMatchedFilesWithBackgroundQueue();
 
             bool result = false;
-            Func<Task> action1 = async () => result = await actionMatchedFiles.Action(new ObservableCollection<MatchedFile> { castle1, castle2, spectre, pomPoko }, new CancellationToken());
+            Func<Task> action1 = async () => result = await actionMatchedFiles.ActionAsync(new ObservableCollection<MatchedFile> { castle1, castle2, spectre, pomPoko }, new CancellationToken());
 
             action1.ShouldNotThrow();
             result.Should().BeTrue();

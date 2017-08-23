@@ -13,7 +13,7 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        Task QueueTask(Action action);
+        Task QueueTaskAsync(Action action);
 
         /// <summary>
         ///
@@ -21,6 +21,6 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <typeparam name="T"></typeparam>
         /// <param name="work"></param>
         /// <returns></returns>
-        Task<T> QueueTask<T>(Func<T> work);
+        Task<T> QueueTaskAsync<T>(Func<T> work);
     }
 }

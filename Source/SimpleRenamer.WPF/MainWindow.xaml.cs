@@ -257,7 +257,7 @@ namespace Sarjee.SimpleRenamer
                 //set to indeterminate so it keeps looping while scanning
                 FileMoveProgressBar.IsIndeterminate = true;
                 _logger.TraceMessage("Scan - Starting.", EventLevel.Informational);
-                var ep = await _scanFiles.Scan(cts.Token);
+                var ep = await _scanFiles.ScanAsync(cts.Token);
                 scannedEpisodes = new ObservableCollection<MatchedFile>(ep);
                 _logger.TraceMessage($"Scan - Grabbed {scannedEpisodes.Count} episodes.", EventLevel.Informational);
                 ShowsListBox.ItemsSource = scannedEpisodes;
@@ -326,7 +326,7 @@ namespace Sarjee.SimpleRenamer
                 _logger.TraceMessage("Action - Starting", EventLevel.Informational);
                 FileMoveProgressBar.Value = 0;
                 FileMoveProgressBar.Maximum = (scannedEpisodes.Where(x => x.ActionThis == true).Count()) * 2;
-                await _actionMatchedFiles.Action(scannedEpisodes, cts.Token);
+                await _actionMatchedFiles.ActionAsync(scannedEpisodes, cts.Token);
                 //add a bit of delay before the progress bar disappears
                 await Task.Delay(TimeSpan.FromMilliseconds(300));
             }
