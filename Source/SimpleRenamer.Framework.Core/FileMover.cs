@@ -15,10 +15,10 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IFileMover" />
     public class FileMover : IFileMover
     {
-        private bool? OnMonoCached;
+        private bool? _onMonoCached;
         private IBannerDownloader _bannerDownloader;
         private ILogger _logger;
-        private Settings settings;
+        private Settings _settings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileMover"/> class.
@@ -41,7 +41,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
 
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            settings = configManager.Settings;
+            _settings = configManager.Settings;
             _bannerDownloader = bannerDownloader ?? throw new ArgumentNullException(nameof(bannerDownloader));
         }
 
@@ -62,11 +62,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 string showDirectory = string.Empty;
                 if (mapping != null && !string.IsNullOrEmpty(mapping.CustomFolderName))
                 {
-                    showDirectory = Path.Combine(settings.DestinationFolderTV, mapping.CustomFolderName);
+                    showDirectory = Path.Combine(_settings.DestinationFolderTV, mapping.CustomFolderName);
                 }
                 else
                 {
-                    showDirectory = Path.Combine(settings.DestinationFolderTV, episode.ShowName);
+                    showDirectory = Path.Combine(_settings.DestinationFolderTV, episode.ShowName);
                 }
                 string seasonDirectory = Path.Combine(showDirectory, string.Format("Season {0}", episode.Season));
                 episode.DestinationFilePath = Path.Combine(seasonDirectory, episode.NewFileName + ext);
@@ -105,7 +105,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             else if (episode.FileType == FileType.Movie)
             {
                 string folderName = episode.Year > 0 ? $"{episode.ShowName} ({episode.Year})" : $"{episode.ShowName}";
-                string movieDirectory = Path.Combine(settings.DestinationFolderMovie, folderName);
+                string movieDirectory = Path.Combine(_settings.DestinationFolderMovie, folderName);
                 episode.DestinationFilePath = Path.Combine(movieDirectory, episode.NewFileName + ext);
                 //create our destination folder if it doesn't already exist
                 if (!Directory.Exists(movieDirectory))
@@ -127,6 +127,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         public async Task<bool> MoveFileAsync(MatchedFile episode, CancellationToken ct)
         {
+            //TODO remove this when async method implemented
+            await Task.Delay(TimeSpan.FromMilliseconds(1));
             _logger.TraceMessage($"Moving File {episode.SourceFilePath} to {episode.DestinationFilePath}.", EventLevel.Verbose);
             FileInfo fromFile = new FileInfo(episode.SourceFilePath);
             FileInfo toFile = new FileInfo(episode.DestinationFilePath);
@@ -136,7 +138,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
             else
             {
-                CopyItOurself(settings, fromFile, toFile, ct);
+                CopyItOurself(_settings, fromFile, toFile, ct);
             }
 
             _logger.TraceMessage($"Moved File {episode.SourceFilePath} to {episode.DestinationFilePath}.", EventLevel.Verbose);
@@ -158,7 +160,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
 
             _logger.TraceMessage("QuickOperation - End", EventLevel.Verbose);
-            return (settings.RenameFiles && !settings.CopyFiles && (fromFile.Directory.Root.FullName.ToLower() == toFile.Directory.Root.FullName.ToLower())); // same device ... TODO: UNC paths?
+            return (_settings.RenameFiles && !_settings.CopyFiles && (fromFile.Directory.Root.FullName.ToLower() == toFile.Directory.Root.FullName.ToLower())); // same device ... TODO: UNC paths?
         }
 
         /// <summary>
@@ -226,11 +228,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private bool OnMono()
         {
-            if (!OnMonoCached.HasValue)
+            if (!_onMonoCached.HasValue)
             {
-                OnMonoCached = System.Type.GetType("Mono.Runtime") != null;
+                _onMonoCached = System.Type.GetType("Mono.Runtime") != null;
             }
-            return OnMonoCached.Value;
+            return _onMonoCached.Value;
         }
 
         /// <summary>
@@ -285,7 +287,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     msw = new BinaryWriter(new FileStream(tempName, FileMode.CreateNew));
                 }
 
-                for (;;)
+                for (; ; )
                 {
                     int n = useWin32 ? copier.ReadBlocks(kArrayLength) : msr.Read(dataArray, 0, kArrayLength);
                     if (n == 0)

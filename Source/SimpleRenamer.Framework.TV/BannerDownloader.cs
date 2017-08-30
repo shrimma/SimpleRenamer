@@ -12,7 +12,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
     /// Image Downloader
     /// </summary>
     /// <seealso cref="Sarjee.SimpleRenamer.Common.TV.Interface.IBannerDownloader" />
-    public class BannerDownloader : IBannerDownloader
+    public class BannerDownloader : IBannerDownloader, IDisposable
     {
         private ILogger _logger;
         private ITvdbManager _tvdbManager;
@@ -76,5 +76,41 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
             return true;
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    if (_webClient != null)
+                    {
+                        _webClient.Dispose();
+                        _webClient = null;
+                    }
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~BannerDownloader() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

@@ -65,7 +65,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             {
                 //throw exception if cancel requested
                 ct.ThrowIfCancellationRequested();
-                RaiseProgressEvent(this, new ProgressTextEventArgs($"Searching watch folder for video files: {folder}"));
+                OnProgressTextChanged(new ProgressTextEventArgs($"Searching watch folder for video files: {folder}"));
                 //if the directory exists and contains at least 1 file (search sub directories if settings allow) -- limitation of searchPattern means we can't filter video extensions here
                 if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
                 {
@@ -81,7 +81,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 ct.ThrowIfCancellationRequested();
             }
 
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Searched all watch folders for video files"));
+            OnProgressTextChanged(new ProgressTextEventArgs($"Searched all watch folders for video files"));
             _logger.TraceMessage($"Found {foundFiles.Count} across all watch folders.", EventLevel.Verbose);
 
             return foundFiles;
@@ -134,6 +134,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
             _logger.TraceMessage($"{input} IsValidExtension == False", EventLevel.Verbose);
             return false;
+        }
+
+        protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)
+        {
+            RaiseProgressEvent?.Invoke(this, e);
         }
     }
 }

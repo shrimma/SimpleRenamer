@@ -96,7 +96,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie)
         {
             _logger.TraceMessage($"Scraping Movie Details for {movie.SourceFilePath}.", EventLevel.Verbose);
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.SourceFilePath}"));
+            OnProgressTextChanged(new ProgressTextEventArgs($"Scraping details for file {movie.SourceFilePath}"));
 
             SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movie.ShowName, movie.Year);
             //if only one result then we can safely match
@@ -183,6 +183,11 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 
             _logger.TraceMessage("Got MovieInfo for MovieId: {movieId}", EventLevel.Verbose);
             return (matchedMovie, bannerImage);
+        }
+
+        protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)
+        {
+            RaiseProgressEvent?.Invoke(this, e);
         }
     }
 }

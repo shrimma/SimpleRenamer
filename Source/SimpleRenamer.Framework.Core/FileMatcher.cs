@@ -57,7 +57,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         public async Task<List<MatchedFile>> SearchFilesAsync(List<string> files, CancellationToken ct)
         {
             _logger.TraceMessage($"Parsing all found files against the regular expressions.", EventLevel.Verbose);
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Parsing file names for show or movie details"));
+            OnProgressTextChanged(new ProgressTextEventArgs($"Parsing file names for show or movie details"));
             ConcurrentBag<MatchedFile> matchedFiles = new ConcurrentBag<MatchedFile>();
 
             //grab the current active regularexpressions
@@ -70,14 +70,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 if (matchedFile != null)
                 {
                     //if episode is not null then we matched so add to the output list                    
-                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Matched file {0} with one of the regular expressions", matchedFile.SourceFilePath)));
+                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Matched file {0} with one of the regular expressions", matchedFile.SourceFilePath)));
                     matchedFiles.Add(matchedFile);
                 }
                 else
                 {
                     //else we couldn't match the file so add a file with just filepath so user can manually match                    
                     matchedFile = new MatchedFile(file, Path.GetFileNameWithoutExtension(file));
-                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Couldn't find a match for {0}!", file)));
+                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Couldn't find a match for {0}!", file)));
                     matchedFiles.Add(matchedFile);
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
@@ -228,5 +228,10 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// The joining words
         /// </summary>
         private string joiningWords = "the,of,and";
+
+        protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)
+        {
+            RaiseProgressEvent?.Invoke(this, e);
+        }
     }
 }

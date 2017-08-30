@@ -14,8 +14,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
 
         protected override BitmapImage InitializeBannerImage(Uri uri)
         {
-            BitmapImage bitmapImage = new BitmapImage();
-            bitmapImage.BaseUri = new Uri("http://www.uri.com");
+            BitmapImage bitmapImage = new BitmapImage
+            {
+                BaseUri = new Uri("http://www.uri.com")
+            };
 
             return bitmapImage;
         }

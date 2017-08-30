@@ -79,7 +79,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <param name="e">The <see cref="ProgressTextEventArgs"/> instance containing the event data.</param>
         private void RaiseProgress(object sender, ProgressTextEventArgs e)
         {
-            RaiseProgressEvent(this, e);
+            RaiseProgressEvent?.Invoke(this, e);
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 CompleteSeries series = await _tvShowMatcher.SearchShowByIdAsync(showId);
                 if (series != null)
                 {
-                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Found data for {0}", series.Series.SeriesName)));
+                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Found data for {0}", series.Series.SeriesName)));
                     matchedSeries.Add(series);
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2 });
@@ -173,7 +173,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 CompleteSeries series = await _tvShowMatcher.SearchShowByNameAsync(showName);
                 if (series != null)
                 {
-                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Found data for {0}", series.Series.SeriesName)));
+                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Found data for {0}", series.Series.SeriesName)));
                     matchedSeries.Add(series);
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2 });
@@ -236,13 +236,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 if (!file.SourceFilePath.Equals(destinationFilePath))
                 {
                     _logger.TraceMessage(string.Format("Will move file {0} to {1}", file.SourceFilePath, file.NewFileName), EventLevel.Verbose);
-                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Will move file {0} to {1}.", file.SourceFilePath, file.NewFileName)));
+                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Will move file {0} to {1}.", file.SourceFilePath, file.NewFileName)));
                     outputEpisodes.Add(file);
                 }
                 else
                 {
                     _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
-                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("File {0} will be ignored as already in correct location.", file.SourceFilePath)));
+                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("File {0} will be ignored as already in correct location.", file.SourceFilePath)));
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
 
@@ -283,13 +283,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 if (!file.SourceFilePath.Equals(destinationFilePath))
                 {
                     _logger.TraceMessage(string.Format("Will move file {0} to {1}", file.SourceFilePath, destinationFilePath), EventLevel.Verbose);
-                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Will move file {0} to {1}.", file.SourceFilePath, destinationFilePath)));
+                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Will move file {0} to {1}.", file.SourceFilePath, destinationFilePath)));
                     scannedMovies.Add(file);
                 }
                 else
                 {
                     _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
-                    RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("File {0} will be ignored as already in correct location.", file.SourceFilePath)));
+                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("File {0} will be ignored as already in correct location.", file.SourceFilePath)));
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
 
@@ -302,6 +302,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             await searchFilesAsyncBlock.Completion;
 
             return scannedMovies.ToList();
+        }
+
+        protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)
+        {
+            RaiseProgressEvent?.Invoke(this, e);
         }
     }
 }

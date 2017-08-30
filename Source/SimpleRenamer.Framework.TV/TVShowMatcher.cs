@@ -129,7 +129,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
 
             _logger.TraceMessage($"Updating File {file.SourceFilePath} with SeriesInfo {series.Series?.SeriesName}.", EventLevel.Verbose);
-            RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Matching {0} with data", file.SourceFilePath)));
+            OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Matching {0} with data", file.SourceFilePath)));
             bool seasonBannerFound = false;
             bool seriesBannerFound = false;
             int.TryParse(file.EpisodeNumber, out int episodeNumber);
@@ -364,6 +364,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             banner.EndInit();
 
             return banner;
+        }
+
+        protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)
+        {
+            RaiseProgressEvent?.Invoke(this, e);
         }
     }
 }
