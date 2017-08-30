@@ -6,6 +6,7 @@ using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using Sarjee.SimpleRenamer.Framework.Movie;
+using Sarjee.SimpleRenamer.L0.Tests.Mocks;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -30,9 +31,17 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             mockHelper = mockRepository.Create<IHelper>();
         }
 
-        private IMovieMatcher GetMovieMatcher()
+        private IMovieMatcher GetMovieMatcher(bool testable = false)
         {
-            IMovieMatcher movieMatcher = new MovieMatcher(mockLogger.Object, mockTmdbManager.Object, mockHelper.Object);
+            IMovieMatcher movieMatcher = null;
+            if (testable)
+            {
+                movieMatcher = new TestableMovieMatcher(mockLogger.Object, mockTmdbManager.Object, mockHelper.Object);
+            }
+            else
+            {
+                movieMatcher = new MovieMatcher(mockLogger.Object, mockTmdbManager.Object, mockHelper.Object);
+            }
             movieMatcher.Should().NotBeNull();
             movieMatcher.RaiseProgressEvent += MovieMatcher_RaiseProgressEvent;
             return movieMatcher;

@@ -103,6 +103,7 @@
     <Compile Include="Logging\LoggerTests.cs" />
     <Compile Include="Mocks\TestableAppConfigurationManager.cs" />
     <Compile Include="Mocks\TestableBannerDownloader.cs" />
+    <Compile Include="Mocks\TestableMovieMatcher.cs" />
     <Compile Include="Mocks\TestableTmdbManager.cs" />
     <Compile Include="Mocks\TestableTvdbManager.cs" />
     <Compile Include="Mocks\TestableTvShowMatcher.cs" />

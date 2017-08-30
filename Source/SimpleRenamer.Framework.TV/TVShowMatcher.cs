@@ -343,8 +343,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             BitmapImage bannerImage = null;
             if (matchedSeries?.SeriesBanners?.Count > 0)
             {
-                Uri uri = new Uri(_tvdbManager.GetBannerUri(matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName));
-                bannerImage = InitializeBannerImage(uri);
+                bannerImage = InitializeBannerImage(new Uri(_tvdbManager.GetBannerUri(matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName)));
             }
             else
             {

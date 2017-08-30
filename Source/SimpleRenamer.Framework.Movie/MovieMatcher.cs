@@ -168,21 +168,30 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         {
             _logger.TraceMessage($"Getting MovieInfo for MovieId: {movieId}.", EventLevel.Verbose);
             Common.Movie.Model.Movie matchedMovie = await _tmdbManager.GetMovieAsync(movieId);
-            BitmapImage bannerImage = new BitmapImage();
 
+            BitmapImage bannerImage = null;
             if (!string.IsNullOrEmpty(matchedMovie.PosterPath))
             {
-                bannerImage.BeginInit();
-                bannerImage.UriSource = new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath));
-                bannerImage.EndInit();
+                bannerImage = InitializeBannerImage(new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath)));
             }
             else
             {
                 //TODO add a not found poster
+                bannerImage = new BitmapImage();
             }
 
             _logger.TraceMessage("Got MovieInfo for MovieId: {movieId}", EventLevel.Verbose);
             return (matchedMovie, bannerImage);
+        }
+
+        protected virtual BitmapImage InitializeBannerImage(Uri uri)
+        {
+            BitmapImage banner = new BitmapImage();
+            banner.BeginInit();
+            banner.UriSource = uri;
+            banner.EndInit();
+
+            return banner;
         }
 
         protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)
