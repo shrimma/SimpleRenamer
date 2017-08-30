@@ -79,7 +79,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <param name="e">The <see cref="ProgressTextEventArgs"/> instance containing the event data.</param>
         private void RaiseProgress(object sender, ProgressTextEventArgs e)
         {
-            RaiseProgressEvent?.Invoke(this, e);
+            OnProgressTextChanged(e);
         }
 
         /// <summary>
