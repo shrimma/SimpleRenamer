@@ -244,7 +244,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             mockTmdbManager.Setup(x => x.GetMovieAsync(It.IsAny<string>())).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = movieName, PosterPath = "notnull" });
             mockTmdbManager.Setup(x => x.GetPosterUriAsync(It.IsAny<string>())).ReturnsAsync("https://i.ytimg.com/vi/yaqe1qesQ8c/maxresdefault.jpg");
 
-            IMovieMatcher movieMatcher = GetMovieMatcher();
+            IMovieMatcher movieMatcher = GetMovieMatcher(true);
             (SimpleRenamer.Common.Movie.Model.Movie movie, BitmapImage image) result = (null, null);
             Func<Task> action1 = async () => result = await movieMatcher.GetMovieWithBannerAsync("1", new CancellationToken());
 
@@ -261,7 +261,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             string movieName = "DummyMovie";
             mockTmdbManager.Setup(x => x.GetMovieAsync(It.IsAny<string>())).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = movieName });
 
-            IMovieMatcher movieMatcher = GetMovieMatcher();
+            IMovieMatcher movieMatcher = GetMovieMatcher(true);
             (SimpleRenamer.Common.Movie.Model.Movie movie, BitmapImage image) result = (null, null);
             Func<Task> action1 = async () => result = await movieMatcher.GetMovieWithBannerAsync("1", new CancellationToken());
 
