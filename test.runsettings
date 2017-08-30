@@ -33,7 +33,8 @@
             </ModulePaths>
             <!-- Match fully qualified names of functions: -->            
             <Functions>
-              <Exclude>                
+              <Exclude>
+                <Function>.*\.Model\..*</Function>
               </Exclude>
             </Functions>
             <!-- Match attributes on any code element: -->
