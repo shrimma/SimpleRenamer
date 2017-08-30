@@ -16,6 +16,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
     {
         private ILogger _logger;
         private ITvdbManager _tvdbManager;
+        private WebClient _webClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BannerDownloader"/> class.
@@ -31,6 +32,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _tvdbManager = tvdbManager ?? throw new ArgumentNullException(nameof(tvdbManager));
+            _webClient = new WebClient();
         }
 
         /// <summary>
@@ -69,10 +71,8 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         protected virtual async Task<bool> Download(string tvdbBannerPath, string bannerPath)
         {
-            using (WebClient client = new WebClient())
-            {
-                await client.DownloadFileTaskAsync(new Uri(_tvdbManager.GetBannerUri(tvdbBannerPath)), bannerPath);
-            }
+
+            await _webClient.DownloadFileTaskAsync(new Uri(_tvdbManager.GetBannerUri(tvdbBannerPath)), bannerPath);
 
             return true;
         }

@@ -18,7 +18,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// The mappings.
         /// </value>
         [JsonProperty("mappings")]
-        public List<Mapping> Mappings { get; } = new List<Mapping>();
+        public List<Mapping> Mappings { get; internal set; } = new List<Mapping>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShowNameMapping"/> class.

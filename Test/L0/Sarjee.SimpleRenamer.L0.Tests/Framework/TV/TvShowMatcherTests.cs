@@ -6,6 +6,7 @@ using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Model;
 using Sarjee.SimpleRenamer.Framework.TV;
+using Sarjee.SimpleRenamer.L0.Tests.Mocks;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -31,9 +32,17 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             mockHelper = mockRepository.Create<IHelper>();
         }
 
-        private ITVShowMatcher GetTVShowMatcher()
+        private ITVShowMatcher GetTVShowMatcher(bool testable = false)
         {
-            ITVShowMatcher tvShowMatcher = new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, mockHelper.Object);
+            ITVShowMatcher tvShowMatcher = null;
+            if (testable)
+            {
+                tvShowMatcher = new TestableTvShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, mockHelper.Object);
+            }
+            else
+            {
+                tvShowMatcher = new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, mockHelper.Object);
+            }
             tvShowMatcher.Should().NotBeNull();
             tvShowMatcher.RaiseProgressEvent += TvShowMatcher_RaiseProgressEvent;
             return tvShowMatcher;
@@ -192,11 +201,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         public void TVShowMatcher_UpdateFileWithSeriesDetails_Success()
         {
             //setup settings
-            Settings settings = new Settings() { NewFileNameFormat = "newFileName" };
+            Settings settings = new Settings() { NewFileNameFormat = "{ShowName},{Season},{Episode},{EpisodeName}" };
             mockConfigurationManager.Setup(x => x.Settings).Returns(settings);
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
             MatchedFile fileInput = new MatchedFile("filePath", "ShowName", "1", "1");
-            CompleteSeries seriesInput = new CompleteSeries(new Series(1, "ShowName"), new List<SeriesActorsData>(), new List<BasicEpisode>() { new BasicEpisode(1, 1, 1, 1, 1, "EpisodeName", 1, "Overview") }, new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>());
+            CompleteSeries seriesInput = new CompleteSeries(new Series(1, "ShowName"), new List<SeriesActorsData>(), new List<BasicEpisode>() { new BasicEpisode(1, 1, 1, 1, 1, "EpisodeName", 1, "Overview") }, new List<SeriesImageQueryResult>() { new SeriesImageQueryResult(1, "Season", "1", "fileName", 1, "resolution", new RatingsInfo(10, 1)) }, new List<SeriesImageQueryResult>() { new SeriesImageQueryResult(1, "Season", "1", "fileName", 1, "resolution", new RatingsInfo(10, 1)) }, new List<SeriesImageQueryResult>() { new SeriesImageQueryResult(1, "Season", "1", "fileName", 1, "resolution", new RatingsInfo(10, 1)) });
 
             MatchedFile result = null;
             Action action1 = () => result = tvShowMatcher.UpdateFileWithSeriesDetails(fileInput, seriesInput);
@@ -230,7 +239,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         public void TVShowMatcher_FixShowsFromMappings_Success()
         {
             //setup settings
-            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
+            Mapping mapping = new Mapping("Showname", "tvdbShowName", "tvdbShowId");
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping() { Mappings = new List<Mapping>() { mapping } });
 
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
             MatchedFile fileInput = new MatchedFile(@"c:\filePath", "Showname", "1", "1");
@@ -240,6 +250,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
+            result.ShowName.Should().Be(mapping.TVDBShowName);
+            result.TVDBShowId.Should().Be(mapping.TVDBShowID);
         }
         #endregion FixShowsFromMappings
 
@@ -261,12 +273,17 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         [TestCategory(TestCategories.TV)]
         public void TVShowMatcher_GetPossibleShowsForEpisodeAsync_Success()
         {
+            SeriesSearchData seriesShortSearchData = new SeriesSearchData(null, null, "2017-01-01", 1, null, "shortoverview", "showName", null);
+            SeriesSearchData seriesLongSearchData = new SeriesSearchData(null, null, "2017-01-01", 1, null, "longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglongestlongestlongestlongestlongestlongestlongestoverview", "showName", null);
+            mockTvdbManager.Setup(x => x.SearchSeriesByNameAsync(It.IsAny<string>())).ReturnsAsync(new List<SeriesSearchData>() { seriesShortSearchData, seriesLongSearchData });
+
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
             List<DetailView> result = null;
             Func<Task> action1 = async () => result = await tvShowMatcher.GetPossibleShowsForEpisodeAsync("showName");
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
+            result.Count.Should().Be(2);
         }
         #endregion GetPossibleShowsForEpisode
 
@@ -347,10 +364,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         public void TVShowMatcher_GetShowWithBannerAsync_Success()
         {
             //mock tvdbmanager
-            CompleteSeries outputSeries = new CompleteSeries(new Series(1, "Series1"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>());
+            CompleteSeries outputSeries = new CompleteSeries(new Series(1, "Series1"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>() { new SeriesImageQueryResult(1, "Season", "1", "fileName", 1, "resolution", new RatingsInfo(10, 1)) }, new List<SeriesImageQueryResult>() { new SeriesImageQueryResult(1, "Season", "1", "fileName", 1, "resolution", new RatingsInfo(10, 1)) }, new List<SeriesImageQueryResult>() { new SeriesImageQueryResult(1, "Season", "1", "fileName", 1, "resolution", new RatingsInfo(10, 1)) });
             mockTvdbManager.Setup(x => x.GetSeriesByIdAsync(It.IsAny<string>())).ReturnsAsync(outputSeries);
+            mockTvdbManager.Setup(x => x.GetBannerUri(It.IsAny<string>())).Returns("http://www.uri.com");
 
-            ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
+            ITVShowMatcher tvShowMatcher = GetTVShowMatcher(true);
             (CompleteSeries series, BitmapImage banner) result = (null, null);
             Func<Task> action1 = async () => result = await tvShowMatcher.GetShowWithBannerAsync("showId");
 
@@ -358,6 +376,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             result.Should().NotBeNull();
             result.series.Should().NotBeNull();
             result.banner.Should().NotBeNull();
+            result.series.Series.Id = 1;
         }
         #endregion GetShowWithBannerAsync
     }

@@ -34,7 +34,7 @@
             <!-- Match fully qualified names of functions: -->            
             <Functions>
               <Exclude>
-                <Function>.*\.Model\..*</Function>
+                <!--<Function>.*\.Model\..*</Function>-->
               </Exclude>
             </Functions>
             <!-- Match attributes on any code element: -->
