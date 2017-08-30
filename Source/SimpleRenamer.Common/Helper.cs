@@ -101,5 +101,64 @@ namespace Sarjee.SimpleRenamer.Common
             //await the backoff delay
             await Task.Delay(backoff);
         }
+
+        //private int[] httpStatusCodesWorthRetrying = { 408, 500, 502, 503, 504, 598, 599 };
+        //public async Task<T> ExecuteRestRequest<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, Func<Task> LoginCallback) where T : class
+        //{
+        //    int currentRetry = 0;
+        //    int offset = ThreadLocalRandom.Instance.Next(100, 500);
+        //    while (currentRetry < maxRetryCount)
+        //    {
+        //        try
+        //        {
+        //            //execute the request
+        //            IRestResponse response = await restClient.ExecuteTaskAsync(restRequest);
+        //            //if no errors and statuscode ok then deserialize the response
+        //            if (response.ErrorException == null && response?.StatusCode == HttpStatusCode.OK)
+        //            {
+        //                T result = JsonConvert.DeserializeObject<T>(response.Content, jsonSerializerSettings);
+        //                return result;
+        //            }
+        //            //if status code indicates transient error then throw timeoutexception
+        //            else if (httpStatusCodesWorthRetrying.Contains((int)response?.StatusCode))
+        //            {
+        //                throw new TimeoutException();
+        //            }
+        //            //if status code indicates unauthorized then throw unauthorized exception
+        //            else if (response?.StatusCode == HttpStatusCode.Unauthorized)
+        //            {
+        //                throw new UnauthorizedAccessException();
+        //            }
+        //            //else throw the responses exception
+        //            else
+        //            {
+        //                throw response.ErrorException;
+        //            }
+        //        }
+        //        catch (TimeoutException)
+        //        {
+        //            currentRetry++;
+        //            await ExponentialDelayAsync(offset, currentRetry, maxBackoffSeconds);
+        //        }
+        //        catch (WebException)
+        //        {
+        //            currentRetry++;
+        //            await ExponentialDelayAsync(offset, currentRetry, maxBackoffSeconds);
+        //        }
+        //        catch (UnauthorizedAccessException)
+        //        {
+        //            currentRetry++;
+        //            if (LoginCallback != null)
+        //            {
+        //                await LoginCallback();
+        //            }
+        //            else
+        //            {
+        //                throw;
+        //            }
+        //        }
+        //    }
+        //    return null;
+        //}
     }
 }

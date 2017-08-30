@@ -9,6 +9,7 @@ using Sarjee.SimpleRenamer.Views;
 using Sarjee.SimpleRenamer.WPF;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -60,7 +61,7 @@ namespace Sarjee.SimpleRenamer
             try
             {
                 InitializeComponent();
-                _logger.TraceMessage("Starting Application");
+                _logger.TraceMessage("Starting Application", EventLevel.LogAlways);
                 showDetailsWindow = _injectionContext.GetService<ShowDetailsWindow>();
                 movieDetailsWindow = _injectionContext.GetService<MovieDetailsWindow>();
                 settingsWindow = _injectionContext.GetService<SettingsWindow>();
@@ -185,7 +186,7 @@ namespace Sarjee.SimpleRenamer
             {
                 try
                 {
-                    _logger.TraceMessage("Closing");
+                    _logger.TraceMessage("Closing", EventLevel.LogAlways);
                     if (CancelButton.Visibility == Visibility.Visible)
                     {
                         e.Cancel = true;
@@ -246,6 +247,7 @@ namespace Sarjee.SimpleRenamer
 
         private async void ScanButton_Click(object sender, RoutedEventArgs e)
         {
+            _logger.TraceMessage("Scan button clicked.", EventLevel.Verbose);
             scannedEpisodes = new ObservableCollection<MatchedFile>();
             ShowsListBox.ItemsSource = scannedEpisodes;
             cts = new CancellationTokenSource();
@@ -254,19 +256,18 @@ namespace Sarjee.SimpleRenamer
             {
                 //set to indeterminate so it keeps looping while scanning
                 FileMoveProgressBar.IsIndeterminate = true;
-
-                _logger.TraceMessage(string.Format("Starting"));
-                var ep = await _scanFiles.Scan(cts.Token);
+                _logger.TraceMessage("Scan - Starting.", EventLevel.Informational);
+                var ep = await _scanFiles.ScanAsync(cts.Token);
                 scannedEpisodes = new ObservableCollection<MatchedFile>(ep);
-                _logger.TraceMessage($"Grabbed {scannedEpisodes.Count} episodes");
+                _logger.TraceMessage($"Scan - Grabbed {scannedEpisodes.Count} episodes.", EventLevel.Informational);
                 ShowsListBox.ItemsSource = scannedEpisodes;
-                _logger.TraceMessage($"Populated listbox with the scanned episodes");
+                _logger.TraceMessage($"Scan - Populated listbox with the scanned episodes.", EventLevel.Verbose);
                 //add a bit of delay before the progress bar disappears
                 await Task.Delay(TimeSpan.FromMilliseconds(300));
             }
             catch (OperationCanceledException)
             {
-                _logger.TraceMessage("User canceled scan");
+                _logger.TraceMessage("Scan - user canceled the operation.", EventLevel.Informational);
             }
             catch (Exception ex)
             {
@@ -274,8 +275,8 @@ namespace Sarjee.SimpleRenamer
             }
             finally
             {
-                _logger.TraceMessage("Finished");
                 EnableUi();
+                _logger.TraceMessage("Scan - Finished.", EventLevel.Informational);
             }
         }
 
@@ -283,6 +284,7 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
+                _logger.TraceMessage("Cancel button clicked.", EventLevel.Verbose);
                 CancelButton.IsEnabled = false;
                 if (cts != null)
                 {
@@ -299,6 +301,7 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
+                _logger.TraceMessage("Settings button clicked.", EventLevel.Verbose);
                 //show the settings window
                 settingsWindow.ShowDialog();
                 settings = _configurationManager.Settings;
@@ -312,23 +315,24 @@ namespace Sarjee.SimpleRenamer
 
         private async void ActionButton_Click(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
-            DisableUi();
             try
             {
+                _logger.TraceMessage("Action button clicked.", EventLevel.Verbose);
+                cts = new CancellationTokenSource();
+                DisableUi();
                 //set to indeterminate so it keeps looping while scanning
                 FileMoveProgressBar.IsIndeterminate = false;
                 //process the folders and jpg downloads async
-                _logger.TraceMessage(string.Format("Starting"));
+                _logger.TraceMessage("Action - Starting", EventLevel.Informational);
                 FileMoveProgressBar.Value = 0;
                 FileMoveProgressBar.Maximum = (scannedEpisodes.Where(x => x.ActionThis == true).Count()) * 2;
-                await _actionMatchedFiles.Action(scannedEpisodes, cts.Token);
+                await _actionMatchedFiles.ActionAsync(scannedEpisodes, cts.Token);
                 //add a bit of delay before the progress bar disappears
                 await Task.Delay(TimeSpan.FromMilliseconds(300));
             }
             catch (OperationCanceledException)
             {
-                _logger.TraceMessage("User canceled actions");
+                _logger.TraceMessage("Action - user canceled the operation.", EventLevel.Informational);
             }
             catch (Exception ex)
             {
@@ -336,8 +340,8 @@ namespace Sarjee.SimpleRenamer
             }
             finally
             {
-                _logger.TraceMessage("Finished");
                 EnableUi();
+                _logger.TraceMessage("Action - Finished", EventLevel.Informational);
             }
         }
 
@@ -345,10 +349,12 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
+                _logger.TraceMessage("MatchShow button clicked.", EventLevel.Verbose);
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
                 FileType fileType = temp.FileType;
                 MediaTypePath = temp.SourceFilePath;
                 MediaTypeShowName = temp.ShowName;
+                _logger.TraceMessage($"User selected to match show for {temp.ShowName}.", EventLevel.Informational);
                 if (fileType == FileType.Unknown)
                 {
                     //IF UNKNOWN then we have to show a dialog here and ask whether movie or TV
@@ -379,12 +385,14 @@ namespace Sarjee.SimpleRenamer
         private void MediaTypeTv_Click(object sender, RoutedEventArgs e)
         {
             MediaTypeFlyout.IsOpen = false;
+            _logger.TraceMessage($"User selected that {MediaTypeShowName} is a TV Show.", EventLevel.Informational);
             OpenSelectShowWindow(FileType.TvShow);
         }
 
         private void MediaTypeMovie_Click(object sender, RoutedEventArgs e)
         {
             MediaTypeFlyout.IsOpen = false;
+            _logger.TraceMessage($"User selected that {MediaTypeShowName} is a Movie.", EventLevel.Informational);
             OpenSelectShowWindow(FileType.Movie);
         }
 
@@ -396,17 +404,22 @@ namespace Sarjee.SimpleRenamer
                 MatchedFile updatedFile;
                 if (e.Type == FileType.TvShow)
                 {
-                    updatedFile = await _tvShowMatcher.UpdateEpisodeWithMatchedSeries(e.ID, temp);
+                    updatedFile = await _tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync(e.ID, temp);
                 }
                 else
                 {
-                    updatedFile = await _movieMatcher.UpdateFileWithMatchedMovie(e.ID, temp);
+                    updatedFile = await _movieMatcher.UpdateFileWithMatchedMovieAsync(e.ID, temp);
                 }
 
                 //if selection wasn't skipped then update the selected item
                 if (updatedFile.SkippedExactSelection == false)
                 {
+                    _logger.TraceMessage($"User selected a match for {MediaTypeShowName}.", EventLevel.Informational);
                     ShowsListBox.SelectedItem = updatedFile;
+                }
+                else
+                {
+                    _logger.TraceMessage($"User did not match {MediaTypeShowName}.", EventLevel.Informational);
                 }
 
                 EnableUi();
@@ -421,6 +434,7 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
+                _logger.TraceMessage("Ignore show button clicked.", EventLevel.Verbose);
                 IgnoreFlyout.IsOpen = true;
             }
             catch (Exception ex)
@@ -435,6 +449,7 @@ namespace Sarjee.SimpleRenamer
             {
                 IgnoreFlyout.IsOpen = false;
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
+                _logger.TraceMessage($"User opted to ignore {tempEp.SourceFilePath}.", EventLevel.Informational);
                 IgnoreList ignoreList = _configurationManager.IgnoredFiles;
                 if (!ignoreList.IgnoreFiles.Contains(tempEp.SourceFilePath))
                 {
@@ -488,7 +503,7 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
-                _logger.TraceMessage("Show Detail button clicked");
+                _logger.TraceMessage("Detail button clicked.", EventLevel.Verbose);
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 if (tempEp.FileType == FileType.TvShow)
                 {
@@ -513,24 +528,23 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
-                _logger.TraceMessage("Edit button clicked");
+                _logger.TraceMessage("Edit button clicked.", EventLevel.Verbose);
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 if (tempEp.FileType == FileType.TvShow)
                 {
-                    _logger.TraceMessage(string.Format("For show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.EpisodeNumber, tempEp.TVDBShowId));
+                    _logger.TraceMessage(string.Format("Editing - show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.EpisodeNumber, tempEp.TVDBShowId), EventLevel.Verbose);
                     ShowNameMapping snm = _configurationManager.ShowNameMappings;
                     if (snm != null && snm.Mappings.Count > 0)
                     {
-                        _logger.TraceMessage(string.Format("Mappings available"));
                         Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(tempEp.TVDBShowId)).FirstOrDefault();
                         if (mapping != null)
                         {
-                            _logger.TraceMessage(string.Format("Mapping found {0}", mapping.FileShowName));
+                            _logger.TraceMessage(string.Format("Edit - Mapping found {0}", mapping.FileShowName), EventLevel.Verbose);
                             ShowEditShowWindow(tempEp, mapping);
                         }
                         else
                         {
-                            _logger.TraceMessage(string.Format("Mapping could not be found!"));
+                            _logger.TraceMessage(string.Format("Edit - Mapping could not be found."), EventLevel.Verbose);
                         }
                     }
                 }

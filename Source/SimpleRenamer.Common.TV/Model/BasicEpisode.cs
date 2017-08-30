@@ -103,6 +103,7 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
             return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
 
+        #region Equality
         /// <summary>
         /// Returns true if objects are equal
         /// </summary>
@@ -111,6 +112,9 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
         public override bool Equals(object obj)
         {
             // credit: http://stackoverflow.com/a/10454552/677735
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
             return this.Equals(obj as BasicEpisode);
         }
 
@@ -123,7 +127,9 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
         {
             // credit: http://stackoverflow.com/a/10454552/677735
             if (other == null)
+            {
                 return false;
+            }
 
             return
                 (
@@ -177,26 +183,43 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
             // credit: http://stackoverflow.com/a/263416/677735
             unchecked // Overflow is fine, just wrap
             {
-                int hash = 41;
+                int hash = (int)2166136261;
                 // Suitable nullity checks etc, of course :)
                 if (this.AbsoluteNumber != null)
-                    hash = hash * 59 + this.AbsoluteNumber.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.AbsoluteNumber.GetHashCode();
+                }
                 if (this.AiredEpisodeNumber != null)
-                    hash = hash * 59 + this.AiredEpisodeNumber.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.AiredEpisodeNumber.GetHashCode();
+                }
                 if (this.AiredSeason != null)
-                    hash = hash * 59 + this.AiredSeason.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.AiredSeason.GetHashCode();
+                }
                 if (this.DvdEpisodeNumber != null)
-                    hash = hash * 59 + this.DvdEpisodeNumber.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.DvdEpisodeNumber.GetHashCode();
+                }
                 if (this.DvdSeason != null)
-                    hash = hash * 59 + this.DvdSeason.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.DvdSeason.GetHashCode();
+                }
                 if (this.EpisodeName != null)
-                    hash = hash * 59 + this.EpisodeName.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.EpisodeName.GetHashCode();
+                }
                 if (this.Id != null)
-                    hash = hash * 59 + this.Id.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.Id.GetHashCode();
+                }
                 if (this.Overview != null)
-                    hash = hash * 59 + this.Overview.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.Overview.GetHashCode();
+                }
                 return hash;
             }
         }
+        #endregion Equality
     }
 }

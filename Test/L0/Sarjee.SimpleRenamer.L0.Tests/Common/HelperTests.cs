@@ -4,6 +4,7 @@ using Sarjee.SimpleRenamer.Common;
 using Sarjee.SimpleRenamer.Common.Interface;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Common
 {
@@ -122,11 +123,15 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IHelper helper = GetHelper();
 
             //setup lists
-            List<string> list1 = new List<string>();
-            list1.Add("123456789");
-            List<string> list2 = new List<string>();
-            list2.Add("123456789");
-            list2.Add("1");
+            List<string> list1 = new List<string>
+            {
+                "123456789"
+            };
+            List<string> list2 = new List<string>
+            {
+                "123456789",
+                "1"
+            };
             list2.Remove("1");
 
             bool result = false;
@@ -143,12 +148,39 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IHelper helper = GetHelper();
 
             //setup lists
-            List<string> list1 = new List<string>();
-            list1.Add("123456789");
-            list1.Add("123456789");
-            List<string> list2 = new List<string>();
-            list2.Add("123456789");
+            List<string> list1 = new List<string>
+            {
+                "123456789",
+                "123456789"
+            };
+            List<string> list2 = new List<string>
+            {
+                "123456789"
+            };
+            bool result = true;
+            Action action1 = () => result = helper.AreListsEqual(list1, list2);
 
+            action1.ShouldNotThrow();
+            result.Should().BeFalse();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Common)]
+        public void Helper_AreListsEqual_PopulatedDifferentValueStringLists2_ReturnsFalse()
+        {
+            IHelper helper = GetHelper();
+
+            //setup lists
+            List<string> list1 = new List<string>
+            {
+                "123456789",
+                "987654321"
+            };
+            List<string> list2 = new List<string>
+            {
+                "123456789",
+                "123456789"
+            };
             bool result = true;
             Action action1 = () => result = helper.AreListsEqual(list1, list2);
 
@@ -163,13 +195,16 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IHelper helper = GetHelper();
 
             //setup lists
-            List<string> list1 = new List<string>();
-            list1.Add("123456789");
-            list1.Add("123456789");
-            List<string> list2 = new List<string>();
-            list2.Add("123456789");
-            list2.Add("987654321");
-
+            List<string> list1 = new List<string>
+            {
+                "123456789",
+                "123456789"
+            };
+            List<string> list2 = new List<string>
+            {
+                "123456789",
+                "987654321"
+            };
             bool result = true;
             Action action1 = () => result = helper.AreListsEqual(list1, list2);
 
@@ -177,5 +212,43 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             result.Should().BeFalse();
         }
         #endregion AreListsEqual
+
+        #region RemoveSpecialCharacters
+        [TestMethod]
+        [TestCategory(TestCategories.Common)]
+        public void Helper_RemoveSpecialCharacters_Success()
+        {
+            IHelper helper = GetHelper();
+
+            string input = @"I<>|:/\?";
+            string output = string.Empty;
+            Action action1 = () => output = helper.RemoveSpecialCharacters(input);
+
+            action1.ShouldNotThrow();
+            output.Should().Be("I");
+        }
+        #endregion RemoveSpecialCharacters
+
+        #region ExponentialDelayAsync
+        [TestMethod]
+        [TestCategory(TestCategories.Common)]
+        public void Helper_ExponentialDelayAsync_Success()
+        {
+            IHelper helper = GetHelper();
+
+            Func<Task> action1 = async () => await helper.ExponentialDelayAsync(1, 1, 1);
+            action1.ShouldNotThrow();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Common)]
+        public void Helper_ExponentialDelayAsync_ExceedsMaxBackoff_Success()
+        {
+            IHelper helper = GetHelper();
+
+            Func<Task> action1 = async () => await helper.ExponentialDelayAsync(500, 5, 1);
+            action1.ShouldNotThrow();
+        }
+        #endregion ExponentialDelayAsync
     }
 }

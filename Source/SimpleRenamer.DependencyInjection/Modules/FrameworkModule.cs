@@ -18,7 +18,6 @@ namespace Sarjee.SimpleRenamer.DependencyInjection.Modules
         public override void Load()
         {
             Bind<ILogger>().To<Logger>().InSingletonScope();
-            Bind<IRetryHelper>().To<RetryHelper>().InSingletonScope();
             Bind<IBackgroundQueue>().To<BackgroundQueue>().InSingletonScope();
             Bind<IConfigurationManager>().To<AppConfigurationManager>().InSingletonScope();
             Bind<IHelper>().To<Helper>().InSingletonScope();

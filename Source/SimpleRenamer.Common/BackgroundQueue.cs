@@ -18,7 +18,7 @@ namespace Sarjee.SimpleRenamer.Common
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        public Task QueueTask(Action action)
+        public Task QueueTaskAsync(Action action)
         {
             lock (key)
             {
@@ -36,7 +36,7 @@ namespace Sarjee.SimpleRenamer.Common
         /// <typeparam name="T"></typeparam>
         /// <param name="work"></param>
         /// <returns></returns>
-        public Task<T> QueueTask<T>(Func<T> work)
+        public Task<T> QueueTaskAsync<T>(Func<T> work)
         {
             lock (key)
             {

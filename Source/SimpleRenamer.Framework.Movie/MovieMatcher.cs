@@ -6,6 +6,7 @@ using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,17 +52,18 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// </summary>
         /// <param name="movieName">Name of the movie.</param>
         /// <returns></returns>
-        public async Task<List<DetailView>> GetPossibleMoviesForFile(string movieName)
+        public async Task<List<DetailView>> GetPossibleMoviesForFileAsync(string movieName)
         {
+            _logger.TraceMessage($"Get possible matches for movie: {movieName}.", EventLevel.Verbose);
             ConcurrentBag<DetailView> movies = new ConcurrentBag<DetailView>();
-            SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName, 0);
+            SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName);
             if (results != null)
             {
                 Parallel.ForEach(results.Results, _parallelOptions, (s) =>
                 {
                     try
                     {
-                        string desc = string.Empty;
+                        string desc = "N/A";
                         if (!string.IsNullOrEmpty(s.Overview))
                         {
                             if (s.Overview.Length > 50)
@@ -82,6 +84,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 });
             }
 
+            _logger.TraceMessage($"Found {movies.Count} possible matches for movie: {movieName}.", EventLevel.Verbose);
             return movies.ToList();
         }
 
@@ -92,25 +95,25 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <returns></returns>
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie)
         {
-            _logger.TraceMessage("ScrapeDetailsAsync - Start");
-            RaiseProgressEvent(this, new ProgressTextEventArgs($"Scraping details for file {movie.SourceFilePath}"));
+            _logger.TraceMessage($"Scraping Movie Details for {movie.SourceFilePath}.", EventLevel.Verbose);
+            OnProgressTextChanged(new ProgressTextEventArgs($"Scraping details for file {movie.SourceFilePath}"));
 
             SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movie.ShowName, movie.Year);
-
-            //IF we have more than 1 result then flag the file to be manually matched
-            if (results.Results.Count > 1)
-            {
-                movie.ActionThis = false;
-                movie.SkippedExactSelection = true;
-            }
-            else if (results.Results.Count == 1)
+            //if only one result then we can safely match
+            if (results?.Results?.Count == 1)
             {
                 //if theres only one match then scape the specific show
                 movie.TMDBShowId = results.Results[0].Id;
                 movie.ShowImage = results.Results[0].PosterPath;
                 movie.NewFileName = _helper.RemoveSpecialCharacters(movie.ShowName);
+                _logger.TraceMessage($"Found exactly one result so can safely match {movie.SourceFilePath} with MovieId {movie.TMDBShowId}.", EventLevel.Verbose);
             }
-            _logger.TraceMessage("ScrapeDetailsAsync - End");
+            else
+            {
+                movie.ActionThis = false;
+                movie.SkippedExactSelection = true;
+                _logger.TraceMessage($"Found {results?.Results?.Count} possible matches for {movie.SourceFilePath}. So must be manually matched by user.", EventLevel.Verbose);
+            }
             return movie;
         }
 
@@ -120,14 +123,19 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <param name="movieId">The movie identifier.</param>
         /// <param name="matchedFile">The matched file.</param>
         /// <returns></returns>
-        public async Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile)
+        public async Task<MatchedFile> UpdateFileWithMatchedMovieAsync(string movieId, MatchedFile matchedFile)
         {
+            if (matchedFile == null)
+            {
+                throw new ArgumentNullException(nameof(matchedFile));
+            }
+
             return await Task.Run(async () =>
             {
-                _logger.TraceMessage("UpdateFileWithMatchedMovie - Start");
-
-                if (!string.IsNullOrEmpty(movieId))
+                //id can be null if user didn't select a match
+                if (!string.IsNullOrWhiteSpace(movieId))
                 {
+                    _logger.TraceMessage($"Updating File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
                     SearchMovie searchedMovie = await _tmdbManager.SearchMovieByIdAsync(movieId);
                     matchedFile.ActionThis = true;
                     matchedFile.SkippedExactSelection = false;
@@ -137,14 +145,15 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                     matchedFile.ShowImage = searchedMovie.PosterPath;
                     matchedFile.FileType = FileType.Movie;
                     matchedFile.NewFileName = _helper.RemoveSpecialCharacters(searchedMovie.Title);
+                    _logger.TraceMessage($"Updated File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
                 }
                 else
                 {
+                    _logger.TraceMessage($"Did not update File {matchedFile.SourceFilePath} as no MovieId provided.", EventLevel.Verbose);
                     matchedFile.ActionThis = false;
                     matchedFile.SkippedExactSelection = true;
                 }
 
-                _logger.TraceMessage("UpdateFileWithMatchedMovie - End");
                 return matchedFile;
             });
         }
@@ -155,25 +164,39 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <param name="movieId">The movie identifier.</param>
         /// <param name="ct">The ct.</param>
         /// <returns></returns>
-        public async Task<(Common.Movie.Model.Movie movie, BitmapImage banner)> GetMovieWithBanner(string movieId, CancellationToken ct)
+        public async Task<(Common.Movie.Model.Movie movie, BitmapImage banner)> GetMovieWithBannerAsync(string movieId, CancellationToken ct)
         {
-            _logger.TraceMessage("GetMovieInfo - Start");
+            _logger.TraceMessage($"Getting MovieInfo for MovieId: {movieId}.", EventLevel.Verbose);
             Common.Movie.Model.Movie matchedMovie = await _tmdbManager.GetMovieAsync(movieId);
-            BitmapImage bannerImage = new BitmapImage();
 
+            BitmapImage bannerImage = null;
             if (!string.IsNullOrEmpty(matchedMovie.PosterPath))
             {
-                bannerImage.BeginInit();
-                bannerImage.UriSource = new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath));
-                bannerImage.EndInit();
+                bannerImage = InitializeBannerImage(new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath)));
             }
             else
             {
                 //TODO add a not found poster
+                bannerImage = new BitmapImage();
             }
 
-            _logger.TraceMessage("GetMovieInfo - End");
+            _logger.TraceMessage("Got MovieInfo for MovieId: {movieId}", EventLevel.Verbose);
             return (matchedMovie, bannerImage);
+        }
+
+        protected virtual BitmapImage InitializeBannerImage(Uri uri)
+        {
+            BitmapImage banner = new BitmapImage();
+            banner.BeginInit();
+            banner.UriSource = uri;
+            banner.EndInit();
+
+            return banner;
+        }
+
+        protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)
+        {
+            RaiseProgressEvent?.Invoke(this, e);
         }
     }
 }

@@ -67,16 +67,16 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <param name="scannedEpisodes">The episodes to action</param>
         /// <param name="ct">CancellationToken</param>
         /// <returns></returns>
-        public async Task<bool> Action(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct)
+        public async Task<bool> ActionAsync(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
             return await Task.Run(async () =>
             {
-                RaiseProgressEvent(this, new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
+                OnProgressTextChanged(new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
                 //perform pre actions on TVshows
                 List<MatchedFile> tvShowsToMove = await PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.TvShow).ToList(), ct);
                 //perform pre actions on movies
                 List<MatchedFile> moviesToMove = await PreProcessMovies(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.Movie).ToList(), ct);
-                RaiseProgressEvent(this, new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
+                OnProgressTextChanged(new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
 
                 //concat final list of files to move
                 List<MatchedFile> filesToMove = new List<MatchedFile>();
@@ -116,7 +116,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(file.TVDBShowId)).FirstOrDefault();
                 MatchedFile result = await _fileMover.CreateDirectoriesAndDownloadBannersAsync(file, mapping, true);
                 //fire event here
-                RaiseFilePreProcessedEvent(this, new FilePreProcessedEventArgs());
+                OnFilePreProcessed(new FilePreProcessedEventArgs());
                 if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
                 {
                     _logger.TraceMessage(string.Format("Successfully processed file and downloaded banners: {0}", result.SourceFilePath));
@@ -153,7 +153,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 ct.ThrowIfCancellationRequested();
                 MatchedFile result = await _fileMover.CreateDirectoriesAndDownloadBannersAsync(file, null, false);
                 //fire event here
-                RaiseFilePreProcessedEvent(this, new FilePreProcessedEventArgs());
+                OnFilePreProcessed(new FilePreProcessedEventArgs());
                 if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
                 {
                     _logger.TraceMessage(string.Format("Successfully processed file: {0}", result.SourceFilePath));
@@ -187,12 +187,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
                 ct.ThrowIfCancellationRequested();
-                RaiseProgressEvent(this, new ProgressTextEventArgs($"Moving file {file.SourceFilePath} to {file.DestinationFilePath}."));
-                bool result = await await _backgroundQueue.QueueTask(() => _fileMover.MoveFileAsync(file, ct));
+                OnProgressTextChanged(new ProgressTextEventArgs($"Moving file {file.SourceFilePath} to {file.DestinationFilePath}."));
+                bool result = await await _backgroundQueue.QueueTaskAsync(() => _fileMover.MoveFileAsync(file, ct));
                 if (result)
                 {
-                    RaiseFileMovedEvent(this, new FileMovedEventArgs(file));
-                    RaiseProgressEvent(this, new ProgressTextEventArgs($"Finished {file.DestinationFilePath}."));
+                    OnFileMoved(new FileMovedEventArgs(file));
+                    OnProgressTextChanged(new ProgressTextEventArgs($"Finished {file.DestinationFilePath}."));
                     _logger.TraceMessage(string.Format("Successfully {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, settings.CopyFiles ? "copied" : "moved"));
                 }
                 else
@@ -209,6 +209,21 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             await actionFilesAsyncBlock.Completion;
 
             return true;
+        }
+
+        protected virtual void OnFilePreProcessed(FilePreProcessedEventArgs e)
+        {
+            RaiseFilePreProcessedEvent?.Invoke(this, e);
+        }
+
+        protected virtual void OnFileMoved(FileMovedEventArgs e)
+        {
+            RaiseFileMovedEvent?.Invoke(this, e);
+        }
+
+        protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)
+        {
+            RaiseProgressEvent?.Invoke(this, e);
         }
     }
 }

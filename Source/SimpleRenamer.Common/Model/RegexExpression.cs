@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 
 namespace Sarjee.SimpleRenamer.Common.Model
 {
@@ -6,7 +7,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
     /// RegexExpression
     /// </summary>
     [JsonObject("regexExpression")]
-    public class RegexExpression
+    public class RegexExpression : IEquatable<RegexExpression>
     {
         /// <summary>
         /// Gets or sets the expression.
@@ -38,13 +39,71 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// Initializes a new instance of the <see cref="RegexExpression" /> class.
         /// </summary>
         /// <param name="expression">The expression.</param>
-        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
-        /// <param name="isTvShow">if set to <c>true</c> [is tv show].</param>
-        public RegexExpression(string expression, bool enabled, bool isTvShow)
+        /// <param name="isEnabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="isForTvShow">if set to <c>true</c> [is tv show].</param>
+        public RegexExpression(string expression, bool isEnabled, bool isForTvShow)
         {
+            if (string.IsNullOrEmpty(expression))
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
             Expression = expression;
-            IsEnabled = enabled;
-            IsForTvShow = isTvShow;
+            IsEnabled = isEnabled;
+            IsForTvShow = isForTvShow;
         }
+
+        #region Equality
+        /// <summary>
+        /// Determines whether two <see cref="RegexExpression"/> contain the same values
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(RegexExpression other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            return
+                (
+                    Expression == other.Expression ||
+                    Expression != null &&
+                    Expression.Equals(other.Expression)
+                ) &&
+                (
+                    IsEnabled == other.IsEnabled
+                ) &&
+                (
+                    IsForTvShow == other.IsForTvShow
+                );
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals(obj as RegexExpression);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hashCode = (int)2166136261;
+                if (Expression != null)
+                {
+                    hashCode = (hashCode * 16777619) + Expression.GetHashCode();
+                }
+                hashCode = (hashCode * 16777619) + IsEnabled.GetHashCode();
+                hashCode = (hashCode * 16777619) + IsForTvShow.GetHashCode();
+
+                return hashCode;
+            }
+        }
+        #endregion Equality
     }
 }

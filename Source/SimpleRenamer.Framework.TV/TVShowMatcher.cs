@@ -6,6 +6,7 @@ using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,17 +15,22 @@ using System.Windows.Media.Imaging;
 namespace Sarjee.SimpleRenamer.Framework.TV
 {
     /// <summary>
-    /// 
+    /// TV Show Matcher
     /// </summary>
     /// <seealso cref="Sarjee.SimpleRenamer.Common.TV.Interface.ITVShowMatcher" />
     public class TVShowMatcher : ITVShowMatcher
     {
+        private const string _fileNameShowName = "{ShowName}";
+        private const string _fileNameSeason = "{Season}";
+        private const string _fileNameEpisodeNumber = "{Episode}";
+        private const string _fileNameEpisodeName = "{EpisodeName}";
+
         private ILogger _logger;
         private IConfigurationManager _configurationManager;
-        private Settings settings;
+        private Settings _settings;
         private ITvdbManager _tvdbManager;
         private IHelper _helper;
-        private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
+        private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = (Environment.ProcessorCount + 2) };
 
         /// <summary>
         /// Fired whenever some noticeable progress is made
@@ -49,51 +55,110 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
             _tvdbManager = tvdbManager ?? throw new ArgumentNullException(nameof(tvdbManager));
-            settings = _configurationManager.Settings;
+            _settings = _configurationManager.Settings;
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
         }
 
+        /// <summary>
+        /// Searches the show by name asynchronous.
+        /// </summary>
+        /// <param name="showName">Name of the show.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">showName</exception>
         public async Task<CompleteSeries> SearchShowByNameAsync(string showName)
         {
+            if (string.IsNullOrWhiteSpace(showName))
+            {
+                throw new ArgumentNullException(nameof(showName));
+            }
+
+            _logger.TraceMessage($"Searching for Show by Name: {showName}.", EventLevel.Verbose);
             List<SeriesSearchData> searchResults = await _tvdbManager.SearchSeriesByNameAsync(showName);
             //if theres only one match then scape the specific show and return this
             if (searchResults?.Count == 1)
             {
+                _logger.TraceMessage($"Found only one show for Name: {showName}. So will grab all series data.", EventLevel.Verbose);
                 string seriesId = searchResults[0].Id.ToString();
                 return await _tvdbManager.GetSeriesByIdAsync(seriesId);
             }
 
             //else there were no matches or more than 1 possible match so return null
+            _logger.TraceMessage($"Found {searchResults?.Count} shows for Name: {showName}. So cannot match this accurately, must be matched by user.", EventLevel.Verbose);
             return null;
         }
 
+        /// <summary>
+        /// Searches the show by identifier asynchronous.
+        /// </summary>
+        /// <param name="showId">The show identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">showId</exception>
         public async Task<CompleteSeries> SearchShowByIdAsync(string showId)
         {
+            if (string.IsNullOrWhiteSpace(showId))
+            {
+                throw new ArgumentNullException(nameof(showId));
+            }
+
+            _logger.TraceMessage($"Searching for Show details by ShowId: {showId}.", EventLevel.Verbose);
             CompleteSeries series = await _tvdbManager.GetSeriesByIdAsync(showId);
+            _logger.TraceMessage($"Found Show details by ShowId: {showId}.", EventLevel.Verbose);
             return series;
         }
 
+        /// <summary>
+        /// Updates the file with series details.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="series">The series.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">
+        /// file
+        /// or
+        /// series
+        /// </exception>
         public MatchedFile UpdateFileWithSeriesDetails(MatchedFile file, CompleteSeries series)
         {
-            RaiseProgressEvent(this, new ProgressTextEventArgs(string.Format("Matching {0} with data", file.SourceFilePath)));
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+            if (series == null)
+            {
+                throw new ArgumentNullException(nameof(series));
+            }
+
+            _logger.TraceMessage($"Updating File {file.SourceFilePath} with SeriesInfo {series.Series?.SeriesName}.", EventLevel.Verbose);
+            OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Matching {0} with data", file.SourceFilePath)));
+            bool seasonBannerFound = false;
+            bool seriesBannerFound = false;
             int.TryParse(file.EpisodeNumber, out int episodeNumber);
             int.TryParse(file.Season, out int seasonAsInt);
-            file.TVDBShowId = series.Series.Id.ToString();
-            file.ShowName = series.Series.SeriesName;
-            file.EpisodeName = series.Episodes.Where(s => s.AiredSeason.Value == seasonAsInt && s.AiredEpisodeNumber == episodeNumber).FirstOrDefault().EpisodeName;
-            List<SeriesImageQueryResult> seasonBanners = series.SeasonPosters.Where(s => s.SubKey.Equals(file.Season) || s.SubKey.Equals(seasonAsInt.ToString())).ToList();
-            if (seasonBanners != null && seasonBanners.Count > 0)
+            file.TVDBShowId = series.Series?.Id.ToString();
+            file.ShowName = series.Series?.SeriesName;
+            if (series.Episodes?.Count > 0)
             {
-                file.SeasonImage = seasonBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName;
+                file.EpisodeName = series.Episodes.Where(s => s?.AiredSeason.Value == seasonAsInt && s?.AiredEpisodeNumber == episodeNumber).FirstOrDefault().EpisodeName;
             }
-            if (series.Posters != null && series.Posters.Count > 0)
+            if (series.SeasonPosters?.Count > 0)
+            {
+                List<SeriesImageQueryResult> seasonBanners = series.SeasonPosters.Where(s => s.SubKey.Equals(file.Season) || s.SubKey.Equals(seasonAsInt.ToString())).ToList();
+                if (seasonBanners?.Count > 0)
+                {
+                    file.SeasonImage = seasonBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName;
+                    seasonBannerFound = true;
+                }
+            }
+            if (series.Posters?.Count > 0)
             {
                 file.ShowImage = series.Posters.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName;
+                seriesBannerFound = true;
             }
             file.NewFileName = GenerateFileName(file.ShowName, file.Season, file.EpisodeNumber, file.EpisodeName);
             file.ActionThis = true;
             file.SkippedExactSelection = false;
 
+            _logger.TraceMessage($"Updated File {file.SourceFilePath} with SeriesInfo {series.Series?.SeriesName}. Season Image Found {seasonBannerFound}. Show Image Found {seriesBannerFound}.", EventLevel.Verbose);
             return file;
         }
 
@@ -104,26 +169,26 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         private string GenerateFileName(string showName, string season, string episodeNumber, string episodeName)
         {
-            _logger.TraceMessage("GenerateFileName - Start");
+            _logger.TraceMessage($"Generating FileName for Show: {showName}, Season: {season}, Episode: {episodeNumber}.", EventLevel.Verbose);
 
-            string temp = settings.NewFileNameFormat;
-            if (temp.Contains("{ShowName}"))
+            string temp = _settings.NewFileNameFormat;
+            if (temp.Contains(_fileNameShowName))
             {
-                temp = temp.Replace("{ShowName}", showName);
+                temp = temp.Replace(_fileNameShowName, showName);
             }
-            if (temp.Contains("{Season}"))
+            if (temp.Contains(_fileNameSeason))
             {
-                temp = temp.Replace("{Season}", season);
+                temp = temp.Replace(_fileNameSeason, season);
             }
-            if (temp.Contains("{Episode}"))
+            if (temp.Contains(_fileNameEpisodeNumber))
             {
-                temp = temp.Replace("{Episode}", episodeNumber);
+                temp = temp.Replace(_fileNameEpisodeNumber, episodeNumber);
             }
-            if (temp.Contains("{EpisodeName}"))
+            if (temp.Contains(_fileNameEpisodeName))
             {
-                temp = temp.Replace("{EpisodeName}", string.IsNullOrEmpty(episodeName) ? "" : episodeName);
+                temp = temp.Replace(_fileNameEpisodeName, string.IsNullOrWhiteSpace(episodeName) ? "" : episodeName);
             }
-            _logger.TraceMessage("GenerateFileName - End");
+            _logger.TraceMessage("Generated FileName {temp}.", EventLevel.Verbose);
             return _helper.RemoveSpecialCharacters(temp);
         }
 
@@ -134,28 +199,34 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public MatchedFile FixShowsFromMappings(MatchedFile episode)
         {
-            ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
-            _logger.TraceMessage("FixMismatchTitles - Start");
-            if (showNameMapping != null && showNameMapping.Mappings != null && showNameMapping.Mappings.Count > 0)
+            if (episode == null)
             {
-                foreach (Mapping m in showNameMapping.Mappings)
+                throw new ArgumentNullException(nameof(episode));
+            }
+
+            _logger.TraceMessage($"FixShowName based on Mappings for {episode.SourceFilePath}.", EventLevel.Verbose);
+            ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
+            if (showNameMapping?.Mappings?.Count > 0)
+            {
+                foreach (Mapping mapping in showNameMapping.Mappings)
                 {
-                    if (m.FileShowName.Equals(episode.ShowName))
+                    if (mapping.FileShowName.Equals(episode.ShowName))
                     {
-                        if (!string.IsNullOrEmpty(m.TVDBShowID))
+                        _logger.TraceMessage($"FixShowName found match {mapping.TVDBShowName} for {episode.SourceFilePath}.", EventLevel.Verbose);
+                        if (!string.IsNullOrWhiteSpace(mapping.TVDBShowID))
                         {
-                            episode.TVDBShowId = m.TVDBShowID;
+                            episode.TVDBShowId = mapping.TVDBShowID;
                         }
-                        if (!string.IsNullOrEmpty(m.TVDBShowName))
+                        if (!string.IsNullOrWhiteSpace(mapping.TVDBShowName))
                         {
-                            episode.ShowName = m.TVDBShowName;
+                            episode.ShowName = mapping.TVDBShowName;
                         }
                         break;
                     }
                 }
             }
 
-            _logger.TraceMessage("FixMismatchTitles - End");
+            _logger.TraceMessage($"FixShowName finished for {episode.SourceFilePath}.", EventLevel.Verbose);
             return episode;
         }
 
@@ -166,36 +237,35 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns>
         /// A list of series
         /// </returns>
-        public async Task<List<DetailView>> GetPossibleShowsForEpisode(string showName)
+        public async Task<List<DetailView>> GetPossibleShowsForEpisodeAsync(string showName)
         {
+            if (string.IsNullOrWhiteSpace(showName))
+            {
+                throw new ArgumentNullException(nameof(showName));
+            }
+
             return await Task.Run(async () =>
             {
-                _logger.TraceMessage("GetPossibleShowsForEpisode - Start");
+                _logger.TraceMessage($"Get possible matches for show: {showName}.", EventLevel.Verbose);
                 ConcurrentBag<DetailView> shows = new ConcurrentBag<DetailView>();
-                List<SeriesSearchData> series = await _tvdbManager.SearchSeriesByNameAsync(showName);
-                string airedDate;
-                if (series != null)
+                List<SeriesSearchData> seriesSearchData = await _tvdbManager.SearchSeriesByNameAsync(showName);
+                if (seriesSearchData?.Count > 0)
                 {
-                    Parallel.ForEach(series, _parallelOptions, (s) =>
+                    Parallel.ForEach(seriesSearchData, _parallelOptions, (series) =>
                     {
                         try
                         {
                             string desc = string.Empty;
-                            if (!string.IsNullOrEmpty(s.Overview))
+                            if (series.Overview?.Length > 50)
                             {
-                                if (s.Overview.Length > 50)
-                                {
-                                    desc = string.Format("{0}...", s.Overview.Substring(0, 50));
-                                }
-                                else
-                                {
-                                    desc = s.Overview;
-                                }
+                                desc = string.Format("{0}...", series.Overview.Substring(0, 50));
                             }
-
-                            bool parsed = DateTime.TryParseExact(s.FirstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt);
-                            airedDate = parsed ? dt.Year.ToString() : "N/A";
-                            shows.Add(new DetailView(s.Id.ToString(), s.SeriesName, airedDate, desc));
+                            else if (series.Overview?.Length <= 50)
+                            {
+                                desc = series.Overview;
+                            }
+                            string airedDate = DateTime.TryParseExact(series.FirstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt) ? dt.Year.ToString() : "N/A";
+                            shows.Add(new DetailView(series.Id.ToString(), series.SeriesName, airedDate, desc));
                         }
                         catch (Exception)
                         {
@@ -204,7 +274,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     });
                 }
 
-                _logger.TraceMessage("SelectShowFromListGetPossibleShowsForEpisode - End");
+                _logger.TraceMessage($"Found {shows.Count} possible matches for show: {showName}.", EventLevel.Verbose);
                 return shows.ToList();
             });
         }
@@ -217,35 +287,41 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns>
         /// The updated TV episode
         /// </returns>
-        public async Task<MatchedFile> UpdateEpisodeWithMatchedSeries(string selectedSeriesId, MatchedFile episode)
+        public async Task<MatchedFile> UpdateEpisodeWithMatchedSeriesAsync(string selectedSeriesId, MatchedFile episode)
         {
+            if (episode == null)
+            {
+                throw new ArgumentNullException(nameof(episode));
+            }
+            //if no series was selected then set action and skipped and return immediately
+            if (string.IsNullOrWhiteSpace(selectedSeriesId))
+            {
+                _logger.TraceMessage($"No series selected so not updating {episode.SourceFilePath}.", EventLevel.Verbose);
+                episode.ActionThis = false;
+                episode.SkippedExactSelection = true;
+                return episode;
+            }
+
             return await Task.Run(async () =>
             {
+                _logger.TraceMessage($"Updating {episode.SourceFilePath} with Matched SeriesId {selectedSeriesId}.", EventLevel.Verbose);
                 string originalShowName = episode.ShowName;
-                //if user selected a match then scrape the details
-                if (!string.IsNullOrEmpty(selectedSeriesId))
-                {
-                    CompleteSeries seriesInfo = await SearchShowByIdAsync(selectedSeriesId);
-                    episode = UpdateFileWithSeriesDetails(episode, seriesInfo);
+                CompleteSeries seriesInfo = await SearchShowByIdAsync(selectedSeriesId);
+                episode = UpdateFileWithSeriesDetails(episode, seriesInfo);
 
-                    if (!string.IsNullOrWhiteSpace(episode.TVDBShowId))
+                if (!string.IsNullOrWhiteSpace(episode.TVDBShowId))
+                {
+                    ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
+                    Mapping map = new Mapping(originalShowName, episode.ShowName, episode.TVDBShowId);
+                    if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                     {
-                        ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
-                        Mapping map = new Mapping(originalShowName, episode.ShowName, episode.TVDBShowId);
-                        if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
-                        {
-                            showNameMapping.Mappings.Add(map);
-                        }
-                        _configurationManager.ShowNameMappings = showNameMapping;
+                        showNameMapping.Mappings.Add(map);
                     }
-                    episode.FileType = FileType.TvShow;
+                    _configurationManager.ShowNameMappings = showNameMapping;
                 }
-                else
-                {
-                    episode.ActionThis = false;
-                    episode.SkippedExactSelection = true;
-                }
+                episode.FileType = FileType.TvShow;
 
+                _logger.TraceMessage($"Updated {episode.SourceFilePath} with Matched SeriesId {selectedSeriesId}.", EventLevel.Verbose);
                 return episode;
             });
         }
@@ -257,22 +333,41 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public async Task<(CompleteSeries series, BitmapImage banner)> GetShowWithBannerAsync(string showId)
         {
-            _logger.TraceMessage("GetSeriesInfo - Start");
-            CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(showId);
-            BitmapImage bannerImage = new BitmapImage();
-            if (matchedSeries.SeriesBanners != null && matchedSeries.SeriesBanners.Count > 0)
+            if (string.IsNullOrWhiteSpace(showId))
             {
-                bannerImage.BeginInit();
-                bannerImage.UriSource = new Uri(_tvdbManager.GetBannerUri(matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName));
-                bannerImage.EndInit();
+                throw new ArgumentNullException(nameof(showId));
+            }
+
+            _logger.TraceMessage($"Getting show and banner for ShowId: {showId}.", EventLevel.Verbose);
+            CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(showId);
+            BitmapImage bannerImage = null;
+            if (matchedSeries?.SeriesBanners?.Count > 0)
+            {
+                bannerImage = InitializeBannerImage(new Uri(_tvdbManager.GetBannerUri(matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName)));
             }
             else
             {
                 //TODO create a no image found banner
+                bannerImage = new BitmapImage();
             }
 
-            _logger.TraceMessage("GetSeriesInfo - End");
+            _logger.TraceMessage($"Got show and banner for ShowId: {showId}.", EventLevel.Verbose);
             return (matchedSeries, bannerImage);
+        }
+
+        protected virtual BitmapImage InitializeBannerImage(Uri uri)
+        {
+            BitmapImage banner = new BitmapImage();
+            banner.BeginInit();
+            banner.UriSource = uri;
+            banner.EndInit();
+
+            return banner;
+        }
+
+        protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)
+        {
+            RaiseProgressEvent?.Invoke(this, e);
         }
     }
 }

@@ -3,6 +3,7 @@ using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using Sarjee.SimpleRenamer.WPF;
 using System;
+using System.Diagnostics.Tracing;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -66,11 +67,11 @@ namespace Sarjee.SimpleRenamer.Views
 
         public async Task GetMovieInfo(string movieId)
         {
-            _logger.TraceMessage("GetMovieInfo - Start");
+            _logger.TraceMessage($"Getting MovieInfo for {movieId}.", EventLevel.Verbose);
             //enable progress spinner
             LoadingProgress.IsActive = true;
             CancellationTokenSource cts = new CancellationTokenSource();
-            (Movie movie, BitmapImage banner) = await _movieMatcher.GetMovieWithBanner(movieId, cts.Token);
+            (Movie movie, BitmapImage banner) = await _movieMatcher.GetMovieWithBannerAsync(movieId, cts.Token);
 
             //set the title, show description, rating and firstaired values
             this.Title = string.Format("{0} - Rating {1} - Year {2}", movie.Title, string.IsNullOrEmpty(movie.VoteAverage.ToString()) ? "0.0" : movie.VoteAverage.ToString(), movie.ReleaseDate.HasValue ? movie.ReleaseDate.Value.Year.ToString() : "1900");
@@ -96,7 +97,7 @@ namespace Sarjee.SimpleRenamer.Views
             //set the banner
             BannerImage.Source = banner;
 
-            _logger.TraceMessage("GetMovieInfo - End");
+            _logger.TraceMessage($"Got MovieInfo for {movieId}.", EventLevel.Verbose);
         }
     }
 }

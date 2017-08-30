@@ -1,11 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{8B656D9A-9561-482E-A2A4-8B5009FEBA6E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "L0", "L0", "{1272D115-CF55-49BE-8304-1557838C790B}"
+	ProjectSection(SolutionItems) = preProject
+		test.runsettings = test.runsettings
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRenamer.L0.Tests", "Test\L0\Sarjee.SimpleRenamer.L0.Tests\SimpleRenamer.L0.Tests.csproj", "{FBE57031-5FB3-4A8E-AF8F-274D606B8777}"
 EndProject

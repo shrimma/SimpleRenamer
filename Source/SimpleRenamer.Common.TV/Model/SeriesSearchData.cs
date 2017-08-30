@@ -102,6 +102,7 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
             return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
 
+        #region Equality
         /// <summary>
         /// Returns true if objects are equal
         /// </summary>
@@ -110,6 +111,9 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
         public override bool Equals(object obj)
         {
             // credit: http://stackoverflow.com/a/10454552/677735
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
             return this.Equals(obj as SeriesSearchData);
         }
 
@@ -122,7 +126,9 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
         {
             // credit: http://stackoverflow.com/a/10454552/677735
             if (other == null)
+            {
                 return false;
+            }
 
             return
                 (
@@ -176,26 +182,46 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
             // credit: http://stackoverflow.com/a/263416/677735
             unchecked // Overflow is fine, just wrap
             {
-                int hash = 41;
+                int hash = (int)2166136261;
                 // Suitable nullity checks etc, of course :)
                 if (this.Aliases != null)
-                    hash = hash * 59 + this.Aliases.GetHashCode();
+                {
+                    foreach (var item in Aliases)
+                    {
+                        hash = (hash * 16777619) + item.GetHashCode();
+                    }
+                }
                 if (this.Banner != null)
-                    hash = hash * 59 + this.Banner.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.Banner.GetHashCode();
+                }
                 if (this.FirstAired != null)
-                    hash = hash * 59 + this.FirstAired.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.FirstAired.GetHashCode();
+                }
                 if (this.Id != null)
-                    hash = hash * 59 + this.Id.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.Id.GetHashCode();
+                }
                 if (this.Network != null)
-                    hash = hash * 59 + this.Network.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.Network.GetHashCode();
+                }
                 if (this.Overview != null)
-                    hash = hash * 59 + this.Overview.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.Overview.GetHashCode();
+                }
                 if (this.SeriesName != null)
-                    hash = hash * 59 + this.SeriesName.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.SeriesName.GetHashCode();
+                }
                 if (this.Status != null)
-                    hash = hash * 59 + this.Status.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.Status.GetHashCode();
+                }
                 return hash;
             }
         }
+        #endregion Equality
     }
 }

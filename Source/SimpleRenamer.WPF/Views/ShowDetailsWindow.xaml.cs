@@ -3,6 +3,7 @@ using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Model;
 using Sarjee.SimpleRenamer.WPF;
 using System;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -66,7 +67,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         public async Task GetSeriesInfo(string showId)
         {
-            _logger.TraceMessage("GetSeriesInfo - Start");
+            _logger.TraceMessage($"Getting SeriesInfo for {showId}", EventLevel.Verbose);
             LoadingProgress.IsActive = true;
 
             (CompleteSeries series, BitmapImage banner) = await _showMatcher.GetShowWithBannerAsync(showId);
@@ -84,7 +85,7 @@ namespace Sarjee.SimpleRenamer.Views
             //set the banner
             BannerImage.Source = banner;
 
-            _logger.TraceMessage("GetSeriesInfo - End");
+            _logger.TraceMessage($"Got SeriesInfo for {showId}.", EventLevel.Verbose);
         }
     }
 }

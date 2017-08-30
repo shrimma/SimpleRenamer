@@ -25,7 +25,7 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Interface
         /// </summary>
         /// <param name="showName">Name of the show.</param>
         /// <returns></returns>
-        Task<List<DetailView>> GetPossibleMoviesForFile(string showName);
+        Task<List<DetailView>> GetPossibleMoviesForFileAsync(string showName);
 
         /// <summary>
         /// Updates the file with matched movie.
@@ -33,14 +33,14 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Interface
         /// <param name="movieId">The movie identifier.</param>
         /// <param name="matchedFile">The matched file.</param>
         /// <returns></returns>
-        Task<MatchedFile> UpdateFileWithMatchedMovie(string movieId, MatchedFile matchedFile);
+        Task<MatchedFile> UpdateFileWithMatchedMovieAsync(string movieId, MatchedFile matchedFile);
 
         /// <summary>
         /// Gets a movie and it's banner
         /// </summary>
         /// <param name="movieId">The TMDB movie ID</param>
         /// <returns>Populated MovieInfo object</returns>
-        Task<(Model.Movie movie, BitmapImage banner)> GetMovieWithBanner(string movieId, CancellationToken ct);
+        Task<(Model.Movie movie, BitmapImage banner)> GetMovieWithBannerAsync(string movieId, CancellationToken ct);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

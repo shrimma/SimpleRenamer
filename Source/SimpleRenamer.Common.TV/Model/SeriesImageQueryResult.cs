@@ -111,6 +111,9 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
         public override bool Equals(object obj)
         {
             // credit: http://stackoverflow.com/a/10454552/677735
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
             return this.Equals(obj as SeriesImageQueryResult);
         }
 
@@ -123,7 +126,9 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
         {
             // credit: http://stackoverflow.com/a/10454552/677735
             if (other == null)
+            {
                 return false;
+            }
 
             return
                 (
@@ -177,24 +182,40 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
             // credit: http://stackoverflow.com/a/263416/677735
             unchecked // Overflow is fine, just wrap
             {
-                int hash = 41;
+                int hash = (int)2166136261;
                 // Suitable nullity checks etc, of course :)
                 if (this.Id != null)
-                    hash = hash * 59 + this.Id.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.Id.GetHashCode();
+                }
                 if (this.KeyType != null)
-                    hash = hash * 59 + this.KeyType.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.KeyType.GetHashCode();
+                }
                 if (this.SubKey != null)
-                    hash = hash * 59 + this.SubKey.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.SubKey.GetHashCode();
+                }
                 if (this.FileName != null)
-                    hash = hash * 59 + this.FileName.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.FileName.GetHashCode();
+                }
                 if (this.LanguageId != null)
-                    hash = hash * 59 + this.LanguageId.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.LanguageId.GetHashCode();
+                }
                 if (this.Resolution != null)
-                    hash = hash * 59 + this.Resolution.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.Resolution.GetHashCode();
+                }
                 if (this.RatingsInfo != null)
-                    hash = hash * 59 + this.RatingsInfo.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.RatingsInfo.GetHashCode();
+                }
                 if (this.Thumbnail != null)
-                    hash = hash * 59 + this.Thumbnail.GetHashCode();
+                {
+                    hash = (hash * 16777619) + this.Thumbnail.GetHashCode();
+                }
                 return hash;
             }
         }

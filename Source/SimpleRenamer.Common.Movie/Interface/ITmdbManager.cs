@@ -14,7 +14,7 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Interface
         /// <param name="movieName">Name of the movie.</param>
         /// <param name="movieYear">The movie year.</param>
         /// <returns></returns>
-        Task<SearchContainer<SearchMovie>> SearchMovieByNameAsync(string movieName, int movieYear);
+        Task<SearchContainer<SearchMovie>> SearchMovieByNameAsync(string movieName, int? movieYear = null);
 
         /// <summary>
         /// Searches the movie by identifier asynchronous.

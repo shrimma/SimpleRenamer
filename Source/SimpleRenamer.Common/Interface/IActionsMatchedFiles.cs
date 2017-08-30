@@ -33,6 +33,6 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <param name="scannedEpisodes">The episodes to action</param>
         /// <param name="ct">CancellationToken</param>
         /// <returns></returns>
-        Task<bool> Action(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct);
+        Task<bool> ActionAsync(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct);
     }
 }

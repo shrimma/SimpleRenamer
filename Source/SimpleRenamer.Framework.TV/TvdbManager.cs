@@ -7,6 +7,8 @@ using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.TV
@@ -21,9 +23,8 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private string _jwtToken;
         private int _maxRetryCount = 10;
         private int _maxBackoffSeconds = 2;
-        private IRetryHelper _retryHelper;
         private IHelper _helper;
-        private RestClient _restClient;
+        private IRestClient _restClient;
         private JsonSerializerSettings _jsonSerializerSettings;
 
         /// <summary>
@@ -36,17 +37,16 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// or
         /// retryHelper
         /// </exception>
-        public TvdbManager(IConfigurationManager configManager, IRetryHelper retryHelper, IHelper helper)
+        public TvdbManager(IConfigurationManager configManager, IHelper helper)
         {
             if (configManager == null)
             {
                 throw new ArgumentNullException(nameof(configManager));
             }
+            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
 
             _apiKey = configManager.TvDbApiKey;
-            _jwtToken = "";
-            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
-            _retryHelper = retryHelper ?? throw new ArgumentNullException(nameof(retryHelper));
+            _jwtToken = string.Empty;
             _restClient = new RestClient("https://api.thetvdb.com");
             _restClient.AddDefaultHeader("content-type", "application/json");
             _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
@@ -60,31 +60,99 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         }
 
         /// <summary>
+        /// Executes the request asynchronous.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        /// <remarks>virtual method for testability</remarks>
+        protected virtual async Task<IRestResponse> ExecuteRequestAsync(IRestRequest request)
+        {
+            return await _restClient.ExecuteTaskAsync(request);
+        }
+
+        private int[] httpStatusCodesWorthRetrying = { 408, 500, 502, 503, 504, 598, 599 };
+        private async Task<T> ExecuteRestRequestAsync<T>(IRestRequest restRequest, Func<Task> LoginCallback) where T : class
+        {
+            int currentRetry = 0;
+            int offset = ThreadLocalRandom.Instance.Next(100, 500);
+            while (currentRetry < _maxRetryCount)
+            {
+                try
+                {
+                    //execute the request
+                    IRestResponse response = await ExecuteRequestAsync(restRequest);
+                    //if no errors and statuscode ok then deserialize the response
+                    if (response?.ErrorException == null && response?.StatusCode == HttpStatusCode.OK)
+                    {
+                        T result = JsonConvert.DeserializeObject<T>(response.Content, _jsonSerializerSettings);
+                        return result;
+                    }
+                    //if status code indicates transient error then throw timeoutexception
+                    else if (httpStatusCodesWorthRetrying.Contains((int)response?.StatusCode))
+                    {
+                        throw new TimeoutException();
+                    }
+                    //if status code indicates unauthorized then throw unauthorized exception
+                    else if (response?.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        throw new UnauthorizedAccessException();
+                    }
+                    //else throw the responses exception
+                    else
+                    {
+                        if (response.ErrorException != null)
+                        {
+                            throw response.ErrorException;
+                        }
+                        //if no exception then do nothing and return null
+                    }
+                }
+                catch (TimeoutException)
+                {
+                    currentRetry++;
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
+                }
+                catch (WebException)
+                {
+                    currentRetry++;
+                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    currentRetry++;
+                    if (LoginCallback != null)
+                    {
+                        await LoginCallback();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Logins this instance.
         /// </summary>
         /// <returns></returns>
         private async Task Login()
         {
+            //create rest request
             Auth auth = new Auth()
             {
                 Apikey = _apiKey
             };
-
-            //create rest request
-            var request = new RestRequest("login", Method.POST);
+            IRestRequest request = new RestRequest("login", Method.POST);
             request.AddParameter("application/json", auth.ToJson(), ParameterType.RequestBody);
-            IRestResponse response = await _retryHelper.OperationWithBasicRetryAsync<IRestResponse>(async () => await _restClient.ExecuteTaskAsync(request));
 
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            //execute the request
+            Token token = await ExecuteRestRequestAsync<Token>(request, Login);
+            if (token != null)
             {
-                Token token = JsonConvert.DeserializeObject<Token>(response.Content, _jsonSerializerSettings);
                 _jwtToken = token._Token;
             }
-            else
-            {
-                //should we throw here?
-            }
-
         }
 
         /// <summary>
@@ -94,6 +162,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public string GetBannerUri(string bannerPath)
         {
+            if (string.IsNullOrWhiteSpace(bannerPath))
+            {
+                throw new ArgumentNullException(nameof(bannerPath));
+            }
+
             return $"http://thetvdb.com/banners/{bannerPath}";
         }
 
@@ -104,7 +177,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public async Task<CompleteSeries> GetSeriesByIdAsync(string tmdbId)
         {
-            if (string.IsNullOrEmpty(_jwtToken))
+            if (string.IsNullOrWhiteSpace(tmdbId))
+            {
+                throw new ArgumentNullException(nameof(tmdbId));
+            }
+
+            if (string.IsNullOrWhiteSpace(_jwtToken))
             {
                 await Login();
             }
@@ -157,42 +235,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <exception cref="System.UnauthorizedAccessException"></exception>
         private async Task<SeriesData> GetSeries(string tmdbId)
         {
-            int currentRetry = 0;
-            int offset = ThreadLocalRandom.Instance.Next(100, 500);
-            while (currentRetry < _maxRetryCount)
-            {
-                try
-                {
-                    RestRequest request = new RestRequest($"series/{tmdbId}", Method.GET);
-                    request.AddHeader("Authorization", $"Bearer {_jwtToken}");
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
-                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        SeriesData series = JsonConvert.DeserializeObject<SeriesData>(response.Content, _jsonSerializerSettings);
-                        return series;
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        throw new UnauthorizedAccessException();
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    await Login();
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-                catch (Exception)
-                {
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-            }
-            return null;
+            //create the request
+            IRestRequest request = new RestRequest($"series/{tmdbId}", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
+
+            //execute the request
+            return await ExecuteRestRequestAsync<SeriesData>(request, Login);
         }
 
         /// <summary>
@@ -203,42 +251,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <exception cref="System.UnauthorizedAccessException"></exception>
         private async Task<SeriesActors> GetActors(string tmdbId)
         {
-            int currentRetry = 0;
-            int offset = ThreadLocalRandom.Instance.Next(100, 500);
-            while (currentRetry < _maxRetryCount)
-            {
-                try
-                {
-                    RestRequest request = new RestRequest($"/series/{tmdbId}/actors", Method.GET);
-                    request.AddHeader("Authorization", $"Bearer {_jwtToken}");
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
-                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        SeriesActors actors = JsonConvert.DeserializeObject<SeriesActors>(response.Content, _jsonSerializerSettings);
-                        return actors;
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        throw new UnauthorizedAccessException();
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    await Login();
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-                catch (Exception)
-                {
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-            }
-            return null;
+            //create the request
+            IRestRequest request = new RestRequest($"/series/{tmdbId}/actors", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
+
+            //execute the request
+            return await ExecuteRestRequestAsync<SeriesActors>(request, Login);
         }
 
         /// <summary>
@@ -249,44 +267,12 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <exception cref="System.UnauthorizedAccessException"></exception>
         private async Task<SeriesEpisodes> GetEpisodes(string tmdbId)
         {
-            int currentRetry = 0;
-            int offset = ThreadLocalRandom.Instance.Next(100, 500);
-            while (currentRetry < _maxRetryCount)
-            {
-                try
-                {
-                    RestRequest request = new RestRequest($"/series/{tmdbId}/episodes", Method.GET);
-                    request.AddHeader("Authorization", $"Bearer {_jwtToken}");
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
-                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
+            //create the request
+            IRestRequest request = new RestRequest($"/series/{tmdbId}/episodes", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
 
-                        SeriesEpisodes episodes = JsonConvert.DeserializeObject<SeriesEpisodes>(response.Content, _jsonSerializerSettings);
-                        return episodes;
-
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        throw new UnauthorizedAccessException();
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    await Login();
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-                catch (Exception)
-                {
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-            }
-            return null;
+            //execute the request
+            return await ExecuteRestRequestAsync<SeriesEpisodes>(request, Login);
         }
 
         /// <summary>
@@ -297,44 +283,18 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <exception cref="System.UnauthorizedAccessException"></exception>
         private async Task<SeriesImageQueryResults> GetSeriesPosters(string tmdbId)
         {
-            int currentRetry = 0;
-            int offset = ThreadLocalRandom.Instance.Next(100, 500);
-            while (currentRetry < _maxRetryCount)
+            //create the request
+            IRestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
+            request.AddParameter("keyType", "poster", ParameterType.QueryString);
+
+            //execute the request
+            SeriesImageQueryResults results = await ExecuteRestRequestAsync<SeriesImageQueryResults>(request, Login);
+            if (results == null)
             {
-                try
-                {
-                    RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
-                    request.AddHeader("Authorization", $"Bearer {_jwtToken}");
-                    request.AddParameter("keyType", "poster", ParameterType.QueryString);
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
-                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content, _jsonSerializerSettings);
-                        return posters;
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        throw new UnauthorizedAccessException();
-                    }
-                    else
-                    {
-                        //not found
-                        return new SeriesImageQueryResults();
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    await Login();
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-                catch (Exception)
-                {
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
+                results = new SeriesImageQueryResults();
             }
-            return new SeriesImageQueryResults();
+            return results;
         }
 
         /// <summary>
@@ -345,44 +305,18 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <exception cref="System.UnauthorizedAccessException"></exception>
         private async Task<SeriesImageQueryResults> GetSeasonPosters(string tmdbId)
         {
-            int currentRetry = 0;
-            int offset = ThreadLocalRandom.Instance.Next(100, 500);
-            while (currentRetry < _maxRetryCount)
+            //create the request
+            IRestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
+            request.AddParameter("keyType", "season", ParameterType.QueryString);
+
+            //execute the request
+            SeriesImageQueryResults results = await ExecuteRestRequestAsync<SeriesImageQueryResults>(request, Login);
+            if (results == null)
             {
-                try
-                {
-                    RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
-                    request.AddHeader("Authorization", $"Bearer {_jwtToken}");
-                    request.AddParameter("keyType", "season", ParameterType.QueryString);
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
-                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content, _jsonSerializerSettings);
-                        return posters;
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        throw new UnauthorizedAccessException();
-                    }
-                    else
-                    {
-                        //not found
-                        return new SeriesImageQueryResults();
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    await Login();
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-                catch (Exception)
-                {
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
+                results = new SeriesImageQueryResults();
             }
-            return new SeriesImageQueryResults();
+            return results;
         }
 
         /// <summary>
@@ -393,44 +327,18 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <exception cref="System.UnauthorizedAccessException"></exception>
         private async Task<SeriesImageQueryResults> GetSeriesBanners(string tmdbId)
         {
-            int currentRetry = 0;
-            int offset = ThreadLocalRandom.Instance.Next(100, 500);
-            while (currentRetry < _maxRetryCount)
+            //create the request
+            IRestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
+            request.AddParameter("keyType", "series", ParameterType.QueryString);
+
+            //execute the request
+            SeriesImageQueryResults results = await ExecuteRestRequestAsync<SeriesImageQueryResults>(request, Login);
+            if (results == null)
             {
-                try
-                {
-                    RestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
-                    request.AddHeader("Authorization", $"Bearer {_jwtToken}");
-                    request.AddParameter("keyType", "series", ParameterType.QueryString);
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
-                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        SeriesImageQueryResults posters = JsonConvert.DeserializeObject<SeriesImageQueryResults>(response.Content, _jsonSerializerSettings);
-                        return posters;
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        throw new UnauthorizedAccessException();
-                    }
-                    else
-                    {
-                        //not found
-                        return new SeriesImageQueryResults();
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    await Login();
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-                catch (Exception)
-                {
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
+                results = new SeriesImageQueryResults();
             }
-            return new SeriesImageQueryResults();
+            return results;
         }
 
         /// <summary>
@@ -440,48 +348,24 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns></returns>
         public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName)
         {
-            int currentRetry = 0;
-            int offset = ThreadLocalRandom.Instance.Next(100, 500);
-            if (string.IsNullOrEmpty(_jwtToken))
+            if (string.IsNullOrWhiteSpace(seriesName))
+            {
+                throw new ArgumentNullException(nameof(seriesName));
+            }
+
+            //login if this is the first call
+            if (string.IsNullOrWhiteSpace(_jwtToken))
             {
                 await Login();
             }
 
-            while (currentRetry < _maxRetryCount)
-            {
-                try
-                {
-                    RestRequest request = new RestRequest("/search/series", Method.GET);
-                    request.AddHeader("Authorization", $"Bearer {_jwtToken}");
-                    request.AddParameter("name", seriesName, ParameterType.QueryString);
-                    IRestResponse response = await _restClient.ExecuteTaskAsync(request);
-                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        SearchData data = JsonConvert.DeserializeObject<SearchData>(response.Content, _jsonSerializerSettings);
-                        return data.Series;
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        throw new UnauthorizedAccessException();
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    await Login();
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-                catch (Exception)
-                {
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-            }
-            return null;
+            //create the request
+            IRestRequest request = new RestRequest("/search/series", Method.GET);
+            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
+            request.AddParameter("name", seriesName, ParameterType.QueryString);
+
+            //execute the request
+            return await ExecuteRestRequestAsync<List<SeriesSearchData>>(request, Login);
         }
     }
 }

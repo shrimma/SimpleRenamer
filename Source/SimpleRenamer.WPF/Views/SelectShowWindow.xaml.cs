@@ -161,11 +161,11 @@ namespace Sarjee.SimpleRenamer.Views
             List<DetailView> possibleMatches = null;
             if (currentFileType == FileType.TvShow)
             {
-                possibleMatches = await showMatcher.GetPossibleShowsForEpisode(searchText);
+                possibleMatches = await showMatcher.GetPossibleShowsForEpisodeAsync(searchText);
             }
             else
             {
-                possibleMatches = await movieMatcher.GetPossibleMoviesForFile(searchText);
+                possibleMatches = await movieMatcher.GetPossibleMoviesForFileAsync(searchText);
             }
 
             return possibleMatches;
