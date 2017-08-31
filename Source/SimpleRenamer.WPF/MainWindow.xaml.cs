@@ -108,7 +108,7 @@ namespace Sarjee.SimpleRenamer
             }
             else
             {
-                ScanButton.ToolTip = string.Empty;
+                ScanButton.ToolTip = null; ;
                 return true;
             }
         }
@@ -170,6 +170,20 @@ namespace Sarjee.SimpleRenamer
             {
                 //invokation required
                 ShowsListBox.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => RemoveFileFromView(file)));
+            }
+        }
+
+        private void AddFileToView(MatchedFile file)
+        {
+            if (ShowsListBox.Dispatcher.CheckAccess())
+            {
+                //calling thread owns the dispatches
+                scannedEpisodes.Add(file);
+            }
+            else
+            {
+                //invokation required
+                ShowsListBox.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => AddFileToView(file)));
             }
         }
 
@@ -408,6 +422,7 @@ namespace Sarjee.SimpleRenamer
             try
             {
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
+                RemoveFileFromView(temp);
                 MatchedFile updatedFile;
                 if (e.Type == FileType.TvShow)
                 {
@@ -422,12 +437,13 @@ namespace Sarjee.SimpleRenamer
                 if (updatedFile.SkippedExactSelection == false)
                 {
                     _logger.TraceMessage($"User selected a match for {MediaTypeShowName}.", EventLevel.Informational);
-                    ShowsListBox.SelectedItem = updatedFile;
                 }
                 else
                 {
                     _logger.TraceMessage($"User did not match {MediaTypeShowName}.", EventLevel.Informational);
                 }
+
+                AddFileToView(updatedFile);
 
                 EnableUi();
             }
@@ -461,7 +477,7 @@ namespace Sarjee.SimpleRenamer
                 if (!ignoreList.IgnoreFiles.Contains(tempEp.SourceFilePath))
                 {
                     ignoreList.IgnoreFiles.Add(tempEp.SourceFilePath);
-                    scannedEpisodes.Remove(tempEp);
+                    RemoveFileFromView(tempEp);
                     _configurationManager.IgnoredFiles = ignoreList;
                 }
             }
@@ -473,7 +489,7 @@ namespace Sarjee.SimpleRenamer
 
         private void ShowsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
+            MatchedFile temp = (MatchedFile)(sender as ListBox).SelectedItem;
             if (temp != null)
             {
                 IgnoreShowButton.IsEnabled = true;
@@ -485,14 +501,15 @@ namespace Sarjee.SimpleRenamer
             if (temp != null && temp.SkippedExactSelection)
             {
                 MatchShowButton.IsEnabled = true;
+                DetailButton.IsEnabled = false;
             }
             else
             {
                 MatchShowButton.IsEnabled = false;
+                DetailButton.IsEnabled = true;
             }
             if (temp != null && !temp.SkippedExactSelection && settings.RenameFiles)
             {
-                DetailButton.IsEnabled = true;
                 //we can only edit show folders
                 if (temp.FileType == FileType.TvShow)
                 {
@@ -501,7 +518,6 @@ namespace Sarjee.SimpleRenamer
             }
             else
             {
-                DetailButton.IsEnabled = false;
                 EditButton.IsEnabled = false;
             }
         }
