@@ -421,8 +421,19 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
+                //if nothing was selected then just return
+                if (string.IsNullOrWhiteSpace(e.ID))
+                {
+                    _logger.TraceMessage($"User did not match {MediaTypeShowName}.", EventLevel.Informational);
+                    return;
+                }
+
+                _logger.TraceMessage($"User selected a match for {MediaTypeShowName}.", EventLevel.Informational);
+                //remove the selected item from listbox (we are modifying it so listbox gets confused)
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
                 RemoveFileFromView(temp);
+
+                //update the file with the matched ID
                 MatchedFile updatedFile;
                 if (e.Type == FileType.TvShow)
                 {
@@ -433,23 +444,16 @@ namespace Sarjee.SimpleRenamer
                     updatedFile = await _movieMatcher.UpdateFileWithMatchedMovieAsync(e.ID, temp);
                 }
 
-                //if selection wasn't skipped then update the selected item
-                if (updatedFile.SkippedExactSelection == false)
-                {
-                    _logger.TraceMessage($"User selected a match for {MediaTypeShowName}.", EventLevel.Informational);
-                }
-                else
-                {
-                    _logger.TraceMessage($"User did not match {MediaTypeShowName}.", EventLevel.Informational);
-                }
-
+                //add the file back to the view
                 AddFileToView(updatedFile);
-
-                EnableUi();
             }
             catch (Exception ex)
             {
                 _logger.TraceException(ex);
+            }
+            finally
+            {
+                EnableUi();
             }
         }
 
