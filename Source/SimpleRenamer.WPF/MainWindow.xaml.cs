@@ -41,7 +41,7 @@ namespace Sarjee.SimpleRenamer
         private ShowDetailsWindow showDetailsWindow;
         private MovieDetailsWindow movieDetailsWindow;
         private SettingsWindow settingsWindow;
-        private Settings settings;
+        private ISettings settings;
         private string EditShowCurrentFolder;
         private string EditShowTvdbShowName;
         private string EditShowTvdbId;

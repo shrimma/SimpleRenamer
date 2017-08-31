@@ -108,7 +108,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         {
             IConfigurationManager configurationManager = new TestableAppConfigurationManager();
 
-            Settings settings = null;
+            ISettings settings = null;
             Action action1 = () => settings = configurationManager.Settings;
 
             action1.ShouldNotThrow();
