@@ -52,6 +52,7 @@
     <Compile Include="Interface\IBannerDownloader.cs" />
     <Compile Include="Interface\ITvdbManager.cs" />
     <Compile Include="Interface\ITVShowMatcher.cs" />
+    <Compile Include="Model\SeriesSearchDataList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\Auth.cs" />
     <Compile Include="Model\BasicEpisode.cs" />

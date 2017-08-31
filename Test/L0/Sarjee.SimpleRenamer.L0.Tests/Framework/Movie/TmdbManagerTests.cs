@@ -93,7 +93,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             //get testable tmdbmanager
             ITmdbManager tmdbManager = GetTmdbManager(true);
             SearchMovie result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByIdAsync("searchByMovieId");
+            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByIdAsync("id");
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -113,7 +113,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
-            result.Title.Should().Be("Fight Club");
+            result.Title.Should().Be("The Dark Tower");
             result.Credits.Should().NotBeNull();
         }
         #endregion GetMovieAsync
