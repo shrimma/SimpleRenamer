@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RestSharp;
+using RestSharp.Authenticators;
 using Sarjee.SimpleRenamer.Common.Helpers;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
@@ -20,7 +21,6 @@ namespace Sarjee.SimpleRenamer.Framework.TV
     public class TvdbManager : ITvdbManager
     {
         private string _apiKey;
-        private string _jwtToken;
         private int _maxRetryCount = 10;
         private int _maxBackoffSeconds = 2;
         private IHelper _helper;
@@ -28,15 +28,15 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private JsonSerializerSettings _jsonSerializerSettings;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TvdbManager"/> class.
+        /// Initializes a new instance of the <see cref="TvdbManager" /> class.
         /// </summary>
         /// <param name="configManager">The configuration manager.</param>
-        /// <param name="retryHelper">The retry helper.</param>
-        /// <exception cref="System.ArgumentNullException">
+        /// <param name="helper">The helper.</param>
+        /// <exception cref="ArgumentNullException">
         /// configManager
-        /// or
-        /// retryHelper
-        /// </exception>
+        /// orW
+        /// helper
+        /// </exception>       
         public TvdbManager(IConfigurationManager configManager, IHelper helper)
         {
             if (configManager == null)
@@ -46,7 +46,6 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
 
             _apiKey = configManager.TvDbApiKey;
-            _jwtToken = string.Empty;
             _restClient = new RestClient("https://api.thetvdb.com");
             _restClient.AddDefaultHeader("content-type", "application/json");
             _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
@@ -71,7 +70,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         }
 
         private int[] httpStatusCodesWorthRetrying = { 408, 500, 502, 503, 504, 598, 599 };
-        private async Task<T> ExecuteRestRequestAsync<T>(IRestRequest restRequest, Func<Task> LoginCallback) where T : class
+        private async Task<T> ExecuteRestRequestAsync<T>(IRestRequest restRequest, Func<Task> LoginCallback = null) where T : class
         {
             int currentRetry = 0;
             int offset = ThreadLocalRandom.Instance.Next(100, 500);
@@ -134,7 +133,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         }
 
         /// <summary>
-        /// Logins this instance.
+        /// Logs into the API.
         /// </summary>
         /// <returns></returns>
         private async Task Login()
@@ -151,7 +150,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             Token token = await ExecuteRestRequestAsync<Token>(request, Login);
             if (token != null)
             {
-                _jwtToken = token._Token;
+                _restClient.Authenticator = new JwtAuthenticator(token._Token);
             }
         }
 
@@ -175,6 +174,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// </summary>
         /// <param name="tmdbId">The TMDB identifier.</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException">tmdbId</exception>
         public async Task<CompleteSeries> GetSeriesByIdAsync(string tmdbId)
         {
             if (string.IsNullOrWhiteSpace(tmdbId))
@@ -182,7 +182,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 throw new ArgumentNullException(nameof(tmdbId));
             }
 
-            if (string.IsNullOrWhiteSpace(_jwtToken))
+            if (_restClient.Authenticator == null)
             {
                 await Login();
             }
@@ -237,7 +237,6 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             //create the request
             IRestRequest request = new RestRequest($"series/{tmdbId}", Method.GET);
-            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
 
             //execute the request
             return await ExecuteRestRequestAsync<SeriesData>(request, Login);
@@ -253,7 +252,6 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             //create the request
             IRestRequest request = new RestRequest($"/series/{tmdbId}/actors", Method.GET);
-            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
 
             //execute the request
             return await ExecuteRestRequestAsync<SeriesActors>(request, Login);
@@ -269,7 +267,6 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             //create the request
             IRestRequest request = new RestRequest($"/series/{tmdbId}/episodes", Method.GET);
-            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
 
             //execute the request
             return await ExecuteRestRequestAsync<SeriesEpisodes>(request, Login);
@@ -285,7 +282,6 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             //create the request
             IRestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
-            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
             request.AddParameter("keyType", "poster", ParameterType.QueryString);
 
             //execute the request
@@ -307,7 +303,6 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             //create the request
             IRestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
-            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
             request.AddParameter("keyType", "season", ParameterType.QueryString);
 
             //execute the request
@@ -329,7 +324,6 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             //create the request
             IRestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
-            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
             request.AddParameter("keyType", "series", ParameterType.QueryString);
 
             //execute the request
@@ -346,6 +340,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// </summary>
         /// <param name="seriesName">Name of the series.</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException">seriesName</exception>
         public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName)
         {
             if (string.IsNullOrWhiteSpace(seriesName))
@@ -354,18 +349,25 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
 
             //login if this is the first call
-            if (string.IsNullOrWhiteSpace(_jwtToken))
+            if (_restClient.Authenticator == null)
             {
                 await Login();
             }
 
             //create the request
             IRestRequest request = new RestRequest("/search/series", Method.GET);
-            request.AddHeader("Authorization", $"Bearer {_jwtToken}");
             request.AddParameter("name", seriesName, ParameterType.QueryString);
 
             //execute the request
-            return await ExecuteRestRequestAsync<List<SeriesSearchData>>(request, Login);
+            SeriesSearchDataList searchData = await ExecuteRestRequestAsync<SeriesSearchDataList>(request, Login);
+            if (searchData?.SearchResults != null)
+            {
+                return searchData.SearchResults;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

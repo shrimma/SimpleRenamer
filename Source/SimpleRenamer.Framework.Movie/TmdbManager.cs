@@ -6,6 +6,7 @@ using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -18,7 +19,6 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Movie.Interface.ITmdbManager" />
     public class TmdbManager : ITmdbManager
     {
-        private string _apiKey;
         private string _posterBaseUri;
         private int _maxRetryCount = 10;
         private int _maxBackoffSeconds = 2;
@@ -44,9 +44,10 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             }
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
 
-            _apiKey = configManager.TmDbApiKey;
             _restClient = new RestClient("https://api.themoviedb.org");
             _restClient.AddDefaultHeader("content-type", "application/json");
+            _restClient.AddDefaultParameter("api_key", configManager.TmDbApiKey, ParameterType.QueryString);
+            _restClient.AddDefaultParameter("language", CultureInfo.CurrentCulture.Name, ParameterType.QueryString);
             _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
         }
 
@@ -120,110 +121,88 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         }
 
         /// <summary>
-        /// Searches the movie by name asynchronous.
+        /// Searches the movie by name.
         /// </summary>
         /// <param name="movieName">Name of the movie.</param>
-        /// <param name="movieYear">The movie year.</param>
+        /// <param name="movieYear">The movie release year.</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException">movieName</exception>
         public async Task<SearchContainer<SearchMovie>> SearchMovieByNameAsync(string movieName, int? movieYear = null)
         {
-            return await GetSearchContainerMoviesAsync(movieName, movieYear);
-        }
-        private async Task<SearchContainer<SearchMovie>> GetSearchContainerMoviesAsync(string movieName, int? movieYear)
-        {
-            string resource = string.Empty;
-            //if no movie year then don't include in the query
-            if (!movieYear.HasValue)
+            if (string.IsNullOrWhiteSpace(movieName))
             {
-                resource = $"/3/search/movie?&query={movieName}&language=en-US&api_key={_apiKey}";
-            }
-            else
-            {
-                resource = $"/3/search/movie?year={movieYear}&query={movieName}&language=en-US&api_key={_apiKey}";
+                throw new ArgumentNullException(nameof(movieName));
             }
 
             //create the request
-            IRestRequest request = new RestRequest(resource, Method.GET);
+            IRestRequest request = new RestRequest("/3/search/movie", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
+            request.AddParameter("query", movieName, ParameterType.QueryString);
+            if (movieYear.HasValue)
+            {
+                request.AddParameter("year", movieYear.ToString());
+            }
 
             return await ExecuteRestRequest<SearchContainer<SearchMovie>>(request);
         }
 
         /// <summary>
-        /// Gets the movie asynchronous.
+        /// Gets movie details.
         /// </summary>
         /// <param name="movieId">The movie identifier.</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException">movieId</exception>
         public async Task<Common.Movie.Model.Movie> GetMovieAsync(string movieId)
         {
-            //spawn tasks for getting movie and credit info
-            Task<Common.Movie.Model.Movie> movieTask = GetMovieDetailsAsync(movieId);
-            Task<Credits> creditsTask = GetCreditsAsync(movieId);
-
-            //wait for the tasks to complete
-            await Task.WhenAll(movieTask, creditsTask);
-
-            Common.Movie.Model.Movie movie = movieTask.Result;
-            if (movie != null)
+            if (string.IsNullOrWhiteSpace(movieId))
             {
-                movie.Credits = creditsTask.Result;
+                throw new ArgumentNullException(nameof(movieId));
             }
-
-            return movie;
-        }
-
-        private async Task<Common.Movie.Model.Movie> GetMovieDetailsAsync(string movieId)
-        {
             //create the request
-            IRestRequest request = new RestRequest($"/3/movie/{movieId}?api_key={_apiKey}", Method.GET);
+            IRestRequest request = new RestRequest($"/3/movie/{movieId}", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
+            request.AddParameter("append_to_response", "credits", ParameterType.QueryString);
 
             //execute the request
             return await ExecuteRestRequest<Common.Movie.Model.Movie>(request);
         }
 
-        private async Task<Credits> GetCreditsAsync(string movieId)
-        {
-            //create the request
-            IRestRequest request = new RestRequest($"/3/movie/{movieId}/credits?api_key={_apiKey}", Method.GET);
-            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-
-            //execute the request
-            return await ExecuteRestRequest<Credits>(request);
-        }
-
         /// <summary>
-        /// Searches the movie by identifier asynchronous.
+        /// Searches the movie by identifier.
         /// </summary>
         /// <param name="movieId">The movie identifier.</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException">movieId</exception>
         public async Task<SearchMovie> SearchMovieByIdAsync(string movieId)
         {
-            return await GetSearchMovieAsync(movieId);
-        }
-
-        private async Task<SearchMovie> GetSearchMovieAsync(string movieId)
-        {
+            if (string.IsNullOrWhiteSpace(movieId))
+            {
+                throw new ArgumentNullException(nameof(movieId));
+            }
             //create request
-            IRestRequest request = new RestRequest($"/3/movie/{movieId}?api_key={_apiKey}", Method.GET);
-            request.AddHeader("content-type", "application/json");
+            IRestRequest request = new RestRequest($"/3/movie/{movieId}", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
             return await ExecuteRestRequest<SearchMovie>(request);
         }
 
         /// <summary>
-        /// Gets the poster URI asynchronous.
+        /// Gets the poster URI.
         /// </summary>
         /// <param name="posterPath">The poster path.</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException">posterPath</exception>
         public async Task<string> GetPosterUriAsync(string posterPath)
         {
+            if (string.IsNullOrWhiteSpace(posterPath))
+            {
+                throw new ArgumentNullException(nameof(posterPath));
+            }
             //if we havent grabbed the base uri yet this session
-            if (string.IsNullOrEmpty(_posterBaseUri))
+            if (string.IsNullOrWhiteSpace(_posterBaseUri))
             {
                 string posterUri = await GetPosterBaseUriAsync();
-                if (!string.IsNullOrEmpty(posterUri))
+                if (!string.IsNullOrWhiteSpace(posterUri))
                 {
                     _posterBaseUri = posterUri;
                 }
@@ -238,7 +217,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         private async Task<string> GetPosterBaseUriAsync()
         {
             //create the request
-            IRestRequest request = new RestRequest($"/3/configuration?api_key={_apiKey}", Method.GET);
+            IRestRequest request = new RestRequest($"/3/configuration", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
             //execute the request
