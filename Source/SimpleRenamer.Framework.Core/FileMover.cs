@@ -15,7 +15,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IFileMover" />
     public class FileMover : IFileMover
     {
-        private bool? _onMonoCached;
         private IBannerDownloader _bannerDownloader;
         private ILogger _logger;
         private Settings _settings;
@@ -127,8 +126,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         public async Task<bool> MoveFileAsync(MatchedFile episode, CancellationToken ct)
         {
-            //TODO remove this when async method implemented
-            await Task.Delay(TimeSpan.FromMilliseconds(1));
             _logger.TraceMessage($"Moving File {episode.SourceFilePath} to {episode.DestinationFilePath}.", EventLevel.Verbose);
             FileInfo fromFile = new FileInfo(episode.SourceFilePath);
             FileInfo toFile = new FileInfo(episode.DestinationFilePath);
@@ -138,7 +135,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
             else
             {
-                CopyItOurself(_settings, fromFile, toFile, ct);
+                await CopyItOurselfAsync(_settings, fromFile, toFile, ct);
             }
 
             _logger.TraceMessage($"Moved File {episode.SourceFilePath} to {episode.DestinationFilePath}.", EventLevel.Verbose);
@@ -223,112 +220,28 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         }
 
         /// <summary>
-        /// Called when [mono].
-        /// </summary>
-        /// <returns></returns>
-        private bool OnMono()
-        {
-            if (!_onMonoCached.HasValue)
-            {
-                _onMonoCached = System.Type.GetType("Mono.Runtime") != null;
-            }
-            return _onMonoCached.Value;
-        }
-
-        /// <summary>
-        /// Called when [windows].
-        /// </summary>
-        /// <returns></returns>
-        private static bool OnWindows()
-        {
-            return Environment.OSVersion.Platform == PlatformID.Win32NT;
-        }
-
-        /// <summary>
         /// Copies it ourself.
         /// </summary>
         /// <param name="settings">The settings.</param>
         /// <param name="fromFile">From file.</param>
         /// <param name="toFile">To file.</param>
         /// <param name="ct">The ct.</param>
-        private void CopyItOurself(Settings settings, FileInfo fromFile, FileInfo toFile, CancellationToken ct)
+        private async Task CopyItOurselfAsync(Settings settings, FileInfo fromFile, FileInfo toFile, CancellationToken ct)
         {
             _logger.TraceMessage("CopyItOurself - Start", EventLevel.Verbose);
-            const int kArrayLength = 1 * 1024 * 1024;
-            Byte[] dataArray = new Byte[kArrayLength];
-
-            bool useWin32 = OnWindows() && !OnMono();
-
-            WinFileIO copier = null;
-
-            BinaryReader msr = null;
-            BinaryWriter msw = null;
 
             try
             {
-                long thisFileCopied = 0;
-                long thisFileSize = fromFile.Length;
+                var fileOptions = FileOptions.Asynchronous | FileOptions.SequentialScan;
+                var bufferSize = 4096;
 
-                string tempName = TempFileName(toFile);
-                if (File.Exists(tempName))
+                using (var sourceStream = new FileStream(fromFile.Name, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, fileOptions))
                 {
-                    File.Delete(tempName);
-                }
-
-                if (useWin32)
-                {
-                    copier = new WinFileIO(dataArray);
-                    copier.OpenForReading(fromFile.FullName);
-                    copier.OpenForWriting(tempName);
-                }
-                else
-                {
-                    msr = new BinaryReader(new FileStream(fromFile.FullName, FileMode.Open, FileAccess.Read));
-                    msw = new BinaryWriter(new FileStream(tempName, FileMode.CreateNew));
-                }
-
-                for (; ; )
-                {
-                    int n = useWin32 ? copier.ReadBlocks(kArrayLength) : msr.Read(dataArray, 0, kArrayLength);
-                    if (n == 0)
+                    using (var destinationStream = new FileStream(toFile.Name, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize, fileOptions))
                     {
-                        break;
+                        await sourceStream.CopyToAsync(destinationStream, bufferSize, ct);
                     }
-
-                    if (useWin32)
-                    {
-                        copier.WriteBlocks(n);
-                    }
-                    else
-                    {
-                        msw.Write(dataArray, 0, n);
-                    }
-                    thisFileCopied += n;
-
-                    double pct = (thisFileSize != 0) ? (100.0 * thisFileCopied / thisFileSize) : 100;
-                    if (pct > 100.0)
-                    {
-                        pct = 100.0;
-                    }
-                    ct.ThrowIfCancellationRequested();
                 }
-
-                if (useWin32)
-                {
-                    copier.Close();
-                }
-                else
-                {
-                    msr.Close();
-                    msw.Close();
-                }
-
-                // rename temp version to final name
-                if (toFile.Exists)
-                {
-                    toFile.Delete(); // outta ma way!
-                }
-                File.Move(tempName, toFile.FullName);
 
                 KeepTimestamps(fromFile, toFile);
 
@@ -342,83 +255,15 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             catch (System.Threading.ThreadAbortException tae)
             {
                 _logger.TraceException(tae);
-                if (useWin32)
-                {
-                    NicelyStopAndCleanUp_Win32(copier, toFile);
-                }
-                else
-                {
-                    NicelyStopAndCleanUp_Streams(msr, msw, toFile);
-                }
                 return;
-            }
-            catch (OperationCanceledException oce)
-            {
-                _logger.TraceException(oce);
-                if (useWin32)
-                {
-                    NicelyStopAndCleanUp_Win32(copier, toFile);
-                }
-                else
-                {
-                    NicelyStopAndCleanUp_Streams(msr, msw, toFile);
-                }
-                //rethrow the cancellation
-                throw;
             }
             catch (Exception ex)
             {
                 _logger.TraceException(ex);
-                if (useWin32)
-                {
-                    NicelyStopAndCleanUp_Win32(copier, toFile);
-                }
-                else
-                {
-                    NicelyStopAndCleanUp_Streams(msr, msw, toFile);
-                }
                 throw;
             }
 
             _logger.TraceMessage("CopyItOurself - End", EventLevel.Verbose);
-        }
-
-        /// <summary>
-        /// Nicelies the stop and clean up win32.
-        /// </summary>
-        /// <param name="copier">The copier.</param>
-        /// <param name="toFile">To file.</param>
-        private void NicelyStopAndCleanUp_Win32(WinFileIO copier, FileInfo toFile)
-        {
-            copier.Close();
-            string tempName = TempFileName(toFile);
-            if (File.Exists(tempName))
-            {
-                File.Delete(tempName);
-            }
-        }
-
-        /// <summary>
-        /// Nicelies the stop and clean up streams.
-        /// </summary>
-        /// <param name="msr">The MSR.</param>
-        /// <param name="msw">The MSW.</param>
-        /// <param name="toFile">To file.</param>
-        private void NicelyStopAndCleanUp_Streams(BinaryReader msr, BinaryWriter msw, FileInfo toFile)
-        {
-            if (msw != null)
-            {
-                msw.Close();
-                string tempName = TempFileName(toFile);
-                if (File.Exists(tempName))
-                {
-                    File.Delete(tempName);
-                }
-            }
-            if (msr != null)
-            {
-                msr.Close();
-            }
         }
     }
 }
