@@ -235,9 +235,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 var fileOptions = FileOptions.Asynchronous | FileOptions.SequentialScan;
                 var bufferSize = 4096;
 
-                using (var sourceStream = new FileStream(fromFile.Name, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, fileOptions))
+                using (var sourceStream = new FileStream(fromFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, fileOptions))
                 {
-                    using (var destinationStream = new FileStream(toFile.Name, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize, fileOptions))
+                    using (var destinationStream = new FileStream(toFile.FullName, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize, fileOptions))
                     {
                         await sourceStream.CopyToAsync(destinationStream, bufferSize, ct);
                     }
