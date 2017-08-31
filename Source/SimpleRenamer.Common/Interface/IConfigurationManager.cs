@@ -53,7 +53,7 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <value>
         /// The settings.
         /// </value>
-        Settings Settings { get; set; }
+        ISettings Settings { get; set; }
 
         /// <summary>
         /// Gets or sets the regex expressions.

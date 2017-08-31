@@ -1,4 +1,5 @@
-﻿using MahApps.Metro.Controls;
+﻿using Jot;
+using MahApps.Metro.Controls;
 using Sarjee.SimpleRenamer.Common.EventArguments;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
@@ -41,12 +42,13 @@ namespace Sarjee.SimpleRenamer
         private ShowDetailsWindow showDetailsWindow;
         private MovieDetailsWindow movieDetailsWindow;
         private SettingsWindow settingsWindow;
-        private Settings settings;
+        private ISettings settings;
         private string EditShowCurrentFolder;
         private string EditShowTvdbShowName;
         private string EditShowTvdbId;
         private string MediaTypePath;
         private string MediaTypeShowName;
+        private static StateTracker _stateTracker = new StateTracker();
 
         public MainWindow(ILogger logger, ITVShowMatcher tvShowMatcher, IMovieMatcher movieMatcher, IDependencyInjectionContext injectionContext, IActionMatchedFiles actionMatchedFiles, IScanFiles scanFiles, IConfigurationManager configManager)
         {
@@ -62,24 +64,29 @@ namespace Sarjee.SimpleRenamer
             {
                 InitializeComponent();
                 _logger.TraceMessage("Starting Application", EventLevel.LogAlways);
-                showDetailsWindow = _injectionContext.GetService<ShowDetailsWindow>();
-                movieDetailsWindow = _injectionContext.GetService<MovieDetailsWindow>();
-                settingsWindow = _injectionContext.GetService<SettingsWindow>();
-                selectShowWindow = _injectionContext.GetService<SelectShowWindow>();
-                selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
-                settings = _configurationManager.Settings;
-                scannedEpisodes = new ObservableCollection<MatchedFile>();
-                ShowsListBox.ItemsSource = scannedEpisodes;
-                ShowsListBox.SizeChanged += ListView_SizeChanged;
-                ShowsListBox.Loaded += ListView_Loaded;
+                this.SourceInitialized += (s, e) =>
+                {
+                    _stateTracker.Configure(this).Apply();
+                    settings = _configurationManager.Settings;
+                    _stateTracker.Configure(settings).Apply();
+                    showDetailsWindow = _injectionContext.GetService<ShowDetailsWindow>();
+                    movieDetailsWindow = _injectionContext.GetService<MovieDetailsWindow>();
+                    settingsWindow = _injectionContext.GetService<SettingsWindow>();
+                    selectShowWindow = _injectionContext.GetService<SelectShowWindow>();
+                    selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
+                    scannedEpisodes = new ObservableCollection<MatchedFile>();
+                    ShowsListBox.ItemsSource = scannedEpisodes;
+                    ShowsListBox.SizeChanged += ListView_SizeChanged;
+                    ShowsListBox.Loaded += ListView_Loaded;
 
-                //setup the perform actions event handlers
-                _actionMatchedFiles.RaiseFileMovedEvent += PerformActionsOnShows_RaiseFileMovedEvent;
-                _actionMatchedFiles.RaiseFilePreProcessedEvent += PerformActionsOnShows_RaiseFilePreProcessedEvent;
-                _actionMatchedFiles.RaiseProgressEvent += ProgressTextEvent;
-                _scanFiles.RaiseProgressEvent += ProgressTextEvent;
-                ScanButton.IsEnabled = IsScanEnabled();
-                this.Closing += MainWindow_Closing;
+                    //setup the perform actions event handlers
+                    _actionMatchedFiles.RaiseFileMovedEvent += PerformActionsOnShows_RaiseFileMovedEvent;
+                    _actionMatchedFiles.RaiseFilePreProcessedEvent += PerformActionsOnShows_RaiseFilePreProcessedEvent;
+                    _actionMatchedFiles.RaiseProgressEvent += ProgressTextEvent;
+                    _scanFiles.RaiseProgressEvent += ProgressTextEvent;
+                    ScanButton.IsEnabled = IsScanEnabled();
+                    this.Closing += MainWindow_Closing;
+                };
             }
             catch (Exception ex)
             {
@@ -101,7 +108,7 @@ namespace Sarjee.SimpleRenamer
             }
             else
             {
-                ScanButton.ToolTip = string.Empty;
+                ScanButton.ToolTip = null; ;
                 return true;
             }
         }
@@ -163,6 +170,20 @@ namespace Sarjee.SimpleRenamer
             {
                 //invokation required
                 ShowsListBox.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => RemoveFileFromView(file)));
+            }
+        }
+
+        private void AddFileToView(MatchedFile file)
+        {
+            if (ShowsListBox.Dispatcher.CheckAccess())
+            {
+                //calling thread owns the dispatches
+                scannedEpisodes.Add(file);
+            }
+            else
+            {
+                //invokation required
+                ShowsListBox.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => AddFileToView(file)));
             }
         }
 
@@ -400,7 +421,19 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
+                //if nothing was selected then just return
+                if (string.IsNullOrWhiteSpace(e.ID))
+                {
+                    _logger.TraceMessage($"User did not match {MediaTypeShowName}.", EventLevel.Informational);
+                    return;
+                }
+
+                _logger.TraceMessage($"User selected a match for {MediaTypeShowName}.", EventLevel.Informational);
+                //remove the selected item from listbox (we are modifying it so listbox gets confused)
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
+                RemoveFileFromView(temp);
+
+                //update the file with the matched ID
                 MatchedFile updatedFile;
                 if (e.Type == FileType.TvShow)
                 {
@@ -411,22 +444,16 @@ namespace Sarjee.SimpleRenamer
                     updatedFile = await _movieMatcher.UpdateFileWithMatchedMovieAsync(e.ID, temp);
                 }
 
-                //if selection wasn't skipped then update the selected item
-                if (updatedFile.SkippedExactSelection == false)
-                {
-                    _logger.TraceMessage($"User selected a match for {MediaTypeShowName}.", EventLevel.Informational);
-                    ShowsListBox.SelectedItem = updatedFile;
-                }
-                else
-                {
-                    _logger.TraceMessage($"User did not match {MediaTypeShowName}.", EventLevel.Informational);
-                }
-
-                EnableUi();
+                //add the file back to the view
+                AddFileToView(updatedFile);
             }
             catch (Exception ex)
             {
                 _logger.TraceException(ex);
+            }
+            finally
+            {
+                EnableUi();
             }
         }
 
@@ -454,7 +481,7 @@ namespace Sarjee.SimpleRenamer
                 if (!ignoreList.IgnoreFiles.Contains(tempEp.SourceFilePath))
                 {
                     ignoreList.IgnoreFiles.Add(tempEp.SourceFilePath);
-                    scannedEpisodes.Remove(tempEp);
+                    RemoveFileFromView(tempEp);
                     _configurationManager.IgnoredFiles = ignoreList;
                 }
             }
@@ -466,7 +493,7 @@ namespace Sarjee.SimpleRenamer
 
         private void ShowsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
+            MatchedFile temp = (MatchedFile)(sender as ListBox).SelectedItem;
             if (temp != null)
             {
                 IgnoreShowButton.IsEnabled = true;
@@ -478,14 +505,15 @@ namespace Sarjee.SimpleRenamer
             if (temp != null && temp.SkippedExactSelection)
             {
                 MatchShowButton.IsEnabled = true;
+                DetailButton.IsEnabled = false;
             }
             else
             {
                 MatchShowButton.IsEnabled = false;
+                DetailButton.IsEnabled = true;
             }
             if (temp != null && !temp.SkippedExactSelection && settings.RenameFiles)
             {
-                DetailButton.IsEnabled = true;
                 //we can only edit show folders
                 if (temp.FileType == FileType.TvShow)
                 {
@@ -494,7 +522,6 @@ namespace Sarjee.SimpleRenamer
             }
             else
             {
-                DetailButton.IsEnabled = false;
                 EditButton.IsEnabled = false;
             }
         }

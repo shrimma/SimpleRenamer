@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Jot.DefaultInitializer;
+using Sarjee.SimpleRenamer.Common.Interface;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Sarjee.SimpleRenamer.Common.Model
 {
-    public class Settings : INotifyPropertyChanged
+    public class Settings : ISettings, INotifyPropertyChanged
     {
         #region INotifyPropertyChanged implementation
         /// <summary>
@@ -24,16 +26,14 @@ namespace Sarjee.SimpleRenamer.Common.Model
         }
         #endregion INotifyPropertyChanged implementation
 
-        /// <summary>
-        /// The sub directories
-        /// </summary>
         private bool subDirectories;
         /// <summary>
-        /// Gets or sets a value indicating whether [sub directories].
+        /// Gets or sets a value indicating whether to scan sub directories of watch folders.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [sub directories]; otherwise, <c>false</c>.
+        ///   <c>true</c> if should scan sub directories; otherwise, <c>false</c>.
         /// </value>
+        [Trackable]
         public bool SubDirectories
         {
             get { return subDirectories; }
@@ -42,21 +42,19 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != subDirectories)
                 {
                     subDirectories = value;
-                    Notify("SubDirectories");
+                    Notify(nameof(SubDirectories));
                 }
             }
         }
 
-        /// <summary>
-        /// The rename files
-        /// </summary>
         private bool renameFiles;
         /// <summary>
-        /// Gets or sets a value indicating whether [rename files].
+        /// Gets or sets a value indicating whether to rename files.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [rename files]; otherwise, <c>false</c>.
         /// </value>
+        [Trackable]
         public bool RenameFiles
         {
             get { return renameFiles; }
@@ -65,21 +63,19 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != renameFiles)
                 {
                     renameFiles = value;
-                    Notify("RenameFiles");
+                    Notify(nameof(RenameFiles));
                 }
             }
         }
 
-        /// <summary>
-        /// The copy files
-        /// </summary>
         private bool copyFiles;
         /// <summary>
-        /// Gets or sets a value indicating whether [copy files].
+        /// Gets or sets a value indicating whether to copy or move files.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [copy files]; otherwise, <c>false</c>.
+        ///   <c>true</c> if copy files; <c>false</c> if move files.
         /// </value>
+        [Trackable]
         public bool CopyFiles
         {
             get { return copyFiles; }
@@ -88,21 +84,16 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != copyFiles)
                 {
                     copyFiles = value;
-                    Notify("CopyFiles");
+                    Notify(nameof(CopyFiles));
                 }
             }
         }
 
-        /// <summary>
-        /// The new file name format
-        /// </summary>
         private string newFileNameFormat;
         /// <summary>
         /// Gets or sets the new file name format.
-        /// </summary>
-        /// <value>
-        /// The new file name format.
-        /// </value>
+        /// </summary>        
+        [Trackable]
         public string NewFileNameFormat
         {
             get { return newFileNameFormat; }
@@ -111,37 +102,52 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != newFileNameFormat)
                 {
                     newFileNameFormat = value;
-                    Notify("NewFileNameFormat");
+                    Notify(nameof(NewFileNameFormat));
                 }
             }
         }
 
+        private List<string> watchFolders = new List<string>();
         /// <summary>
         /// Gets or sets the watch folders.
-        /// </summary>
-        /// <value>
-        /// The watch folders.
-        /// </value>
-        public List<string> WatchFolders { get; set; }
+        /// </summary>        
+        [Trackable]
+        public List<string> WatchFolders
+        {
+            get { return watchFolders; }
+            set
+            {
+                if (value != watchFolders)
+                {
+                    watchFolders = value;
+                    Notify(nameof(WatchFolders));
+                }
+            }
+        }
+
+        private List<string> validExtensions = new List<string>();
         /// <summary>
         /// Gets or sets the valid extensions.
-        /// </summary>
-        /// <value>
-        /// The valid extensions.
-        /// </value>
-        public List<string> ValidExtensions { get; set; }
+        /// </summary>        
+        [Trackable]
+        public List<string> ValidExtensions
+        {
+            get { return validExtensions; }
+            set
+            {
+                if (value != validExtensions)
+                {
+                    validExtensions = value;
+                    Notify(nameof(ValidExtensions));
+                }
+            }
+        }
 
-        /// <summary>
-        /// The destination folder tv
-        /// </summary>
         private string destinationFolderTV;
-
         /// <summary>
-        /// Gets or sets the destination folder tv.
+        /// Gets or sets the destination folder for TV shows.
         /// </summary>
-        /// <value>
-        /// The destination folder tv.
-        /// </value>
+        [Trackable]
         public string DestinationFolderTV
         {
             get { return destinationFolderTV; }
@@ -150,22 +156,16 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != destinationFolderTV)
                 {
                     destinationFolderTV = value;
-                    Notify("DestinationFolderTV");
+                    Notify(nameof(DestinationFolderTV));
                 }
             }
         }
 
-        /// <summary>
-        /// The destination folder movie
-        /// </summary>
         private string destinationFolderMovie;
-
         /// <summary>
-        /// Gets or sets the destination folder movie.
+        /// Gets or sets the destination folder for movies.
         /// </summary>
-        /// <value>
-        /// The destination folder movie.
-        /// </value>
+        [Trackable]
         public string DestinationFolderMovie
         {
             get { return destinationFolderMovie; }
@@ -174,7 +174,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != destinationFolderMovie)
                 {
                     destinationFolderMovie = value;
-                    Notify("DestinationFolderMovie");
+                    Notify(nameof(DestinationFolderMovie));
                 }
             }
         }

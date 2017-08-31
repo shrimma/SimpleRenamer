@@ -28,7 +28,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private ITVShowMatcher _tvShowMatcher;
         private IMovieMatcher _movieMatcher;
         private IFileMatcher _fileMatcher;
-        private Settings _settings;
+        private ISettings _settings;
         private ParallelOptions parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
         /// <summary>
         /// Fired whenever some noticeable progress is made
