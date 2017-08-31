@@ -27,7 +27,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         private ILogger _logger;
         private IConfigurationManager _configurationManager;
-        private Settings _settings;
+        private ISettings _settings;
         private ITvdbManager _tvdbManager;
         private IHelper _helper;
         private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = (Environment.ProcessorCount + 2) };

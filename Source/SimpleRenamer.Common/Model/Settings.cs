@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using Sarjee.SimpleRenamer.Common.Interface;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Sarjee.SimpleRenamer.Common.Model
 {
-    public class Settings : INotifyPropertyChanged
+    public class Settings : ISettings, INotifyPropertyChanged
     {
         #region INotifyPropertyChanged implementation
         /// <summary>
@@ -24,15 +25,12 @@ namespace Sarjee.SimpleRenamer.Common.Model
         }
         #endregion INotifyPropertyChanged implementation
 
-        /// <summary>
-        /// The sub directories
-        /// </summary>
         private bool subDirectories;
         /// <summary>
-        /// Gets or sets a value indicating whether [sub directories].
+        /// Gets or sets a value indicating whether to scan sub directories of watch folders.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [sub directories]; otherwise, <c>false</c>.
+        ///   <c>true</c> if should scan sub directories; otherwise, <c>false</c>.
         /// </value>
         public bool SubDirectories
         {
@@ -47,12 +45,9 @@ namespace Sarjee.SimpleRenamer.Common.Model
             }
         }
 
-        /// <summary>
-        /// The rename files
-        /// </summary>
         private bool renameFiles;
         /// <summary>
-        /// Gets or sets a value indicating whether [rename files].
+        /// Gets or sets a value indicating whether to rename files.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [rename files]; otherwise, <c>false</c>.
@@ -70,15 +65,12 @@ namespace Sarjee.SimpleRenamer.Common.Model
             }
         }
 
-        /// <summary>
-        /// The copy files
-        /// </summary>
         private bool copyFiles;
         /// <summary>
-        /// Gets or sets a value indicating whether [copy files].
+        /// Gets or sets a value indicating whether to copy or move files.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [copy files]; otherwise, <c>false</c>.
+        ///   <c>true</c> if copy files; <c>false</c> if move files.
         /// </value>
         public bool CopyFiles
         {
@@ -93,16 +85,10 @@ namespace Sarjee.SimpleRenamer.Common.Model
             }
         }
 
-        /// <summary>
-        /// The new file name format
-        /// </summary>
         private string newFileNameFormat;
         /// <summary>
         /// Gets or sets the new file name format.
-        /// </summary>
-        /// <value>
-        /// The new file name format.
-        /// </value>
+        /// </summary>        
         public string NewFileNameFormat
         {
             get { return newFileNameFormat; }
@@ -118,30 +104,18 @@ namespace Sarjee.SimpleRenamer.Common.Model
 
         /// <summary>
         /// Gets or sets the watch folders.
-        /// </summary>
-        /// <value>
-        /// The watch folders.
-        /// </value>
+        /// </summary>        
         public List<string> WatchFolders { get; set; }
+
         /// <summary>
         /// Gets or sets the valid extensions.
-        /// </summary>
-        /// <value>
-        /// The valid extensions.
-        /// </value>
+        /// </summary>        
         public List<string> ValidExtensions { get; set; }
 
-        /// <summary>
-        /// The destination folder tv
-        /// </summary>
         private string destinationFolderTV;
-
         /// <summary>
-        /// Gets or sets the destination folder tv.
+        /// Gets or sets the destination folder for TV shows.
         /// </summary>
-        /// <value>
-        /// The destination folder tv.
-        /// </value>
         public string DestinationFolderTV
         {
             get { return destinationFolderTV; }
@@ -155,17 +129,10 @@ namespace Sarjee.SimpleRenamer.Common.Model
             }
         }
 
-        /// <summary>
-        /// The destination folder movie
-        /// </summary>
         private string destinationFolderMovie;
-
         /// <summary>
-        /// Gets or sets the destination folder movie.
+        /// Gets or sets the destination folder for movies.
         /// </summary>
-        /// <value>
-        /// The destination folder movie.
-        /// </value>
         public string DestinationFolderMovie
         {
             get { return destinationFolderMovie; }

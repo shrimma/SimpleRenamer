@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="BackgroundQueue.cs" />
     <Compile Include="Helpers\ThreadLocalRandom.cs" />
+    <Compile Include="Interface\ISettings.cs" />
     <Compile Include="Model\FileType.cs" />
     <Compile Include="Model\IgnoreList.cs" />
     <Compile Include="Model\Mapping.cs" />

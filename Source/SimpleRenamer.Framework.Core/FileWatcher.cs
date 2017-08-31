@@ -20,7 +20,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     {
         private ILogger _logger;
         private IConfigurationManager _configurationManager;
-        private Settings settings;
+        private ISettings _settings;
         private IgnoreList ignoreList;
         private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
@@ -43,7 +43,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-            settings = _configurationManager.Settings;
+            _settings = _configurationManager.Settings;
         }
 
         /// <summary>
@@ -61,13 +61,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
             ignoreList = _configurationManager.IgnoredFiles;
             //FOR EACH WATCH FOLDER
-            foreach (string folder in settings.WatchFolders)
+            foreach (string folder in _settings.WatchFolders)
             {
                 //throw exception if cancel requested
                 ct.ThrowIfCancellationRequested();
                 OnProgressTextChanged(new ProgressTextEventArgs($"Searching watch folder for video files: {folder}"));
                 //if the directory exists and contains at least 1 file (search sub directories if settings allow) -- limitation of searchPattern means we can't filter video extensions here
-                if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
+                if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", _settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
                 {
                     //search the folder for files with video extensions
                     List<string> temp = await SearchThisFolder(folder, ct);
@@ -98,7 +98,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             _logger.TraceMessage($"Searching Folder {dir} for valid video files.", EventLevel.Verbose);
             ConcurrentBag<string> foundFiles = new ConcurrentBag<string>();
             _parallelOptions.CancellationToken = ct;
-            Task result = Task.Run(() => Parallel.ForEach(Directory.GetFiles(dir, "*", settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly), _parallelOptions, (file) =>
+            Task result = Task.Run(() => Parallel.ForEach(Directory.GetFiles(dir, "*", _settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly), _parallelOptions, (file) =>
             {
                 ct.ThrowIfCancellationRequested();
                 //is a valid extension, is not ignored and isn't a sample
@@ -123,7 +123,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// </returns>
         private bool IsValidExtension(string input)
         {
-            foreach (string extension in settings.ValidExtensions)
+            foreach (string extension in _settings.ValidExtensions)
             {
                 if (input.ToLowerInvariant().Equals(extension.ToLowerInvariant()))
                 {

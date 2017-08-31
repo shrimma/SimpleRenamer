@@ -15,7 +15,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     {
         private IgnoreList ignoredFiles;
         private RegexFile regexExpressions;
-        private Settings settings;
+        private ISettings settings;
         private ShowNameMapping showNameMapping;
         private JsonSerializer jsonSerializer = new JsonSerializer();
 
@@ -145,7 +145,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <value>
         /// The settings.
         /// </value>
-        public Settings Settings
+        public ISettings Settings
         {
             get
             {
@@ -257,7 +257,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             SaveSettings(this.Settings);
         }
 
-        private void SaveSettings(Settings settings)
+        private void SaveSettings(ISettings settings)
         {
             Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             configuration.AppSettings.Settings["SubDirectories"].Value = settings.SubDirectories.ToString();

@@ -22,7 +22,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private IBackgroundQueue _backgroundQueue;
         private IFileMover _fileMover;
         private IConfigurationManager _configurationManager;
-        private Settings settings;
+        private ISettings _settings;
         /// <summary>
         /// Fired whenever a preprocessor action is completed on a file
         /// </summary>
@@ -58,7 +58,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             _backgroundQueue = backgroundQueue ?? throw new ArgumentNullException(nameof(backgroundQueue));
             _fileMover = fileMover ?? throw new ArgumentNullException(nameof(fileMover));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-            settings = _configurationManager.Settings;
+            _settings = _configurationManager.Settings;
         }
 
         /// <summary>
@@ -193,11 +193,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     OnFileMoved(new FileMovedEventArgs(file));
                     OnProgressTextChanged(new ProgressTextEventArgs($"Finished {file.DestinationFilePath}."));
-                    _logger.TraceMessage(string.Format("Successfully {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, settings.CopyFiles ? "copied" : "moved"));
+                    _logger.TraceMessage(string.Format("Successfully {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, _settings.CopyFiles ? "copied" : "moved"));
                 }
                 else
                 {
-                    _logger.TraceMessage(string.Format("Failed to {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, settings.CopyFiles ? "copy" : "move"));
+                    _logger.TraceMessage(string.Format("Failed to {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, _settings.CopyFiles ? "copy" : "move"));
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
             //actually move/copy the files one at a time

@@ -17,7 +17,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     {
         private IBannerDownloader _bannerDownloader;
         private ILogger _logger;
-        private Settings _settings;
+        private ISettings _settings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileMover"/> class.
@@ -135,7 +135,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
             else
             {
-                await CopyItOurselfAsync(_settings, fromFile, toFile, ct);
+                await CopyItOurselfAsync(fromFile, toFile, ct);
             }
 
             _logger.TraceMessage($"Moved File {episode.SourceFilePath} to {episode.DestinationFilePath}.", EventLevel.Verbose);
@@ -226,7 +226,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <param name="fromFile">From file.</param>
         /// <param name="toFile">To file.</param>
         /// <param name="ct">The ct.</param>
-        private async Task CopyItOurselfAsync(Settings settings, FileInfo fromFile, FileInfo toFile, CancellationToken ct)
+        private async Task CopyItOurselfAsync(FileInfo fromFile, FileInfo toFile, CancellationToken ct)
         {
             _logger.TraceMessage("CopyItOurself - Start", EventLevel.Verbose);
 
@@ -246,7 +246,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 KeepTimestamps(fromFile, toFile);
 
                 // if that was a move/rename, delete the source
-                if (!settings.CopyFiles)
+                if (!_settings.CopyFiles)
                 {
                     fromFile.Delete();
                 }
