@@ -138,11 +138,11 @@ namespace Sarjee.SimpleRenamer.Views
             {
                 return true;
             }
-            if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, originalSettings.ValidExtensions) == false)
+            if (!helper.AreListsEqual(configurationManager.Settings.ValidExtensions, originalSettings.ValidExtensions))
             {
                 return true;
             }
-            if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, originalSettings.WatchFolders) == false)
+            if (!helper.AreListsEqual(configurationManager.Settings.WatchFolders, originalSettings.WatchFolders))
             {
                 return true;
             }

@@ -1,4 +1,5 @@
-﻿using MahApps.Metro.Controls;
+﻿using Jot;
+using MahApps.Metro.Controls;
 using Sarjee.SimpleRenamer.Common.EventArguments;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
@@ -47,6 +48,7 @@ namespace Sarjee.SimpleRenamer
         private string EditShowTvdbId;
         private string MediaTypePath;
         private string MediaTypeShowName;
+        private static StateTracker _stateTracker = new StateTracker();
 
         public MainWindow(ILogger logger, ITVShowMatcher tvShowMatcher, IMovieMatcher movieMatcher, IDependencyInjectionContext injectionContext, IActionMatchedFiles actionMatchedFiles, IScanFiles scanFiles, IConfigurationManager configManager)
         {
@@ -62,24 +64,29 @@ namespace Sarjee.SimpleRenamer
             {
                 InitializeComponent();
                 _logger.TraceMessage("Starting Application", EventLevel.LogAlways);
-                showDetailsWindow = _injectionContext.GetService<ShowDetailsWindow>();
-                movieDetailsWindow = _injectionContext.GetService<MovieDetailsWindow>();
-                settingsWindow = _injectionContext.GetService<SettingsWindow>();
-                selectShowWindow = _injectionContext.GetService<SelectShowWindow>();
-                selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
-                settings = _configurationManager.Settings;
-                scannedEpisodes = new ObservableCollection<MatchedFile>();
-                ShowsListBox.ItemsSource = scannedEpisodes;
-                ShowsListBox.SizeChanged += ListView_SizeChanged;
-                ShowsListBox.Loaded += ListView_Loaded;
+                this.SourceInitialized += (s, e) =>
+                {
+                    _stateTracker.Configure(this).Apply();
+                    settings = _configurationManager.Settings;
+                    _stateTracker.Configure(settings).Apply();
+                    showDetailsWindow = _injectionContext.GetService<ShowDetailsWindow>();
+                    movieDetailsWindow = _injectionContext.GetService<MovieDetailsWindow>();
+                    settingsWindow = _injectionContext.GetService<SettingsWindow>();
+                    selectShowWindow = _injectionContext.GetService<SelectShowWindow>();
+                    selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
+                    scannedEpisodes = new ObservableCollection<MatchedFile>();
+                    ShowsListBox.ItemsSource = scannedEpisodes;
+                    ShowsListBox.SizeChanged += ListView_SizeChanged;
+                    ShowsListBox.Loaded += ListView_Loaded;
 
-                //setup the perform actions event handlers
-                _actionMatchedFiles.RaiseFileMovedEvent += PerformActionsOnShows_RaiseFileMovedEvent;
-                _actionMatchedFiles.RaiseFilePreProcessedEvent += PerformActionsOnShows_RaiseFilePreProcessedEvent;
-                _actionMatchedFiles.RaiseProgressEvent += ProgressTextEvent;
-                _scanFiles.RaiseProgressEvent += ProgressTextEvent;
-                ScanButton.IsEnabled = IsScanEnabled();
-                this.Closing += MainWindow_Closing;
+                    //setup the perform actions event handlers
+                    _actionMatchedFiles.RaiseFileMovedEvent += PerformActionsOnShows_RaiseFileMovedEvent;
+                    _actionMatchedFiles.RaiseFilePreProcessedEvent += PerformActionsOnShows_RaiseFilePreProcessedEvent;
+                    _actionMatchedFiles.RaiseProgressEvent += ProgressTextEvent;
+                    _scanFiles.RaiseProgressEvent += ProgressTextEvent;
+                    ScanButton.IsEnabled = IsScanEnabled();
+                    this.Closing += MainWindow_Closing;
+                };
             }
             catch (Exception ex)
             {

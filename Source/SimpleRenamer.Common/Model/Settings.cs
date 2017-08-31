@@ -1,4 +1,5 @@
-﻿using Sarjee.SimpleRenamer.Common.Interface;
+﻿using Jot.DefaultInitializer;
+using Sarjee.SimpleRenamer.Common.Interface;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -32,6 +33,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <value>
         ///   <c>true</c> if should scan sub directories; otherwise, <c>false</c>.
         /// </value>
+        [Trackable]
         public bool SubDirectories
         {
             get { return subDirectories; }
@@ -40,7 +42,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != subDirectories)
                 {
                     subDirectories = value;
-                    Notify("SubDirectories");
+                    Notify(nameof(SubDirectories));
                 }
             }
         }
@@ -52,6 +54,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <value>
         ///   <c>true</c> if [rename files]; otherwise, <c>false</c>.
         /// </value>
+        [Trackable]
         public bool RenameFiles
         {
             get { return renameFiles; }
@@ -60,7 +63,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != renameFiles)
                 {
                     renameFiles = value;
-                    Notify("RenameFiles");
+                    Notify(nameof(RenameFiles));
                 }
             }
         }
@@ -72,6 +75,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <value>
         ///   <c>true</c> if copy files; <c>false</c> if move files.
         /// </value>
+        [Trackable]
         public bool CopyFiles
         {
             get { return copyFiles; }
@@ -80,7 +84,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != copyFiles)
                 {
                     copyFiles = value;
-                    Notify("CopyFiles");
+                    Notify(nameof(CopyFiles));
                 }
             }
         }
@@ -89,6 +93,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <summary>
         /// Gets or sets the new file name format.
         /// </summary>        
+        [Trackable]
         public string NewFileNameFormat
         {
             get { return newFileNameFormat; }
@@ -97,25 +102,52 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != newFileNameFormat)
                 {
                     newFileNameFormat = value;
-                    Notify("NewFileNameFormat");
+                    Notify(nameof(NewFileNameFormat));
                 }
             }
         }
 
+        private List<string> watchFolders = new List<string>();
         /// <summary>
         /// Gets or sets the watch folders.
         /// </summary>        
-        public List<string> WatchFolders { get; set; }
+        [Trackable]
+        public List<string> WatchFolders
+        {
+            get { return watchFolders; }
+            set
+            {
+                if (value != watchFolders)
+                {
+                    watchFolders = value;
+                    Notify(nameof(WatchFolders));
+                }
+            }
+        }
 
+        private List<string> validExtensions = new List<string>();
         /// <summary>
         /// Gets or sets the valid extensions.
         /// </summary>        
-        public List<string> ValidExtensions { get; set; }
+        [Trackable]
+        public List<string> ValidExtensions
+        {
+            get { return validExtensions; }
+            set
+            {
+                if (value != validExtensions)
+                {
+                    validExtensions = value;
+                    Notify(nameof(ValidExtensions));
+                }
+            }
+        }
 
         private string destinationFolderTV;
         /// <summary>
         /// Gets or sets the destination folder for TV shows.
         /// </summary>
+        [Trackable]
         public string DestinationFolderTV
         {
             get { return destinationFolderTV; }
@@ -124,7 +156,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != destinationFolderTV)
                 {
                     destinationFolderTV = value;
-                    Notify("DestinationFolderTV");
+                    Notify(nameof(DestinationFolderTV));
                 }
             }
         }
@@ -133,6 +165,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <summary>
         /// Gets or sets the destination folder for movies.
         /// </summary>
+        [Trackable]
         public string DestinationFolderMovie
         {
             get { return destinationFolderMovie; }
@@ -141,7 +174,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
                 if (value != destinationFolderMovie)
                 {
                     destinationFolderMovie = value;
-                    Notify("DestinationFolderMovie");
+                    Notify(nameof(DestinationFolderMovie));
                 }
             }
         }

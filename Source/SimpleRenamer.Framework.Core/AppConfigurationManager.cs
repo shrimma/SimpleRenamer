@@ -151,7 +151,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             {
                 if (settings == null)
                 {
-                    settings = GetSettings();
+                    settings = new Settings();
                 }
                 return settings;
             }
@@ -254,7 +254,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             WriteMappingFile(this.ShowNameMappings);
             WriteIgnoreListAsync(this.IgnoredFiles);
             WriteExpressionFile(this.RegexExpressions);
-            SaveSettings(this.Settings);
+            //SaveSettings(this.Settings);
         }
 
         private void SaveSettings(ISettings settings)
