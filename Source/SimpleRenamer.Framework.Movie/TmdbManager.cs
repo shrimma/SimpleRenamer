@@ -83,7 +83,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 request.AddParameter("year", movieYear.ToString());
             }
 
-            return await _helper.ExecuteRestRequest<SearchContainer<SearchMovie>>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            return await _helper.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             request.AddParameter("append_to_response", "credits", ParameterType.QueryString);
 
             //execute the request
-            return await _helper.ExecuteRestRequest<Common.Movie.Model.Movie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            return await _helper.ExecuteRestRequestAsync<Common.Movie.Model.Movie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             IRestRequest request = new RestRequest($"/3/movie/{movieId}", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
-            return await _helper.ExecuteRestRequest<SearchMovie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            return await _helper.ExecuteRestRequestAsync<SearchMovie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
             //execute the request
-            TMDbConfig tmdbConfig = await _helper.ExecuteRestRequest<TMDbConfig>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            TMDbConfig tmdbConfig = await _helper.ExecuteRestRequestAsync<TMDbConfig>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
             if (!string.IsNullOrWhiteSpace(tmdbConfig?.Images?.SecureBaseUrl))
             {
                 return tmdbConfig.Images.SecureBaseUrl;

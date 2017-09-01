@@ -74,7 +74,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_SearchMovieByNameAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequest<SearchContainer<SearchMovie>>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new SearchContainer<SearchMovie>() { Page = 1, TotalPages = 1, TotalResults = 2 });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new SearchContainer<SearchMovie>() { Page = 1, TotalPages = 1, TotalResults = 2 });
             ITmdbManager tmdbManager = GetTmdbManager();
 
             SearchContainer<SearchMovie> result = null;
@@ -109,7 +109,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_SearchMovieByIdAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequest<SearchMovie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new SearchMovie() { Title = "Fight Club" });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SearchMovie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new SearchMovie() { Title = "Fight Club" });
             ITmdbManager tmdbManager = GetTmdbManager();
 
             SearchMovie result = null;
@@ -139,7 +139,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetMovieAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequest<SimpleRenamer.Common.Movie.Model.Movie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = "Fight Club", Credits = new Credits() });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SimpleRenamer.Common.Movie.Model.Movie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = "Fight Club", Credits = new Credits() });
             ITmdbManager tmdbManager = GetTmdbManager();
 
             SimpleRenamer.Common.Movie.Model.Movie result = null;
@@ -170,7 +170,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetPosterUriAsync_Null_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequest<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new TMDbConfig());
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new TMDbConfig());
             ITmdbManager tmdbManager = GetTmdbManager();
 
             string result = null;
@@ -184,7 +184,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetPosterUriAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequest<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new TMDbConfig() { Images = new ConfigImageTypes() { SecureBaseUrl = "https://www.uri.com" } });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new TMDbConfig() { Images = new ConfigImageTypes() { SecureBaseUrl = "https://www.uri.com" } });
             ITmdbManager tmdbManager = GetTmdbManager();
 
             string result = null;

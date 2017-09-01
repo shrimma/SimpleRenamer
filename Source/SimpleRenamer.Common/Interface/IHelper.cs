@@ -54,6 +54,6 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <param name="maxBackoffSeconds">The maximum backoff seconds.</param>
         /// <param name="loginCallback">The login callback.</param>
         /// <returns></returns>
-        Task<T> ExecuteRestRequest<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, Func<Task> loginCallback = null) where T : class;
+        Task<T> ExecuteRestRequestAsync<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, Func<Task> loginCallback = null) where T : class;
     }
 }

@@ -131,7 +131,7 @@ namespace Sarjee.SimpleRenamer.Common
         /// <returns></returns>
         /// <exception cref="System.TimeoutException"></exception>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
-        public async Task<T> ExecuteRestRequest<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, Func<Task> loginCallback = null) where T : class
+        public async Task<T> ExecuteRestRequestAsync<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, Func<Task> loginCallback = null) where T : class
         {
             int currentRetry = 0;
             int offset = ThreadLocalRandom.Instance.Next(100, 500);
