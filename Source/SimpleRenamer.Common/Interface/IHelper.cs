@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using RestSharp;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common.Interface
@@ -39,5 +42,18 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <param name="maxBackoffSeconds">The maximum backoff seconds.</param>
         /// <returns></returns>
         Task ExponentialDelayAsync(int offsetMilliseconds, int retryCount, int maxBackoffSeconds);
+
+        /// <summary>
+        /// Executes the rest request.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="restClient">The rest client.</param>
+        /// <param name="restRequest">The rest request.</param>
+        /// <param name="jsonSerializerSettings">The json serializer settings.</param>
+        /// <param name="maxRetryCount">The maximum retry count.</param>
+        /// <param name="maxBackoffSeconds">The maximum backoff seconds.</param>
+        /// <param name="loginCallback">The login callback.</param>
+        /// <returns></returns>
+        Task<T> ExecuteRestRequestAsync<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, Func<Task> loginCallback = null) where T : class;
     }
 }

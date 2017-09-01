@@ -1,10 +1,14 @@
-﻿using Jot.DefaultInitializer;
-using Sarjee.SimpleRenamer.Common.Interface;
+﻿using Sarjee.SimpleRenamer.Common.Interface;
 using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Sarjee.SimpleRenamer.Common.Model
 {
+    /// <summary>
+    /// Settings
+    /// </summary>
+    /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.ISettings" />
+    /// <seealso cref="System.ComponentModel.INotifyPropertyChanged" />
     public class Settings : ISettings, INotifyPropertyChanged
     {
         #region INotifyPropertyChanged implementation
@@ -26,14 +30,13 @@ namespace Sarjee.SimpleRenamer.Common.Model
         }
         #endregion INotifyPropertyChanged implementation
 
-        private bool subDirectories;
+        private bool subDirectories = true;
         /// <summary>
         /// Gets or sets a value indicating whether to scan sub directories of watch folders.
         /// </summary>
         /// <value>
         ///   <c>true</c> if should scan sub directories; otherwise, <c>false</c>.
-        /// </value>
-        [Trackable]
+        /// </value>        
         public bool SubDirectories
         {
             get { return subDirectories; }
@@ -47,14 +50,13 @@ namespace Sarjee.SimpleRenamer.Common.Model
             }
         }
 
-        private bool renameFiles;
+        private bool renameFiles = true;
         /// <summary>
         /// Gets or sets a value indicating whether to rename files.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [rename files]; otherwise, <c>false</c>.
-        /// </value>
-        [Trackable]
+        /// </value>        
         public bool RenameFiles
         {
             get { return renameFiles; }
@@ -68,14 +70,13 @@ namespace Sarjee.SimpleRenamer.Common.Model
             }
         }
 
-        private bool copyFiles;
+        private bool copyFiles = false;
         /// <summary>
         /// Gets or sets a value indicating whether to copy or move files.
         /// </summary>
         /// <value>
         ///   <c>true</c> if copy files; <c>false</c> if move files.
-        /// </value>
-        [Trackable]
+        /// </value>        
         public bool CopyFiles
         {
             get { return copyFiles; }
@@ -89,11 +90,10 @@ namespace Sarjee.SimpleRenamer.Common.Model
             }
         }
 
-        private string newFileNameFormat;
+        private string newFileNameFormat = "{ShowName} - S{Season}E{Episode} - {EpisodeName}";
         /// <summary>
         /// Gets or sets the new file name format.
-        /// </summary>        
-        [Trackable]
+        /// </summary>                
         public string NewFileNameFormat
         {
             get { return newFileNameFormat; }
@@ -110,8 +110,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         private List<string> watchFolders = new List<string>();
         /// <summary>
         /// Gets or sets the watch folders.
-        /// </summary>        
-        [Trackable]
+        /// </summary>                
         public List<string> WatchFolders
         {
             get { return watchFolders; }
@@ -125,11 +124,10 @@ namespace Sarjee.SimpleRenamer.Common.Model
             }
         }
 
-        private List<string> validExtensions = new List<string>();
+        private List<string> validExtensions = new List<string>() { ".264", ".3g2", ".3gp", ".arf", ".asf", ".asx", ".avi", ".bik", ".dash", ".dvr", ".flv", ".h264", ".m2t", ".m2ts", ".m4v", ".mkv", ".mod", ".mov", ".mp4", ".mpeg", ".mpg", ".mts", ".ogv", ".rmvb", ".swf", ".tod", ".tp", ".ts", ".vob", ".webm", ".wmv" };
         /// <summary>
         /// Gets or sets the valid extensions.
-        /// </summary>        
-        [Trackable]
+        /// </summary>                
         public List<string> ValidExtensions
         {
             get { return validExtensions; }
@@ -143,11 +141,10 @@ namespace Sarjee.SimpleRenamer.Common.Model
             }
         }
 
-        private string destinationFolderTV;
+        private string destinationFolderTV = string.Empty;
         /// <summary>
         /// Gets or sets the destination folder for TV shows.
-        /// </summary>
-        [Trackable]
+        /// </summary>        
         public string DestinationFolderTV
         {
             get { return destinationFolderTV; }
@@ -161,11 +158,10 @@ namespace Sarjee.SimpleRenamer.Common.Model
             }
         }
 
-        private string destinationFolderMovie;
+        private string destinationFolderMovie = string.Empty;
         /// <summary>
         /// Gets or sets the destination folder for movies.
-        /// </summary>
-        [Trackable]
+        /// </summary>        
         public string DestinationFolderMovie
         {
             get { return destinationFolderMovie; }

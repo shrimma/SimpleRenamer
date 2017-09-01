@@ -1,11 +1,12 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Newtonsoft.Json;
+using RestSharp;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using Sarjee.SimpleRenamer.Framework.Movie;
-using Sarjee.SimpleRenamer.L0.Tests.Mocks;
 using System;
 using System.Threading.Tasks;
 
@@ -25,17 +26,9 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             mockHelper = mockRepository.Create<IHelper>();
         }
 
-        private ITmdbManager GetTmdbManager(bool testableVersion = false)
+        private ITmdbManager GetTmdbManager()
         {
-            ITmdbManager tmdbManager = null;
-            if (testableVersion)
-            {
-                tmdbManager = new TestableTmdbManager(mockConfigurationManager.Object, mockHelper.Object);
-            }
-            else
-            {
-                tmdbManager = new TmdbManager(mockConfigurationManager.Object, mockHelper.Object);
-            }
+            ITmdbManager tmdbManager = new TmdbManager(mockConfigurationManager.Object, mockHelper.Object);
             tmdbManager.Should().NotBeNull();
             return tmdbManager;
         }
@@ -67,10 +60,23 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         #region SearchMovieByNameAsync
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
+        public void TmdbManager_SearchMovieByNameAsync_NullArgument_ThrowsANE()
+        {
+            ITmdbManager tmdbManager = GetTmdbManager();
+            SearchContainer<SearchMovie> result = null;
+            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByNameAsync(string.Empty, 2016);
+
+            action1.ShouldThrow<ArgumentNullException>();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
         public void TmdbManager_SearchMovieByNameAsync_Success()
         {
-            //get testable tmdbmanager
-            ITmdbManager tmdbManager = GetTmdbManager(true);
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new SearchContainer<SearchMovie>() { Page = 1, TotalPages = 1, TotalResults = 2 });
+            ITmdbManager tmdbManager = GetTmdbManager();
+
             SearchContainer<SearchMovie> result = null;
             SearchContainer<SearchMovie> result2 = null;
             Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByNameAsync("searchByMovieName");
@@ -88,10 +94,24 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         #region SearchMovieByIdAsync
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
+        public void TmdbManager_SearchMovieByIdAsync_NullArgument_ThrowsANE()
+        {
+            ITmdbManager tmdbManager = GetTmdbManager();
+
+            SearchMovie result = null;
+            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByIdAsync(string.Empty);
+
+            action1.ShouldThrow<ArgumentNullException>();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
         public void TmdbManager_SearchMovieByIdAsync_Success()
         {
-            //get testable tmdbmanager
-            ITmdbManager tmdbManager = GetTmdbManager(true);
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SearchMovie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new SearchMovie() { Title = "Fight Club" });
+            ITmdbManager tmdbManager = GetTmdbManager();
+
             SearchMovie result = null;
             Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByIdAsync("id");
 
@@ -104,16 +124,30 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         #region GetMovieAsync
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
+        public void TmdbManager_GetMovieAsync_NullArgument_ThrowsANE()
+        {
+            ITmdbManager tmdbManager = GetTmdbManager();
+
+            SimpleRenamer.Common.Movie.Model.Movie result = null;
+            Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync(string.Empty);
+
+            action1.ShouldThrow<ArgumentNullException>();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetMovieAsync_Success()
         {
-            //get testable tmdbmanager
-            ITmdbManager tmdbManager = GetTmdbManager(true);
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SimpleRenamer.Common.Movie.Model.Movie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = "Fight Club", Credits = new Credits() });
+            ITmdbManager tmdbManager = GetTmdbManager();
+
             SimpleRenamer.Common.Movie.Model.Movie result = null;
             Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync("getMovie");
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
-            result.Title.Should().Be("The Dark Tower");
+            result.Title.Should().Be("Fight Club");
             result.Credits.Should().NotBeNull();
         }
         #endregion GetMovieAsync
@@ -121,10 +155,24 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         #region GetPosterUriAsync
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
+        public void TmdbManager_GetPosterUriAsync_NullArgument_ThrowsANE()
+        {
+            ITmdbManager tmdbManager = GetTmdbManager();
+
+            string result = null;
+            Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync(string.Empty);
+
+            action1.ShouldThrow<ArgumentNullException>();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetPosterUriAsync_Null_Success()
         {
-            //get testable tmdbmanager
-            ITmdbManager tmdbManager = new EmptyTestableTmdbManager(mockConfigurationManager.Object, mockHelper.Object);
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new TMDbConfig());
+            ITmdbManager tmdbManager = GetTmdbManager();
+
             string result = null;
             Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync("getPoster");
 
@@ -136,56 +184,16 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetPosterUriAsync_Success()
         {
-            //get testable tmdbmanager
-            ITmdbManager tmdbManager = GetTmdbManager(true);
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new TMDbConfig() { Images = new ConfigImageTypes() { SecureBaseUrl = "https://www.uri.com" } });
+            ITmdbManager tmdbManager = GetTmdbManager();
+
             string result = null;
             Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync("getPoster");
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
-            result.Should().Contain("tmdb");
+            result.Should().Contain("https");
         }
-        #endregion GetPosterUriAsync
-
-        #region RetryHandling
-        [TestMethod]
-        [TestCategory(TestCategories.Movie)]
-        public void TmdbManager_RetryHandling_StatusCode_ReturnsNull_Success()
-        {
-            //get testable tmdbmanager
-            ITmdbManager tmdbManager = new ErrorCodeTestableTmdbManager(mockConfigurationManager.Object, mockHelper.Object);
-            SimpleRenamer.Common.Movie.Model.Movie result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync("getMovie");
-
-            action1.ShouldNotThrow();
-            result.Should().BeNull();
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Movie)]
-        public void TmdbManager_RetryHandling_WebException_ReturnsNull_Success()
-        {
-            //get testable tmdbmanager
-            ITmdbManager tmdbManager = new WebExceptionTestableTmdbManager(mockConfigurationManager.Object, mockHelper.Object);
-            SimpleRenamer.Common.Movie.Model.Movie result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync("getMovie");
-
-            action1.ShouldNotThrow();
-            result.Should().BeNull();
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.Movie)]
-        public void TmdbManager_RetryHandling_ErrorException_ThrowsException_Success()
-        {
-            //get testable tmdbmanager
-            ITmdbManager tmdbManager = new ErrorExceptionTestableTmdbManager(mockConfigurationManager.Object, mockHelper.Object);
-            SimpleRenamer.Common.Movie.Model.Movie result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync("getMovie");
-
-            action1.ShouldThrow<ArgumentNullException>();
-            result.Should().BeNull();
-        }
-        #endregion RetryHandling
+        #endregion GetPosterUriAsync        
     }
 }

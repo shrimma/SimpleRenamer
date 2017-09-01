@@ -2,14 +2,11 @@
 using Newtonsoft.Json.Serialization;
 using RestSharp;
 using RestSharp.Authenticators;
-using Sarjee.SimpleRenamer.Common.Helpers;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.TV
@@ -59,80 +56,6 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         }
 
         /// <summary>
-        /// Executes the request asynchronous.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns></returns>
-        /// <remarks>virtual method for testability</remarks>
-        protected virtual async Task<IRestResponse> ExecuteRequestAsync(IRestRequest request)
-        {
-            return await _restClient.ExecuteTaskAsync(request);
-        }
-
-        private int[] httpStatusCodesWorthRetrying = { 408, 500, 502, 503, 504, 598, 599 };
-        private async Task<T> ExecuteRestRequestAsync<T>(IRestRequest restRequest, Func<Task> LoginCallback = null) where T : class
-        {
-            int currentRetry = 0;
-            int offset = ThreadLocalRandom.Instance.Next(100, 500);
-            while (currentRetry < _maxRetryCount)
-            {
-                try
-                {
-                    //execute the request
-                    IRestResponse response = await ExecuteRequestAsync(restRequest);
-                    //if no errors and statuscode ok then deserialize the response
-                    if (response?.ErrorException == null && response?.StatusCode == HttpStatusCode.OK)
-                    {
-                        T result = JsonConvert.DeserializeObject<T>(response.Content, _jsonSerializerSettings);
-                        return result;
-                    }
-                    //if status code indicates transient error then throw timeoutexception
-                    else if (httpStatusCodesWorthRetrying.Contains((int)response?.StatusCode))
-                    {
-                        throw new TimeoutException();
-                    }
-                    //if status code indicates unauthorized then throw unauthorized exception
-                    else if (response?.StatusCode == HttpStatusCode.Unauthorized)
-                    {
-                        throw new UnauthorizedAccessException();
-                    }
-                    //else throw the responses exception
-                    else
-                    {
-                        if (response.ErrorException != null)
-                        {
-                            throw response.ErrorException;
-                        }
-                        //if no exception then do nothing and return null
-                    }
-                }
-                catch (TimeoutException)
-                {
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-                catch (WebException)
-                {
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    currentRetry++;
-                    if (LoginCallback != null)
-                    {
-                        await LoginCallback();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
         /// Logs into the API.
         /// </summary>
         /// <returns></returns>
@@ -147,7 +70,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddParameter("application/json", auth.ToJson(), ParameterType.RequestBody);
 
             //execute the request
-            Token token = await ExecuteRestRequestAsync<Token>(request, Login);
+            Token token = await _helper.ExecuteRestRequestAsync<Token>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
             if (token != null)
             {
                 _restClient.Authenticator = new JwtAuthenticator(token._Token);
@@ -239,7 +162,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             IRestRequest request = new RestRequest($"series/{tmdbId}", Method.GET);
 
             //execute the request
-            return await ExecuteRestRequestAsync<SeriesData>(request, Login);
+            return await _helper.ExecuteRestRequestAsync<SeriesData>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
         }
 
         /// <summary>
@@ -254,7 +177,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             IRestRequest request = new RestRequest($"/series/{tmdbId}/actors", Method.GET);
 
             //execute the request
-            return await ExecuteRestRequestAsync<SeriesActors>(request, Login);
+            return await _helper.ExecuteRestRequestAsync<SeriesActors>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
         }
 
         /// <summary>
@@ -269,7 +192,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             IRestRequest request = new RestRequest($"/series/{tmdbId}/episodes", Method.GET);
 
             //execute the request
-            return await ExecuteRestRequestAsync<SeriesEpisodes>(request, Login);
+            return await _helper.ExecuteRestRequestAsync<SeriesEpisodes>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
         }
 
         /// <summary>
@@ -285,7 +208,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddParameter("keyType", "poster", ParameterType.QueryString);
 
             //execute the request
-            SeriesImageQueryResults results = await ExecuteRestRequestAsync<SeriesImageQueryResults>(request, Login);
+            SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
             if (results == null)
             {
                 results = new SeriesImageQueryResults();
@@ -306,7 +229,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddParameter("keyType", "season", ParameterType.QueryString);
 
             //execute the request
-            SeriesImageQueryResults results = await ExecuteRestRequestAsync<SeriesImageQueryResults>(request, Login);
+            SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
             if (results == null)
             {
                 results = new SeriesImageQueryResults();
@@ -327,7 +250,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddParameter("keyType", "series", ParameterType.QueryString);
 
             //execute the request
-            SeriesImageQueryResults results = await ExecuteRestRequestAsync<SeriesImageQueryResults>(request, Login);
+            SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
             if (results == null)
             {
                 results = new SeriesImageQueryResults();
@@ -359,7 +282,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddParameter("name", seriesName, ParameterType.QueryString);
 
             //execute the request
-            SeriesSearchDataList searchData = await ExecuteRestRequestAsync<SeriesSearchDataList>(request, Login);
+            SeriesSearchDataList searchData = await _helper.ExecuteRestRequestAsync<SeriesSearchDataList>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
             if (searchData?.SearchResults != null)
             {
                 return searchData.SearchResults;

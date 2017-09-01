@@ -48,6 +48,7 @@ namespace Sarjee.SimpleRenamer
         private string EditShowTvdbId;
         private string MediaTypePath;
         private string MediaTypeShowName;
+
         private static StateTracker _stateTracker = new StateTracker();
 
         public MainWindow(ILogger logger, ITVShowMatcher tvShowMatcher, IMovieMatcher movieMatcher, IDependencyInjectionContext injectionContext, IActionMatchedFiles actionMatchedFiles, IScanFiles scanFiles, IConfigurationManager configManager)
@@ -68,7 +69,10 @@ namespace Sarjee.SimpleRenamer
                 {
                     _stateTracker.Configure(this).Apply();
                     settings = _configurationManager.Settings;
-                    _stateTracker.Configure(settings).Apply();
+                    _stateTracker.Configure(settings)
+                                    .IdentifyAs("Settings")
+                                    .AddProperties(nameof(settings.CopyFiles), nameof(settings.DestinationFolderMovie), nameof(settings.DestinationFolderTV), nameof(settings.NewFileNameFormat), nameof(settings.RenameFiles), nameof(settings.SubDirectories), nameof(settings.ValidExtensions), nameof(settings.WatchFolders))
+                                    .Apply();
                     showDetailsWindow = _injectionContext.GetService<ShowDetailsWindow>();
                     movieDetailsWindow = _injectionContext.GetService<MovieDetailsWindow>();
                     settingsWindow = _injectionContext.GetService<SettingsWindow>();
