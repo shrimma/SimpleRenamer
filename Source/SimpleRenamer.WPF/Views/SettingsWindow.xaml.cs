@@ -25,7 +25,7 @@ namespace Sarjee.SimpleRenamer.Views
         private IHelper helper;
         private AddExtensionsWindow addExtensionsWindow;
         private RegexExpressionsWindow regexExpressionsWindow;
-        private Tuple<AppTheme, Accent> currentTheme;
+        private (AppTheme appTheme, Accent accent) currentTheme;
         private List<AccentItem> accentItems;
 
         public SettingsWindow(IConfigurationManager configManager, IHelper help, AddExtensionsWindow extWindow, RegexExpressionsWindow expWindow)
@@ -58,9 +58,9 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void SetupView()
         {
-            //grab the current theme
-            currentTheme = ThemeManager.DetectAppStyle(System.Windows.Application.Current);
-            AccentItem currentAccentItem = accentItems.Where(x => x.AccentName.Equals(currentTheme.Item2.Name)).FirstOrDefault();
+            //grab the current theme            
+            currentTheme = ThemeManager.DetectAppStyle(System.Windows.Application.Current).ToValueTuple<AppTheme, Accent>();
+            AccentItem currentAccentItem = accentItems.Where(x => x.AccentName.Equals(currentTheme.accent.Name)).FirstOrDefault();
             ChangeThemeCombo.SelectedItem = currentAccentItem;
             //grab the current settings from the factory and populate our UI
             originalSettings = new Settings()
@@ -280,7 +280,7 @@ namespace Sarjee.SimpleRenamer.Views
             try
             {
                 AccentItem selectedColor = (AccentItem)ChangeThemeCombo.SelectedItem;
-                ThemeManager.ChangeAppStyle(System.Windows.Application.Current, selectedColor.Accent, currentTheme.Item1);
+                ThemeManager.ChangeAppStyle(System.Windows.Application.Current, selectedColor.Accent, currentTheme.appTheme);
             }
             catch (Exception)
             {
