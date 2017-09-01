@@ -119,7 +119,7 @@ namespace Sarjee.SimpleRenamer.Common
 
         private int[] httpStatusCodesWorthRetrying = { 408, 500, 502, 503, 504, 598, 599 };
         /// <summary>
-        /// Executes the rest request.
+        /// Executes a rest request.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="restClient">The rest client.</param>
@@ -129,8 +129,9 @@ namespace Sarjee.SimpleRenamer.Common
         /// <param name="maxBackoffSeconds">The maximum backoff seconds.</param>
         /// <param name="loginCallback">The login callback.</param>
         /// <returns></returns>
-        /// <exception cref="System.TimeoutException"></exception>
-        /// <exception cref="System.UnauthorizedAccessException"></exception>
+        /// <exception cref="TimeoutException"></exception>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>        
         public async Task<T> ExecuteRestRequestAsync<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, Func<Task> loginCallback = null) where T : class
         {
             int currentRetry = 0;
@@ -160,7 +161,14 @@ namespace Sarjee.SimpleRenamer.Common
                     //else throw the responses exception
                     else
                     {
-                        throw response?.ErrorException;
+                        if (response?.ErrorException != null)
+                        {
+                            throw response?.ErrorException;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException();
+                        }
                     }
                 }
                 catch (TimeoutException)

@@ -1,7 +1,11 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using RestSharp;
 using Sarjee.SimpleRenamer.Common;
 using Sarjee.SimpleRenamer.Common.Interface;
+using Sarjee.SimpleRenamer.Common.TV.Model;
+using Sarjee.SimpleRenamer.L0.Tests.Mocks;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,6 +15,16 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
     [TestClass]
     public class HelperTests
     {
+        private static IRestClient _restClient;
+        private static JsonSerializerSettings _jsonSerializerSettings;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext testContext)
+        {
+            _restClient = new RestClient();
+            _jsonSerializerSettings = new JsonSerializerSettings();
+        }
+
         private IHelper GetHelper()
         {
             IHelper helper = new Helper();
@@ -250,5 +264,87 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             action1.ShouldNotThrow();
         }
         #endregion ExponentialDelayAsync
+
+        #region ExecuteRestRequestAsync        
+        [TestMethod]
+        [TestCategory(TestCategories.Common)]
+        public void Helper_ExecuteRestRequestAsync_Testable_Success()
+        {
+            IHelper helper = new TestableHelper();
+
+            Token result = null;
+            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, null);
+
+            action1.ShouldNotThrow();
+            result.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Common)]
+        public void Helper_ExecuteRestRequestAsync_Testable_RetryableStatusCode_Success()
+        {
+            IHelper helper = new ErrorCodeTestableHelper();
+
+            Token result = null;
+            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, null);
+
+            action1.ShouldNotThrow();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Common)]
+        public void Helper_ExecuteRestRequestAsync_Testable_RetryableWebException_Success()
+        {
+            IHelper helper = new WebExceptionTestableHelper();
+
+            Token result = null;
+            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, null);
+
+            action1.ShouldNotThrow();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Common)]
+        public void Helper_ExecuteRestRequestAsync_Testable_ErrorException_Success()
+        {
+            IHelper helper = new ErrorExceptionTestableHelper();
+
+            Token result = null;
+            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, null);
+
+            action1.ShouldThrow<ArgumentNullException>();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Common)]
+        public void Helper_ExecuteRestRequestAsync_Testable_UnauthorizedNoCallback_ThrowsException()
+        {
+            IHelper helper = new UnauthorizedTestableHelper();
+
+            Token result = null;
+            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, null);
+
+            action1.ShouldThrow<UnauthorizedAccessException>();
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        [TestCategory(TestCategories.Common)]
+        public void Helper_ExecuteRestRequestAsync_Testable_UnauthorizedWithCallback_Success()
+        {
+            int loginFailures = 0;
+            IHelper helper = new UnauthorizedTestableHelper();
+
+            Token result = null;
+            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, async () => { await Task.Delay(TimeSpan.FromMilliseconds(1)); loginFailures++; });
+
+            action1.ShouldNotThrow();
+            result.Should().BeNull();
+            loginFailures.Should().BeGreaterThan(0);
+        }
+        #endregion ExecuteRestRequestAsync
     }
 }
