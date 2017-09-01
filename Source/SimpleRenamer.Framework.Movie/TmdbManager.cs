@@ -1,14 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RestSharp;
-using Sarjee.SimpleRenamer.Common.Helpers;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
 using System.Globalization;
-using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.Movie
@@ -64,63 +61,6 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         }
 
         /// <summary>
-        /// Executes the request asynchronous.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns></returns>
-        /// <remarks>virtual method for testability</remarks>
-        protected virtual async Task<IRestResponse> ExecuteRequestAsync(IRestRequest request)
-        {
-            return await _restClient.ExecuteTaskAsync(request);
-        }
-
-        private int[] httpStatusCodesWorthRetrying = { 408, 500, 502, 503, 504, 598, 599 };
-        private async Task<T> ExecuteRestRequest<T>(IRestRequest restRequest) where T : class
-        {
-            int currentRetry = 0;
-            int offset = ThreadLocalRandom.Instance.Next(100, 500);
-            while (currentRetry < _maxRetryCount)
-            {
-                try
-                {
-                    //execute the request
-                    IRestResponse response = await ExecuteRequestAsync(restRequest);
-                    //if no errors and statuscode ok then deserialize the response
-                    if (response?.ErrorException == null && response?.StatusCode == HttpStatusCode.OK)
-                    {
-                        T result = JsonConvert.DeserializeObject<T>(response.Content, _jsonSerializerSettings);
-                        return result;
-                    }
-                    //if status code indicates transient error then throw timeoutexception
-                    else if (httpStatusCodesWorthRetrying.Contains((int)response?.StatusCode))
-                    {
-                        throw new TimeoutException();
-                    }
-                    //else throw the responses exception
-                    else
-                    {
-                        if (response.ErrorException != null)
-                        {
-                            throw response.ErrorException;
-                        }
-                        //if no exception then do nothing and return null
-                    }
-                }
-                catch (TimeoutException)
-                {
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-                catch (WebException)
-                {
-                    currentRetry++;
-                    await _helper.ExponentialDelayAsync(offset, currentRetry, _maxBackoffSeconds);
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
         /// Searches the movie by name.
         /// </summary>
         /// <param name="movieName">Name of the movie.</param>
@@ -143,7 +83,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 request.AddParameter("year", movieYear.ToString());
             }
 
-            return await ExecuteRestRequest<SearchContainer<SearchMovie>>(request);
+            return await _helper.ExecuteRestRequest<SearchContainer<SearchMovie>>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
         }
 
         /// <summary>
@@ -164,7 +104,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             request.AddParameter("append_to_response", "credits", ParameterType.QueryString);
 
             //execute the request
-            return await ExecuteRestRequest<Common.Movie.Model.Movie>(request);
+            return await _helper.ExecuteRestRequest<Common.Movie.Model.Movie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
         }
 
         /// <summary>
@@ -183,7 +123,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             IRestRequest request = new RestRequest($"/3/movie/{movieId}", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
-            return await ExecuteRestRequest<SearchMovie>(request);
+            return await _helper.ExecuteRestRequest<SearchMovie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
         }
 
         /// <summary>
@@ -221,10 +161,10 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
             //execute the request
-            TMDbConfig tmdbConfig = await ExecuteRestRequest<TMDbConfig>(request);
-            if (tmdbConfig != null)
+            TMDbConfig tmdbConfig = await _helper.ExecuteRestRequest<TMDbConfig>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            if (!string.IsNullOrWhiteSpace(tmdbConfig?.Images?.SecureBaseUrl))
             {
-                return tmdbConfig.Images.BaseUrl;
+                return tmdbConfig.Images.SecureBaseUrl;
             }
             else
             {

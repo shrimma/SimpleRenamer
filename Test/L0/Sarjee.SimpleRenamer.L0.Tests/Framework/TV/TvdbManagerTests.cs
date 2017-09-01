@@ -1,11 +1,12 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Newtonsoft.Json;
+using RestSharp;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Model;
 using Sarjee.SimpleRenamer.Framework.TV;
-using Sarjee.SimpleRenamer.L0.Tests.Mocks;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -26,17 +27,9 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             mockHelper = mockRepository.Create<IHelper>();
         }
 
-        private ITvdbManager GetTvdbManager(bool getTestableVersion = false)
+        private ITvdbManager GetTvdbManager()
         {
-            ITvdbManager tvdbManager = null;
-            if (getTestableVersion)
-            {
-                tvdbManager = new TestableTvdbManager(mockConfigurationManager.Object, mockHelper.Object);
-            }
-            else
-            {
-                tvdbManager = new TvdbManager(mockConfigurationManager.Object, mockHelper.Object);
-            }
+            ITvdbManager tvdbManager = new TvdbManager(mockConfigurationManager.Object, mockHelper.Object);
             tvdbManager.Should().NotBeNull();
             return tvdbManager;
         }
@@ -82,7 +75,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         [TestCategory(TestCategories.TV)]
         public void TvdbManager_SearchSeriesByNameAsync_Success()
         {
-            ITvdbManager tvdbManager = GetTvdbManager(true);
+            mockHelper.Setup(x => x.ExecuteRestRequest<Token>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new Token("jwtToken"));
+            mockHelper.Setup(x => x.ExecuteRestRequest<SeriesSearchDataList>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesSearchDataList() { SearchResults = new List<SeriesSearchData>() { new SeriesSearchData(null, null, null, 1, null, null, "Castle", null), new SeriesSearchData(null, null, null, 2, null, null, "KillJoys", null) } });
+            ITvdbManager tvdbManager = GetTvdbManager();
+
             List<SeriesSearchData> result = null;
             Func<Task> action1 = async () => result = await tvdbManager.SearchSeriesByNameAsync("seriesName");
 
@@ -111,18 +107,24 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         [TestCategory(TestCategories.TV)]
         public void TvdbManager_GetSeriesByIdAsync_Success()
         {
-            ITvdbManager tvdbManager = GetTvdbManager(true);
+            mockHelper.Setup(x => x.ExecuteRestRequest<Token>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new Token("jwtToken"));
+            mockHelper.Setup(x => x.ExecuteRestRequest<SeriesData>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesData() { Data = new Series(1, "Game of Thrones") });
+            mockHelper.Setup(x => x.ExecuteRestRequest<SeriesActors>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesActors() { Data = new List<SeriesActorsData>() { new SeriesActorsData(1, 1, "Bob") } });
+            mockHelper.Setup(x => x.ExecuteRestRequest<SeriesEpisodes>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesEpisodes() { Data = new List<BasicEpisode>() { new BasicEpisode(1, 1, 1, 1, 1, "EpisodeName", 1, "overview") } });
+            mockHelper.Setup(x => x.ExecuteRestRequest<SeriesImageQueryResults>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesImageQueryResults() { Data = new List<SeriesImageQueryResult>() { new SeriesImageQueryResult(1, "keytype", "subkey") } });
+            ITvdbManager tvdbManager = GetTvdbManager();
+
             CompleteSeries result = null;
             Func<Task> action1 = async () => result = await tvdbManager.GetSeriesByIdAsync("tmdbId");
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
             result.Series.SeriesName.Should().Be("Game of Thrones");
-            result.Actors.Count.Should().Be(2);
-            result.Episodes.Count.Should().Be(3);
-            result.SeriesBanners.Count.Should().Be(30);
-            result.SeasonPosters.Count.Should().Be(30);
-            result.Posters.Count.Should().Be(30);
+            result.Actors.Count.Should().Be(1);
+            result.Episodes.Count.Should().Be(1);
+            result.SeriesBanners.Count.Should().Be(1);
+            result.SeasonPosters.Count.Should().Be(1);
+            result.Posters.Count.Should().Be(1);
         }
         #endregion GetSeriesByIdAsync
 
@@ -152,60 +154,6 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             result.Should().Contain("bannerPath");
             result.Should().Contain("tvdb");
         }
-        #endregion GetBannerUri
-
-        #region RetryHandling
-        [TestMethod]
-        [TestCategory(TestCategories.TV)]
-        public void TvdbManager_RetryHandling_StatusCode_ReturnsNull_Success()
-        {
-            //get testable tmdbmanager
-            ITvdbManager tvdbManager = new ErrorCodeTestableTvdbManager(mockConfigurationManager.Object, mockHelper.Object);
-            CompleteSeries result = null;
-            Func<Task> action1 = async () => result = await tvdbManager.GetSeriesByIdAsync("tmdbId");
-
-            action1.ShouldNotThrow();
-            result.Should().BeNull();
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.TV)]
-        public void TvdbManager_RetryHandling_WebException_ReturnsNull_Success()
-        {
-            //get testable tmdbmanager
-            ITvdbManager tvdbManager = new WebExceptionTestableTvdbManager(mockConfigurationManager.Object, mockHelper.Object);
-            CompleteSeries result = null;
-            Func<Task> action1 = async () => result = await tvdbManager.GetSeriesByIdAsync("tmdbId");
-
-            action1.ShouldNotThrow();
-            result.Should().BeNull();
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.TV)]
-        public void TvdbManager_RetryHandling_Unauthorized_ReturnsNull_Success()
-        {
-            //get testable tmdbmanager
-            ITvdbManager tvdbManager = new UnauthorizedTestableTvdbManager(mockConfigurationManager.Object, mockHelper.Object);
-            List<SeriesSearchData> result = null;
-            Func<Task> action1 = async () => result = await tvdbManager.SearchSeriesByNameAsync("name");
-
-            action1.ShouldNotThrow();
-            result.Should().BeNull();
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.TV)]
-        public void TvdbManager_RetryHandling_ErrorException_ThrowsException_Success()
-        {
-            //get testable tmdbmanager
-            ITvdbManager tvdbManager = new ErrorExceptionTestableTvdbManager(mockConfigurationManager.Object, mockHelper.Object);
-            CompleteSeries result = null;
-            Func<Task> action1 = async () => result = await tvdbManager.GetSeriesByIdAsync("tmdbId");
-
-            action1.ShouldThrow<ArgumentNullException>();
-            result.Should().BeNull();
-        }
-        #endregion RetryHandling
+        #endregion GetBannerUri        
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Jot;
-using MahApps.Metro;
 using MahApps.Metro.Controls;
 using Sarjee.SimpleRenamer.Common.EventArguments;
 using Sarjee.SimpleRenamer.Common.Interface;
@@ -49,7 +48,7 @@ namespace Sarjee.SimpleRenamer
         private string EditShowTvdbId;
         private string MediaTypePath;
         private string MediaTypeShowName;
-        private (AppTheme appTheme, Accent accent) currentTheme;
+
         private static StateTracker _stateTracker = new StateTracker();
 
         public MainWindow(ILogger logger, ITVShowMatcher tvShowMatcher, IMovieMatcher movieMatcher, IDependencyInjectionContext injectionContext, IActionMatchedFiles actionMatchedFiles, IScanFiles scanFiles, IConfigurationManager configManager)
