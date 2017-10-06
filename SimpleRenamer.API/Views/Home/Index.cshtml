@@ -1,0 +1,21 @@
+﻿@using Microsoft.Extensions.FileProviders
+@model  IDirectoryContents
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h2>Folder Contents</h2>
+
+<ul>
+    @foreach (IFileInfo item in Model)
+    {
+        if (item.IsDirectory)
+        {
+            <li><strong>@item.Name</strong> - Directory</li>
+        }
+        else
+        {
+            <li><strong>@item.Name</strong> - @item.PhysicalPath </li>
+        }
+    }
+</ul>
