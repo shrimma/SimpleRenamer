@@ -4,6 +4,7 @@ using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Logging;
 using System;
+using System.Diagnostics.Tracing;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Logging
 {
@@ -88,15 +89,25 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
         }
         #endregion Constructor
 
-        #region TraceMessage
+        #region TraceMessage       
         [TestMethod]
         [TestCategory(TestCategories.Logger)]
         public void Logger_TraceMessage_Success()
         {
             ILogger logger = GetLogger();
-            Action action1 = () => logger.TraceMessage("hello world");
+            Action action1 = () => logger.TraceMessage("hello world", EventLevel.Verbose);
+            Action action2 = () => logger.TraceMessage("hello world", EventLevel.LogAlways);
+            Action action3 = () => logger.TraceMessage("hello world", EventLevel.Informational);
+            Action action4 = () => logger.TraceMessage("hello world", EventLevel.Warning);
+            Action action5 = () => logger.TraceMessage("hello world", EventLevel.Error);
+            Action action6 = () => logger.TraceMessage("hello world", EventLevel.Critical);
 
             action1.ShouldNotThrow();
+            action2.ShouldNotThrow();
+            action3.ShouldNotThrow();
+            action4.ShouldNotThrow();
+            action5.ShouldNotThrow();
+            action6.ShouldNotThrow();
         }
         #endregion TraceMessage
 
