@@ -138,7 +138,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                         season = fileMatch.Groups["season_num"].Value;
                         episode = fileMatch.Groups["ep_num"].Value;
 
-                        if (!string.IsNullOrEmpty(showname) && !string.IsNullOrEmpty(season) && !string.IsNullOrEmpty(episode))
+                        if (!string.IsNullOrWhiteSpace(showname) && !string.IsNullOrWhiteSpace(season) && !string.IsNullOrWhiteSpace(episode))
                         {
                             //if we found a showname, season, and episode in the filename then this is a match
                             _logger.TraceMessage($"Matched show details for {fileName}.", EventLevel.Verbose);
@@ -152,7 +152,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                         yearString = fileMatch.Groups["movie_year"].Value;
                         int.TryParse(yearString, out year);
 
-                        if (!string.IsNullOrEmpty(movieTitle) && !string.IsNullOrEmpty(yearString))
+                        if (!string.IsNullOrWhiteSpace(movieTitle) && !string.IsNullOrWhiteSpace(yearString))
                         {
                             //if we found a movie title and year then this is a match
                             _logger.TraceMessage($"Matched movie details for {fileName}.", EventLevel.Verbose);

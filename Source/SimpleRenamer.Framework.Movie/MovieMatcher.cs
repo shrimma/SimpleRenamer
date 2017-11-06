@@ -64,7 +64,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                     try
                     {
                         string desc = "N/A";
-                        if (!string.IsNullOrEmpty(s.Overview))
+                        if (!string.IsNullOrWhiteSpace(s.Overview))
                         {
                             if (s.Overview.Length > 50)
                             {
@@ -170,7 +170,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             Common.Movie.Model.Movie matchedMovie = await _tmdbManager.GetMovieAsync(movieId);
 
             BitmapImage bannerImage = null;
-            if (!string.IsNullOrEmpty(matchedMovie.PosterPath))
+            if (!string.IsNullOrWhiteSpace(matchedMovie.PosterPath))
             {
                 bannerImage = InitializeBannerImage(new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath)));
             }

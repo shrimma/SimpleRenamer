@@ -138,21 +138,33 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             file.ShowName = series.Series?.SeriesName;
             if (series.Episodes?.Count > 0)
             {
-                file.EpisodeName = series.Episodes.Where(s => s?.AiredSeason.Value == seasonAsInt && s?.AiredEpisodeNumber == episodeNumber).FirstOrDefault().EpisodeName;
+                BasicEpisode episode = series.Episodes.FirstOrDefault(s => s?.AiredSeason.Value == seasonAsInt && s?.AiredEpisodeNumber == episodeNumber);
+                if (episode != null && !string.IsNullOrWhiteSpace(episode.EpisodeName))
+                {
+                    file.EpisodeName = episode.EpisodeName;
+                }
             }
             if (series.SeasonPosters?.Count > 0)
             {
                 List<SeriesImageQueryResult> seasonBanners = series.SeasonPosters.Where(s => s.SubKey.Equals(file.Season) || s.SubKey.Equals(seasonAsInt.ToString())).ToList();
                 if (seasonBanners?.Count > 0)
                 {
-                    file.SeasonImage = seasonBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName;
-                    seasonBannerFound = true;
+                    SeriesImageQueryResult seasonBanner = seasonBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault();
+                    if (seasonBanner != null && !string.IsNullOrWhiteSpace(seasonBanner.FileName))
+                    {
+                        file.SeasonImage = seasonBanner.FileName;
+                        seasonBannerFound = true;
+                    }
                 }
             }
             if (series.Posters?.Count > 0)
             {
-                file.ShowImage = series.Posters.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName;
-                seriesBannerFound = true;
+                SeriesImageQueryResult poster = series.Posters.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault();
+                if (poster != null && !string.IsNullOrWhiteSpace(poster.FileName))
+                {
+                    file.ShowImage = poster.FileName;
+                    seriesBannerFound = true;
+                }
             }
             file.NewFileName = GenerateFileName(file.ShowName, file.Season, file.EpisodeNumber, file.EpisodeName);
             file.ActionThis = true;
@@ -343,7 +355,15 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             BitmapImage bannerImage = null;
             if (matchedSeries?.SeriesBanners?.Count > 0)
             {
-                bannerImage = InitializeBannerImage(new Uri(_tvdbManager.GetBannerUri(matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault().FileName)));
+                SeriesImageQueryResult banner = matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(banner?.FileName))
+                {
+                    bannerImage = InitializeBannerImage(new Uri(_tvdbManager.GetBannerUri(banner.FileName)));
+                }
+                else
+                {
+                    bannerImage = new BitmapImage();
+                }
             }
             else
             {

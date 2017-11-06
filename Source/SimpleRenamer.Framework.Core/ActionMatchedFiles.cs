@@ -80,17 +80,17 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
                 //concat final list of files to move
                 List<MatchedFile> filesToMove = new List<MatchedFile>();
-                if (tvShowsToMove != null && tvShowsToMove.Count > 0)
+                if (tvShowsToMove?.Count > 0)
                 {
                     filesToMove.AddRange(tvShowsToMove);
                 }
-                if (moviesToMove != null && moviesToMove.Count > 0)
+                if (moviesToMove?.Count > 0)
                 {
                     filesToMove.AddRange(moviesToMove);
                 }
 
                 //move these files
-                if (filesToMove != null && filesToMove.Count > 0)
+                if (filesToMove?.Count > 0)
                 {
                     await MoveFiles(filesToMove, ct);
                 }
@@ -113,7 +113,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
                 ct.ThrowIfCancellationRequested();
-                Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(file.TVDBShowId)).FirstOrDefault();
+                Mapping mapping = snm.Mappings.FirstOrDefault(x => x.TVDBShowID.Equals(file.TVDBShowId));
                 MatchedFile result = await _fileMover.CreateDirectoriesAndDownloadBannersAsync(file, mapping, true);
                 //fire event here
                 OnFilePreProcessed(new FilePreProcessedEventArgs());

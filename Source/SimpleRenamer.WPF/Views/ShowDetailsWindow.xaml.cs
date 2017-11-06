@@ -73,7 +73,7 @@ namespace Sarjee.SimpleRenamer.Views
             (CompleteSeries series, BitmapImage banner) = await _showMatcher.GetShowWithBannerAsync(showId);
 
             //set the title, show description, rating and firstaired values
-            this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.SeriesName, string.IsNullOrEmpty(series.Series.SiteRating.ToString()) ? "0.0" : series.Series.SiteRating.ToString(), string.IsNullOrEmpty(series.Series.FirstAired.ToString()) ? "1900" : series.Series.FirstAired.ToString());
+            this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.SeriesName, string.IsNullOrWhiteSpace(series.Series.SiteRating.ToString()) ? "0.0" : series.Series.SiteRating.ToString(), string.IsNullOrWhiteSpace(series.Series.FirstAired.ToString()) ? "1900" : series.Series.FirstAired.ToString());
             ShowDescriptionTextBox.Text = series.Series.Overview;
 
             //set the actor listbox

@@ -61,7 +61,6 @@
     <Compile Include="FileWatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScanFiles.cs" />
-    <Compile Include="Win32FileIO.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SimpleRenamer.Common.Movie\SimpleRenamer.Common.Movie.csproj">

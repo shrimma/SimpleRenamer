@@ -110,15 +110,15 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
                 //add the tv shows and movies to the same list and return this
                 List<MatchedFile> scannedFiles = new List<MatchedFile>();
-                if (scannedEpisodes != null && scannedEpisodes.Count > 0)
+                if (scannedEpisodes?.Count > 0)
                 {
                     scannedFiles.AddRange(scannedEpisodes);
                 }
-                if (scannedMovies != null && scannedMovies.Count > 0)
+                if (scannedMovies?.Count > 0)
                 {
                     scannedFiles.AddRange(scannedMovies);
                 }
-                if (otherVideoFiles != null & otherVideoFiles.Count > 0)
+                if (otherVideoFiles?.Count > 0)
                 {
                     scannedFiles.AddRange(otherVideoFiles);
                 }
@@ -151,8 +151,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
             //ONLY DO ALL THIS STUFF IF WE ARE RENAMING FILES
             //find unique show ids or show names                        
-            List<string> uniqueShowIds = matchedFiles.Where(x => !string.IsNullOrEmpty(x.TVDBShowId)).Select(x => x.TVDBShowId).Distinct().ToList();
-            List<string> uniqueShowNames = matchedFiles.Where(x => string.IsNullOrEmpty(x.TVDBShowId)).Select(x => x.ShowName).Distinct().ToList();
+            List<string> uniqueShowIds = matchedFiles.Where(x => !string.IsNullOrWhiteSpace(x.TVDBShowId)).Select(x => x.TVDBShowId).Distinct().ToList();
+            List<string> uniqueShowNames = matchedFiles.Where(x => string.IsNullOrWhiteSpace(x.TVDBShowId)).Select(x => x.ShowName).Distinct().ToList();
 
             //block for searching unique show ids
             var searchShowIdsAsyncBlock = new ActionBlock<string>(async (showId) =>
