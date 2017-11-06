@@ -105,19 +105,19 @@ namespace Sarjee.SimpleRenamer.Common.Model
             unchecked
             {
                 int hashCode = (int)2166136261;
-                if (!string.IsNullOrEmpty(FileShowName))
+                if (!string.IsNullOrWhiteSpace(FileShowName))
                 {
                     hashCode = (hashCode * 16777619) + FileShowName.GetHashCode();
                 }
-                if (!string.IsNullOrEmpty(TVDBShowName))
+                if (!string.IsNullOrWhiteSpace(TVDBShowName))
                 {
                     hashCode = (hashCode * 16777619) + TVDBShowName.GetHashCode();
                 }
-                if (!string.IsNullOrEmpty(TVDBShowID))
+                if (!string.IsNullOrWhiteSpace(TVDBShowID))
                 {
                     hashCode = (hashCode * 16777619) + TVDBShowID.GetHashCode();
                 }
-                if (!string.IsNullOrEmpty(CustomFolderName))
+                if (!string.IsNullOrWhiteSpace(CustomFolderName))
                 {
                     hashCode = (hashCode * 16777619) + CustomFolderName.GetHashCode();
                 }

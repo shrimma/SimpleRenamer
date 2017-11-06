@@ -102,19 +102,19 @@ namespace Sarjee.SimpleRenamer.Common.Model
             unchecked
             {
                 int hashCode = (int)2166136261;
-                if (!string.IsNullOrEmpty(Id))
+                if (!string.IsNullOrWhiteSpace(Id))
                 {
                     hashCode = (hashCode * 16777619) + Id.GetHashCode();
                 }
-                if (!string.IsNullOrEmpty(ShowName))
+                if (!string.IsNullOrWhiteSpace(ShowName))
                 {
                     hashCode = (hashCode * 16777619) + ShowName.GetHashCode();
                 }
-                if (!string.IsNullOrEmpty(Year))
+                if (!string.IsNullOrWhiteSpace(Year))
                 {
                     hashCode = (hashCode * 16777619) + Year.GetHashCode();
                 }
-                if (!string.IsNullOrEmpty(Description))
+                if (!string.IsNullOrWhiteSpace(Description))
                 {
                     hashCode = (hashCode * 16777619) + Description.GetHashCode();
                 }

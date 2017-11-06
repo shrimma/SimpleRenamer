@@ -43,7 +43,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
         /// <param name="isForTvShow">if set to <c>true</c> [is tv show].</param>
         public RegexExpression(string expression, bool isEnabled, bool isForTvShow)
         {
-            if (string.IsNullOrEmpty(expression))
+            if (string.IsNullOrWhiteSpace(expression))
             {
                 throw new ArgumentNullException(nameof(expression));
             }

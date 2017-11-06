@@ -74,9 +74,9 @@ namespace Sarjee.SimpleRenamer.Views
             (Movie movie, BitmapImage banner) = await _movieMatcher.GetMovieWithBannerAsync(movieId, cts.Token);
 
             //set the title, show description, rating and firstaired values
-            this.Title = string.Format("{0} - Rating {1} - Year {2}", movie.Title, string.IsNullOrEmpty(movie.VoteAverage.ToString()) ? "0.0" : movie.VoteAverage.ToString(), movie.ReleaseDate.HasValue ? movie.ReleaseDate.Value.Year.ToString() : "1900");
+            this.Title = string.Format("{0} - Rating {1} - Year {2}", movie.Title, string.IsNullOrWhiteSpace(movie.VoteAverage.ToString()) ? "0.0" : movie.VoteAverage.ToString(), movie.ReleaseDate.HasValue ? movie.ReleaseDate.Value.Year.ToString() : "1900");
 
-            if (!string.IsNullOrEmpty(movie.Tagline))
+            if (!string.IsNullOrWhiteSpace(movie.Tagline))
             {
                 MovieTagLineTextBox.Text = movie.Tagline;
                 MovieTagLineTextBox.Visibility = Visibility.Visible;

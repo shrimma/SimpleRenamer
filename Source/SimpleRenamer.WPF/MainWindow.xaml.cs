@@ -100,19 +100,19 @@ namespace Sarjee.SimpleRenamer
 
         private bool IsScanEnabled()
         {
-            if (string.IsNullOrEmpty(settings.DestinationFolderMovie) && string.IsNullOrEmpty(settings.DestinationFolderTV))
+            if (string.IsNullOrWhiteSpace(settings?.DestinationFolderMovie) && string.IsNullOrWhiteSpace(settings?.DestinationFolderTV))
             {
                 ScanButton.ToolTip = "Destination TV and Movie folders must be configured in settings.";
                 return false;
             }
-            else if (settings.WatchFolders.Count < 1)
+            else if (settings?.WatchFolders?.Count < 1)
             {
                 ScanButton.ToolTip = "At least one Watch Folder must be configured in settings.";
                 return false;
             }
             else
             {
-                ScanButton.ToolTip = null; ;
+                ScanButton.ToolTip = null;
                 return true;
             }
         }
@@ -264,7 +264,7 @@ namespace Sarjee.SimpleRenamer
             CancelButton.Visibility = Visibility.Hidden;
             ProgressTextStackPanel.Visibility = Visibility.Hidden;
             ProgressBarStackPanel.Visibility = Visibility.Hidden;
-            if (scannedEpisodes.Count > 0)
+            if (scannedEpisodes?.Count > 0)
             {
                 ActionButton.IsEnabled = true;
             }
@@ -350,7 +350,7 @@ namespace Sarjee.SimpleRenamer
                 //process the folders and jpg downloads async
                 _logger.TraceMessage("Action - Starting", EventLevel.Informational);
                 FileMoveProgressBar.Value = 0;
-                FileMoveProgressBar.Maximum = (scannedEpisodes.Where(x => x.ActionThis == true).Count()) * 2;
+                FileMoveProgressBar.Maximum = scannedEpisodes.Count(x => x.ActionThis == true) * 2;
                 await _actionMatchedFiles.ActionAsync(scannedEpisodes, cts.Token);
                 //add a bit of delay before the progress bar disappears
                 await Task.Delay(TimeSpan.FromMilliseconds(300));
@@ -536,13 +536,13 @@ namespace Sarjee.SimpleRenamer
             {
                 _logger.TraceMessage("Detail button clicked.", EventLevel.Verbose);
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
-                if (tempEp.FileType == FileType.TvShow)
+                if (tempEp?.FileType == FileType.TvShow)
                 {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                     showDetailsWindow.GetSeriesInfo(tempEp.TVDBShowId);
                     showDetailsWindow.ShowDialog();
                 }
-                else if (tempEp.FileType == FileType.Movie)
+                else if (tempEp?.FileType == FileType.Movie)
                 {
                     movieDetailsWindow.GetMovieInfo(tempEp.TMDBShowId.ToString());
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
@@ -561,13 +561,13 @@ namespace Sarjee.SimpleRenamer
             {
                 _logger.TraceMessage("Edit button clicked.", EventLevel.Verbose);
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
-                if (tempEp.FileType == FileType.TvShow)
+                if (tempEp?.FileType == FileType.TvShow)
                 {
                     _logger.TraceMessage(string.Format("Editing - show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.EpisodeNumber, tempEp.TVDBShowId), EventLevel.Verbose);
                     ShowNameMapping snm = _configurationManager.ShowNameMappings;
-                    if (snm != null && snm.Mappings.Count > 0)
+                    if (snm?.Mappings?.Count > 0)
                     {
-                        Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(tempEp.TVDBShowId)).FirstOrDefault();
+                        Mapping mapping = snm.Mappings.FirstOrDefault(x => x.TVDBShowID.Equals(tempEp.TVDBShowId));
                         if (mapping != null)
                         {
                             _logger.TraceMessage(string.Format("Edit - Mapping found {0}", mapping.FileShowName), EventLevel.Verbose);
@@ -590,7 +590,7 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
-                string folderPath = Path.Combine(settings.DestinationFolderTV, string.IsNullOrEmpty(mapping.CustomFolderName) ? mapping.TVDBShowName : mapping.CustomFolderName);
+                string folderPath = Path.Combine(settings.DestinationFolderTV, string.IsNullOrWhiteSpace(mapping.CustomFolderName) ? mapping.TVDBShowName : mapping.CustomFolderName);
                 EditShowCurrentFolder = mapping.CustomFolderName;
                 EditShowTvdbShowName = tempEp.ShowName;
                 EditShowTvdbId = tempEp.TVDBShowId;
@@ -615,11 +615,11 @@ namespace Sarjee.SimpleRenamer
                 {
                     //if the custom folder name hasn't changed then don't do anything
                 }
-                else if (EditShowTvdbShowName.Equals(currentText) && string.IsNullOrEmpty(EditShowCurrentFolder))
+                else if (EditShowTvdbShowName.Equals(currentText) && string.IsNullOrWhiteSpace(EditShowCurrentFolder))
                 {
                     //if the new folder name equals the tvshowname and no customfolder name then dont do anything
                 }
-                else if (EditShowTvdbShowName.Equals(currentText) && !string.IsNullOrEmpty(EditShowCurrentFolder))
+                else if (EditShowTvdbShowName.Equals(currentText) && !string.IsNullOrWhiteSpace(EditShowCurrentFolder))
                 {
                     //if the new folder name equals the tvshowname and there is a customfoldername already then reset customfoldername to blank
                     currentText = string.Empty;
@@ -634,9 +634,9 @@ namespace Sarjee.SimpleRenamer
                 if (updateMapping)
                 {
                     ShowNameMapping snm = _configurationManager.ShowNameMappings;
-                    if (snm != null && snm.Mappings.Count > 0)
+                    if (snm?.Mappings?.Count > 0)
                     {
-                        Mapping mapping = snm.Mappings.Where(x => x.TVDBShowID.Equals(EditShowTvdbId)).FirstOrDefault();
+                        Mapping mapping = snm.Mappings.FirstOrDefault(x => x.TVDBShowID.Equals(EditShowTvdbId));
                         if (mapping != null)
                         {
                             mapping.CustomFolderName = currentText;

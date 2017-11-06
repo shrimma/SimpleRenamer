@@ -59,7 +59,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             {
                 //use the destination folder and showname etc to define final destination
                 string showDirectory = string.Empty;
-                if (mapping != null && !string.IsNullOrEmpty(mapping.CustomFolderName))
+                if (!string.IsNullOrWhiteSpace(mapping?.CustomFolderName))
                 {
                     showDirectory = Path.Combine(_settings.DestinationFolderTV, mapping.CustomFolderName);
                 }
@@ -83,12 +83,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     {
                         _logger.TraceMessage($"Downloading images for {episode.SourceFilePath}", EventLevel.Verbose);
                         bool bannerResult;
-                        if (!string.IsNullOrEmpty(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
+                        if (!string.IsNullOrWhiteSpace(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
                         {
                             //Grab Show banner if required
                             bannerResult = await _bannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
                         }
-                        if (!string.IsNullOrEmpty(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))
+                        if (!string.IsNullOrWhiteSpace(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))
                         {
                             //Grab Season banner if required
                             bannerResult = await _bannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
@@ -252,7 +252,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 }
 
             } // try
-            catch (System.Threading.ThreadAbortException tae)
+            catch (ThreadAbortException tae)
             {
                 _logger.TraceException(tae);
                 return;

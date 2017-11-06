@@ -60,7 +60,7 @@ namespace Sarjee.SimpleRenamer.Views
         {
             //grab the current theme            
             currentTheme = ThemeManager.DetectAppStyle(System.Windows.Application.Current).ToValueTuple<AppTheme, Accent>();
-            AccentItem currentAccentItem = accentItems.Where(x => x.AccentName.Equals(currentTheme.accent.Name)).FirstOrDefault();
+            AccentItem currentAccentItem = accentItems.FirstOrDefault(x => x.AccentName.Equals(currentTheme.accent.Name));
             ChangeThemeCombo.SelectedItem = currentAccentItem;
             //grab the current settings from the factory and populate our UI
             originalSettings = new Settings()
