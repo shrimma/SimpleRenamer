@@ -6,6 +6,8 @@ using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
 using System.Globalization;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.Movie
@@ -19,7 +21,9 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         private string _posterBaseUri;
         private int _maxRetryCount = 10;
         private int _maxBackoffSeconds = 2;
-        private IRestClient _restClient;
+        private const string apiUri = "https://api.themoviedb.org";
+        private string defaultQueryParams = string.Empty;
+        private HttpClient _httpClient;
         private IHelper _helper;
         private JsonSerializerSettings _jsonSerializerSettings;
 
@@ -41,10 +45,14 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             }
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
 
-            _restClient = new RestClient("https://api.themoviedb.org");
-            _restClient.AddDefaultHeader("content-type", "application/json");
-            _restClient.AddDefaultParameter("api_key", configManager.TmDbApiKey, ParameterType.QueryString);
-            _restClient.AddDefaultParameter("language", CultureInfo.CurrentCulture.Name, ParameterType.QueryString);
+            _httpClient = new HttpClient()
+            {
+                BaseAddress = new Uri(apiUri),
+            };
+            _httpClient.DefaultRequestHeaders.Accept.Clear();
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _httpClient.AddDefaultParameter("api_key", configManager.TmDbApiKey, ParameterType.QueryString);
+            _httpClient.AddDefaultParameter("language", CultureInfo.CurrentCulture.Name, ParameterType.QueryString);
             _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
         }
 
@@ -75,6 +83,8 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             }
 
             //create the request
+            string uri = $"/3/search/movie?query?{movieName}"
+            HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, "/3/search/movie");
             IRestRequest request = new RestRequest("/3/search/movie", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
             request.AddParameter("query", movieName, ParameterType.QueryString);
@@ -83,7 +93,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 request.AddParameter("year", movieYear.ToString());
             }
 
-            return await _helper.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            return await _helper.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(_httpClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
         }
 
         /// <summary>
@@ -104,7 +114,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             request.AddParameter("append_to_response", "credits", ParameterType.QueryString);
 
             //execute the request
-            return await _helper.ExecuteRestRequestAsync<Common.Movie.Model.Movie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            return await _helper.ExecuteRestRequestAsync<Common.Movie.Model.Movie>(_httpClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
         }
 
         /// <summary>
@@ -123,7 +133,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             IRestRequest request = new RestRequest($"/3/movie/{movieId}", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
-            return await _helper.ExecuteRestRequestAsync<SearchMovie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            return await _helper.ExecuteRestRequestAsync<SearchMovie>(_httpClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
         }
 
         /// <summary>
@@ -161,7 +171,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
             //execute the request
-            TMDbConfig tmdbConfig = await _helper.ExecuteRestRequestAsync<TMDbConfig>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            TMDbConfig tmdbConfig = await _helper.ExecuteRestRequestAsync<TMDbConfig>(_httpClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
             if (!string.IsNullOrWhiteSpace(tmdbConfig?.Images?.SecureBaseUrl))
             {
                 return tmdbConfig.Images.SecureBaseUrl;

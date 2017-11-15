@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using RestSharp;
 using Sarjee.SimpleRenamer.Common.Helpers;
 using Sarjee.SimpleRenamer.Common.Interface;
 using System;
@@ -7,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -112,9 +112,9 @@ namespace Sarjee.SimpleRenamer.Common
         /// <param name="request">The request.</param>
         /// <returns></returns>
         /// <remarks>virtual method for testability</remarks>
-        protected virtual async Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request)
+        protected virtual async Task<HttpResponseMessage> ExecuteRequestAsync(HttpClient httpClient, HttpRequestMessage request)
         {
-            return await restClient.ExecuteTaskAsync(request);
+            return await httpClient.SendAsync(request);
         }
 
         private int[] httpStatusCodesWorthRetrying = { 408, 500, 502, 503, 504, 598, 599 };
@@ -132,7 +132,7 @@ namespace Sarjee.SimpleRenamer.Common
         /// <exception cref="TimeoutException"></exception>
         /// <exception cref="UnauthorizedAccessException"></exception>
         /// <exception cref="InvalidOperationException"></exception>        
-        public async Task<T> ExecuteRestRequestAsync<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, Func<Task> loginCallback = null) where T : class
+        public async Task<T> ExecuteRestRequestAsync<T>(HttpClient httpClient, HttpRequestMessage requestMessage, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, Func<Task> loginCallback = null) where T : class
         {
             int currentRetry = 0;
             int offset = ThreadLocalRandom.Instance.Next(100, 500);
@@ -141,11 +141,11 @@ namespace Sarjee.SimpleRenamer.Common
                 try
                 {
                     //execute the request
-                    IRestResponse response = await ExecuteRequestAsync(restClient, restRequest);
+                    HttpResponseMessage response = await ExecuteRequestAsync(httpClient, requestMessage);
                     //if no errors and statuscode ok then deserialize the response
-                    if (response.ErrorException == null && response?.StatusCode == HttpStatusCode.OK)
+                    if (response.IsSuccessStatusCode)
                     {
-                        T result = JsonConvert.DeserializeObject<T>(response.Content, jsonSerializerSettings);
+                        T result = JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync(), jsonSerializerSettings);
                         return result;
                     }
                     //if status code indicates transient error then throw timeoutexception
@@ -161,14 +161,8 @@ namespace Sarjee.SimpleRenamer.Common
                     //else throw the responses exception
                     else
                     {
-                        if (response?.ErrorException != null)
-                        {
-                            throw response?.ErrorException;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
+                        //TODO log statuscode and reason
+                        throw new InvalidOperationException();
                     }
                 }
                 catch (TimeoutException)
