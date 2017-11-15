@@ -250,8 +250,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     fromFile.Delete();
                 }
-
-            } // try
+            }
             catch (ThreadAbortException tae)
             {
                 _logger.TraceException(tae);
