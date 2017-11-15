@@ -28,7 +28,8 @@
               <Exclude>
                 <ModulePath>.*.tests\.dll$</ModulePath>
                 <ModulePath>.*.test\.dll$</ModulePath>
-                <ModulePath>.*fluentassertions.*\.dll$</ModulePath>                
+                <ModulePath>.*fluentassertions.*\.dll$</ModulePath>
+                <ModulePath>.*moq.*\.dll$</ModulePath>
               </Exclude>
             </ModulePaths>
             <!-- Match fully qualified names of functions: -->            
