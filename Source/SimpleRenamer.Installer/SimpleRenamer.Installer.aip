@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<DOCUMENT Type="Advanced Installer" CreateVersion="14.4.2" version="14.4.2" Modules="simple" RootPath="." Language="en" Id="{8AA0BD4E-3948-44A1-AA82-4364EDF42A92}">
+  <COMPONENT cid="caphyon.advinst.msicomp.ProjectOptionsComponent">
+    <ROW Name="HiddenItems" Value="AppXProductDetailsComponent;AppXDependenciesComponent;AppXAppDetailsComponent;AppXVisualAssetsComponent;AppXCapabilitiesComponent;AppXAppDeclarationsComponent;AppXUriRulesComponent"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
+    <ROW Property="AI_BITMAP_DISPLAY_MODE" Value="0"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_Jot.dll" Value="..\..\packages\Jot.1.4.0\lib"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_MahApps.Metro.IconPacks.Material.dll" Value="..\..\packages\MahApps.Metro.IconPacks.Material.1.9.1\lib\net46"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_MahApps.Metro.dll" Value="..\..\packages\MahApps.Metro.1.5.0\lib\net45"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_Newtonsoft.Json.dll" Value="..\..\packages\Newtonsoft.Json.10.0.3\lib\net45"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_Newtonsoft.Json.dll_1" Value="..\..\packages\Newtonsoft.Json.10.0.3\lib\net45"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_Ninject.dll" Value="..\..\packages\Ninject.3.3.4\lib\net45"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_OneTrueError.Client.Log4Net.dll" Value="..\..\packages\OneTrueError.Client.log4net.1.0.0\lib\net45"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_OneTrueError.Client.dll" Value="..\..\packages\OneTrueError.Client.1.0.0\lib\net40"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_RegexExpressions.json" Value="..\SimpleRenamer.Common\bin\Debug"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_RestSharp.dll" Value="..\..\packages\RestSharp.106.0.1\lib\net452"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Common.Movie.dll" Value="..\SimpleRenamer.Common.Movie\bin\Debug"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Common.TV.dll" Value="..\SimpleRenamer.Common.TV\bin\Debug"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Common.dll" Value="..\SimpleRenamer.Common\bin\Debug"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.DependencyInjection.dll" Value="..\SimpleRenamer.DependencyInjection\bin\Debug"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Framework.Core.dll" Value="..\SimpleRenamer.Framework.Core\bin\Debug"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Framework.Logging.dll" Value="..\SimpleRenamer.Logging\bin\Debug"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Framework.Movie.dll" Value="..\SimpleRenamer.Framework.Movie\bin\Debug"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Framework.TV.dll" Value="..\SimpleRenamer.Framework.TV\bin\Debug"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_SimpleRenamer.exe" Value="..\SimpleRenamer.WPF\bin\Debug"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_SimpleRenamer.exe.config" Value="..\SimpleRenamer.WPF\bin\Debug"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_System.Threading.Tasks.Dataflow.dll" Value="..\..\packages\Microsoft.Tpl.Dataflow.4.5.24\lib\portable-net45+win8+wpa81"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_System.Windows.Interactivity.dll" Value="..\..\packages\MahApps.Metro.1.5.0\lib\net45"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_log4net.dll" Value="..\..\packages\log4net.2.0.8\lib\net45-full"/>
+    <ROW Property="AI_PROPPATH_DIR_PERBUILD_log4net.dll_1" Value="..\..\packages\log4net.2.0.8\lib\net45-full"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_Jot.dll" Value="Jot.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_MahApps.Metro.IconPacks.Material.dll" Value="MahApps.Metro.IconPacks.Material.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_MahApps.Metro.dll" Value="MahApps.Metro.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_Newtonsoft.Json.dll" Value="Newtonsoft.Json.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_Newtonsoft.Json.dll_1" Value="Newtonsoft.Json.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_Ninject.dll" Value="Ninject.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_OneTrueError.Client.Log4Net.dll" Value="OneTrueError.Client.Log4Net.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_OneTrueError.Client.dll" Value="OneTrueError.Client.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_RegexExpressions.json" Value="RegexExpressions.json"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_RestSharp.dll" Value="RestSharp.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Common.Movie.dll" Value="Sarjee.SimpleRenamer.Common.Movie.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Common.TV.dll" Value="Sarjee.SimpleRenamer.Common.TV.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Common.dll" Value="Sarjee.SimpleRenamer.Common.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.DependencyInjection.dll" Value="Sarjee.SimpleRenamer.DependencyInjection.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Framework.Core.dll" Value="Sarjee.SimpleRenamer.Framework.Core.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Framework.Logging.dll" Value="Sarjee.SimpleRenamer.Framework.Logging.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Framework.Movie.dll" Value="Sarjee.SimpleRenamer.Framework.Movie.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Framework.TV.dll" Value="Sarjee.SimpleRenamer.Framework.TV.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_SimpleRenamer.exe" Value="SimpleRenamer.exe"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_SimpleRenamer.exe.config" Value="SimpleRenamer.exe.config"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_System.Threading.Tasks.Dataflow.dll" Value="System.Threading.Tasks.Dataflow.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_System.Windows.Interactivity.dll" Value="System.Windows.Interactivity.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_log4net.dll" Value="log4net.dll"/>
+    <ROW Property="AI_PROPPATH_FILENAME_PERBUILD_log4net.dll_1" Value="log4net.dll"/>
+    <ROW Property="ALLUSERS" Value="1"/>
+    <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
+    <ROW Property="ARPPRODUCTICON" Value="tv.exe" Type="8"/>
+    <ROW Property="Manufacturer" Value="Sarjee"/>
+    <ROW Property="ProductCode" Value="1033:{E83BF3A9-7FB1-4FCB-90BB-CE1B82CBE75D} " Type="16"/>
+    <ROW Property="ProductLanguage" Value="1033"/>
+    <ROW Property="ProductName" Value="Simple Renamer"/>
+    <ROW Property="ProductVersion" Value="1.1.0" Type="32"/>
+    <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
+    <ROW Property="UpgradeCode" Value="{575175F1-1742-4306-9342-BB9EE48A7588}"/>
+    <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
+    <ROW Property="WindowsType9XDisplay" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT40" MultiBuildValue="DefaultBuild:Windows NT 4.0" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT40Display" MultiBuildValue="DefaultBuild:Windows NT 4.0" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT50" MultiBuildValue="DefaultBuild:Windows 2000" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT50Display" MultiBuildValue="DefaultBuild:Windows 2000" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT5X" MultiBuildValue="DefaultBuild:Windows XP/2003 RTM, Windows XP/2003 SP1, Windows XP SP2 x86" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT5XDisplay" MultiBuildValue="DefaultBuild:Windows XP/2003 RTM, Windows XP/2003 SP1, Windows XP SP2 x86" ValueLocId="-"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiDirsComponent">
+    <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1"/>
+    <ROW Directory="SHORTCUTDIR" Directory_Parent="TARGETDIR" DefaultDir="SHORTC~1|SHORTCUTDIR" IsPseudoRoot="1"/>
+    <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
+    <ROW Component="ProductInformation" ComponentId="{EE629A84-C0F7-42B0-AFAB-D67F64E81EE7}" Directory_="APPDIR" Attributes="4" KeyPath="Version"/>
+    <ROW Component="SHORTCUTDIR" ComponentId="{4EBEFA0B-883F-4ABE-9BDC-FAA183F02FB4}" Directory_="SHORTCUTDIR" Attributes="0"/>
+    <ROW Component="SimpleRenamer.Common_ContentOutput" ComponentId="{359F11FE-FA61-4405-967C-5DA93BBA976F}" Directory_="APPDIR" Attributes="0" KeyPath="RegexExpressions.json" Type="0"/>
+    <ROW Component="SimpleRenamer.WPF_PrimaryOutput" ComponentId="{6DD8A97F-BC06-466C-AC1E-C91B4C063E4B}" Directory_="APPDIR" Attributes="0" KeyPath="SimpleRenamer.exe"/>
+    <ROW Component="SimpleRenamer.WPF_References" ComponentId="{1C73E2CA-3364-46FA-BC95-4735893384AE}" Directory_="APPDIR" Attributes="0" KeyPath="log4net.dll_1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
+    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Directory_="APPDIR" Attributes="0" Components="ProductInformation SHORTCUTDIR SimpleRenamer.Common_ContentOutput SimpleRenamer.WPF_PrimaryOutput SimpleRenamer.WPF_References"/>
+    <ATTRIBUTE name="CurrentFeature" value="MainFeature"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
+    <ROW File="Jot.dll" Component_="SimpleRenamer.WPF_References" FileName="[|AI_PROPPATH_FILENAME_PERBUILD_Jot.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_Jot.dll&gt;" SelfReg="false" NextFile="log4net.dll_1"/>
+    <ROW File="MahApps.Metro.IconPacks.Material.dll" Component_="SimpleRenamer.WPF_References" FileName="MAHAPP~3.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_MahApps.Metro.IconPacks.Material.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_MahApps.Metro.IconPacks.Material.dll&gt;" SelfReg="false" NextFile="Newtonsoft.Json.dll_1"/>
+    <ROW File="MahApps.Metro.dll" Component_="SimpleRenamer.WPF_References" FileName="MAHAPP~2.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_MahApps.Metro.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_MahApps.Metro.dll&gt;" SelfReg="false" NextFile="MahApps.Metro.IconPacks.Material.dll"/>
+    <ROW File="Newtonsoft.Json.dll" Component_="SimpleRenamer.WPF_References" FileName="NEWTON~2.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_Newtonsoft.Json.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_Newtonsoft.Json.dll&gt;" SelfReg="false" NextFile="RestSharp.dll"/>
+    <ROW File="Newtonsoft.Json.dll_1" Component_="SimpleRenamer.WPF_References" FileName="NEWTON~1.DLL|Newtonsoft.Json.dll" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_Newtonsoft.Json.dll_1&gt;" SelfReg="false" NextFile="System.Windows.Interactivity.dll"/>
+    <ROW File="Ninject.dll" Component_="SimpleRenamer.WPF_References" FileName="[|AI_PROPPATH_FILENAME_PERBUILD_Ninject.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_Ninject.dll&gt;" SelfReg="false" NextFile="System.Threading.Tasks.Dataflow.dll"/>
+    <ROW File="OneTrueError.Client.Log4Net.dll" Component_="SimpleRenamer.WPF_References" FileName="ONETRU~3.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_OneTrueError.Client.Log4Net.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_OneTrueError.Client.Log4Net.dll&gt;" SelfReg="false" NextFile="Jot.dll"/>
+    <ROW File="OneTrueError.Client.dll" Component_="SimpleRenamer.WPF_References" FileName="ONETRU~2.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_OneTrueError.Client.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_OneTrueError.Client.dll&gt;" SelfReg="false" NextFile="OneTrueError.Client.Log4Net.dll"/>
+    <ROW File="RegexExpressions.json" Component_="SimpleRenamer.Common_ContentOutput" FileName="REGEXE~2.JSO|[|AI_PROPPATH_FILENAME_PERBUILD_RegexExpressions.json]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_RegexExpressions.json&gt;" SelfReg="false"/>
+    <ROW File="RestSharp.dll" Component_="SimpleRenamer.WPF_References" FileName="RESTSH~2.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_RestSharp.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_RestSharp.dll&gt;" SelfReg="false" NextFile="Ninject.dll"/>
+    <ROW File="Sarjee.SimpleRenamer.Common.Movie.dll" Component_="SimpleRenamer.WPF_References" FileName="SARJEE~2.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Common.Movie.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Common.Movie.dll&gt;" SelfReg="false" NextFile="Sarjee.SimpleRenamer.Common.dll"/>
+    <ROW File="Sarjee.SimpleRenamer.Common.TV.dll" Component_="SimpleRenamer.WPF_References" FileName="SARJEE~4.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Common.TV.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Common.TV.dll&gt;" SelfReg="false" NextFile="Sarjee.SimpleRenamer.DependencyInjection.dll"/>
+    <ROW File="Sarjee.SimpleRenamer.Common.dll" Component_="SimpleRenamer.WPF_References" FileName="SARJEE~3.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Common.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Common.dll&gt;" SelfReg="false" NextFile="Sarjee.SimpleRenamer.Common.TV.dll"/>
+    <ROW File="Sarjee.SimpleRenamer.DependencyInjection.dll" Component_="SimpleRenamer.WPF_References" FileName="SARJEE~5.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.DependencyInjection.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.DependencyInjection.dll&gt;" SelfReg="false" NextFile="Sarjee.SimpleRenamer.Framework.Core.dll"/>
+    <ROW File="Sarjee.SimpleRenamer.Framework.Core.dll" Component_="SimpleRenamer.WPF_References" FileName="SARJEE~6.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Framework.Core.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Framework.Core.dll&gt;" SelfReg="false" NextFile="Sarjee.SimpleRenamer.Framework.Movie.dll"/>
+    <ROW File="Sarjee.SimpleRenamer.Framework.Logging.dll" Component_="SimpleRenamer.WPF_References" FileName="SARJEE~9.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Framework.Logging.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Framework.Logging.dll&gt;" SelfReg="false" NextFile="Newtonsoft.Json.dll"/>
+    <ROW File="Sarjee.SimpleRenamer.Framework.Movie.dll" Component_="SimpleRenamer.WPF_References" FileName="SARJEE~7.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Framework.Movie.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Framework.Movie.dll&gt;" SelfReg="false" NextFile="Sarjee.SimpleRenamer.Framework.TV.dll"/>
+    <ROW File="Sarjee.SimpleRenamer.Framework.TV.dll" Component_="SimpleRenamer.WPF_References" FileName="SARJEE~8.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Framework.TV.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Framework.TV.dll&gt;" SelfReg="false" NextFile="Sarjee.SimpleRenamer.Framework.Logging.dll"/>
+    <ROW File="SimpleRenamer.exe" Component_="SimpleRenamer.WPF_PrimaryOutput" FileName="SIMPLE~2.EXE|[|AI_PROPPATH_FILENAME_PERBUILD_SimpleRenamer.exe]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_SimpleRenamer.exe&gt;" SelfReg="false" NextFile="SimpleRenamer.exe.config" DigSign="true"/>
+    <ROW File="SimpleRenamer.exe.config" Component_="SimpleRenamer.WPF_PrimaryOutput" FileName="SIMPLE~2.CON|[|AI_PROPPATH_FILENAME_PERBUILD_SimpleRenamer.exe.config]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_SimpleRenamer.exe.config&gt;" SelfReg="false" NextFile="Sarjee.SimpleRenamer.Common.Movie.dll"/>
+    <ROW File="System.Threading.Tasks.Dataflow.dll" Component_="SimpleRenamer.WPF_References" FileName="SYSTEM~2.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_System.Threading.Tasks.Dataflow.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_System.Threading.Tasks.Dataflow.dll&gt;" SelfReg="false" NextFile="log4net.dll"/>
+    <ROW File="System.Windows.Interactivity.dll" Component_="SimpleRenamer.WPF_References" FileName="SYSTEM~3.DLL|[|AI_PROPPATH_FILENAME_PERBUILD_System.Windows.Interactivity.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_System.Windows.Interactivity.dll&gt;" SelfReg="false" NextFile="RegexExpressions.json"/>
+    <ROW File="log4net.dll" Component_="SimpleRenamer.WPF_References" FileName="[|AI_PROPPATH_FILENAME_PERBUILD_log4net.dll]" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_log4net.dll&gt;" SelfReg="false" NextFile="OneTrueError.Client.dll"/>
+    <ROW File="log4net.dll_1" Component_="SimpleRenamer.WPF_References" FileName="log4net.dll" Attributes="0" SourcePath="&lt;AI_APPPATH_PERBUILD_log4net.dll_1&gt;" SelfReg="false" NextFile="MahApps.Metro.dll"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.AppPathsComponent">
+    <ROW Name="AI_APPPATH_PERBUILD_Jot.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_Jot.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_Jot.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_MahApps.Metro.IconPacks.Material.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_MahApps.Metro.IconPacks.Material.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_MahApps.Metro.IconPacks.Material.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_MahApps.Metro.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_MahApps.Metro.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_MahApps.Metro.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_Newtonsoft.Json.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_Newtonsoft.Json.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_Newtonsoft.Json.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_Newtonsoft.Json.dll_1" Path="[|AI_PROPPATH_DIR_PERBUILD_Newtonsoft.Json.dll_1]\[|AI_PROPPATH_FILENAME_PERBUILD_Newtonsoft.Json.dll_1]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_Ninject.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_Ninject.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_Ninject.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_OneTrueError.Client.Log4Net.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_OneTrueError.Client.Log4Net.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_OneTrueError.Client.Log4Net.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_OneTrueError.Client.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_OneTrueError.Client.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_OneTrueError.Client.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_RegexExpressions.json" Path="[|AI_PROPPATH_DIR_PERBUILD_RegexExpressions.json]\[|AI_PROPPATH_FILENAME_PERBUILD_RegexExpressions.json]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_RestSharp.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_RestSharp.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_RestSharp.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Common.Movie.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Common.Movie.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Common.Movie.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Common.TV.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Common.TV.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Common.TV.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Common.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Common.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Common.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.DependencyInjection.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.DependencyInjection.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.DependencyInjection.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Framework.Core.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Framework.Core.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Framework.Core.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Framework.Logging.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Framework.Logging.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Framework.Logging.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Framework.Movie.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Framework.Movie.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Framework.Movie.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_Sarjee.SimpleRenamer.Framework.TV.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_Sarjee.SimpleRenamer.Framework.TV.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_Sarjee.SimpleRenamer.Framework.TV.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_SimpleRenamer.exe" Path="[|AI_PROPPATH_DIR_PERBUILD_SimpleRenamer.exe]\[|AI_PROPPATH_FILENAME_PERBUILD_SimpleRenamer.exe]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_SimpleRenamer.exe.config" Path="[|AI_PROPPATH_DIR_PERBUILD_SimpleRenamer.exe.config]\[|AI_PROPPATH_FILENAME_PERBUILD_SimpleRenamer.exe.config]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_System.Threading.Tasks.Dataflow.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_System.Threading.Tasks.Dataflow.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_System.Threading.Tasks.Dataflow.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_System.Windows.Interactivity.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_System.Windows.Interactivity.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_System.Windows.Interactivity.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_log4net.dll" Path="[|AI_PROPPATH_DIR_PERBUILD_log4net.dll]\[|AI_PROPPATH_FILENAME_PERBUILD_log4net.dll]" Type="2" Content="0"/>
+    <ROW Name="AI_APPPATH_PERBUILD_log4net.dll_1" Path="[|AI_PROPPATH_DIR_PERBUILD_log4net.dll_1]\[|AI_PROPPATH_FILENAME_PERBUILD_log4net.dll_1]" Type="2" Content="0"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.BuildComponent">
+    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="0" Languages="en" InstallationType="4" UseLargeSchema="true"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.DictionaryComponent">
+    <ROW Path="&lt;AI_DICTS&gt;ui.ail"/>
+    <ROW Path="&lt;AI_DICTS&gt;ui_en.ail"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.FragmentComponent">
+    <ROW Fragment="CommonUI.aip" Path="&lt;AI_FRAGS&gt;CommonUI.aip"/>
+    <ROW Fragment="FolderDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\FolderDlg.aip"/>
+    <ROW Fragment="MaintenanceTypeDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\MaintenanceTypeDlg.aip"/>
+    <ROW Fragment="MaintenanceWelcomeDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\MaintenanceWelcomeDlg.aip"/>
+    <ROW Fragment="SequenceDialogs.aip" Path="&lt;AI_THEMES&gt;classic\fragments\SequenceDialogs.aip"/>
+    <ROW Fragment="Sequences.aip" Path="&lt;AI_FRAGS&gt;Sequences.aip"/>
+    <ROW Fragment="StaticUIStrings.aip" Path="&lt;AI_FRAGS&gt;StaticUIStrings.aip"/>
+    <ROW Fragment="UI.aip" Path="&lt;AI_THEMES&gt;classic\fragments\UI.aip"/>
+    <ROW Fragment="Validation.aip" Path="&lt;AI_FRAGS&gt;Validation.aip"/>
+    <ROW Fragment="VerifyRemoveDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\VerifyRemoveDlg.aip"/>
+    <ROW Fragment="VerifyRepairDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\VerifyRepairDlg.aip"/>
+    <ROW Fragment="WelcomeDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\WelcomeDlg.aip"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiBinaryComponent">
+    <ROW Name="aicustact.dll" SourcePath="&lt;AI_CUSTACTS&gt;aicustact.dll"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiControlEventComponent">
+    <ROW Dialog_="WelcomeDlg" Control_="Next" Event="NewDialog" Argument="FolderDlg" Condition="AI_INSTALL" Ordering="1"/>
+    <ROW Dialog_="FolderDlg" Control_="Next" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_INSTALL" Ordering="201"/>
+    <ROW Dialog_="FolderDlg" Control_="Back" Event="NewDialog" Argument="WelcomeDlg" Condition="AI_INSTALL" Ordering="1"/>
+    <ROW Dialog_="MaintenanceWelcomeDlg" Control_="Next" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT" Ordering="99"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_MAINT" Ordering="198"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="CustomizeDlg" Condition="AI_MAINT" Ordering="202"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_INSTALL" Ordering="197"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="FolderDlg" Condition="AI_INSTALL" Ordering="201"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Next" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_MAINT" Ordering="101"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT" Ordering="1"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="ChangeButton" Event="NewDialog" Argument="CustomizeDlg" Condition="AI_MAINT" Ordering="501"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceWelcomeDlg" Condition="AI_MAINT" Ordering="1"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="RemoveButton" Event="NewDialog" Argument="VerifyRemoveDlg" Condition="AI_MAINT AND InstallMode=&quot;Remove&quot;" Ordering="601"/>
+    <ROW Dialog_="VerifyRemoveDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT AND InstallMode=&quot;Remove&quot;" Ordering="1"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="RepairButton" Event="NewDialog" Argument="VerifyRepairDlg" Condition="AI_MAINT AND InstallMode=&quot;Repair&quot;" Ordering="601"/>
+    <ROW Dialog_="VerifyRepairDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT AND InstallMode=&quot;Repair&quot;" Ordering="1"/>
+    <ROW Dialog_="VerifyRepairDlg" Control_="Repair" Event="EndDialog" Argument="Return" Condition="AI_MAINT AND InstallMode=&quot;Repair&quot;" Ordering="399" Options="1"/>
+    <ROW Dialog_="VerifyRemoveDlg" Control_="Remove" Event="EndDialog" Argument="Return" Condition="AI_MAINT AND InstallMode=&quot;Remove&quot;" Ordering="299" Options="1"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="Next" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_PATCH" Ordering="201"/>
+    <ROW Dialog_="ResumeDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_RESUME" Ordering="299"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_PATCH" Ordering="199"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="PatchWelcomeDlg" Condition="AI_PATCH" Ordering="203"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCreateFolderComponent">
+    <ROW Directory_="SHORTCUTDIR" Component_="SHORTCUTDIR" ManualDelete="false"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCustActComponent">
+    <ROW Action="AI_DOWNGRADE" Type="19" Target="4010"/>
+    <ROW Action="AI_DpiContentScale" Type="1" Source="aicustact.dll" Target="DpiContentScale"/>
+    <ROW Action="AI_EnableDebugLog" Type="321" Source="aicustact.dll" Target="EnableDebugLog"/>
+    <ROW Action="AI_InstallModeCheck" Type="1" Source="aicustact.dll" Target="UpdateInstallMode" WithoutSeq="true"/>
+    <ROW Action="AI_PREPARE_UPGRADE" Type="65" Source="aicustact.dll" Target="PrepareUpgrade"/>
+    <ROW Action="AI_RESTORE_LOCATION" Type="65" Source="aicustact.dll" Target="RestoreLocation"/>
+    <ROW Action="AI_ResolveKnownFolders" Type="1" Source="aicustact.dll" Target="AI_ResolveKnownFolders"/>
+    <ROW Action="AI_SHOW_LOG" Type="65" Source="aicustact.dll" Target="LaunchLogFile" WithoutSeq="true"/>
+    <ROW Action="AI_STORE_LOCATION" Type="51" Source="ARPINSTALLLOCATION" Target="[APPDIR]"/>
+    <ROW Action="SET_APPDIR" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
+    <ROW Action="SET_SHORTCUTDIR" Type="307" Source="SHORTCUTDIR" Target="[ProgramMenuFolder][ProductName]"/>
+    <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
+    <ROW Name="tv.exe" SourcePath="..\SimpleRenamer.WPF\Icons\tv.ico" Index="0"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiInstExSeqComponent">
+    <ROW Action="AI_DOWNGRADE" Condition="AI_NEWERPRODUCTFOUND AND (UILevel &lt;&gt; 5)" Sequence="210"/>
+    <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
+    <ROW Action="AI_STORE_LOCATION" Condition="(Not Installed) OR REINSTALL" Sequence="1501"/>
+    <ROW Action="AI_PREPARE_UPGRADE" Condition="AI_UPGRADE=&quot;No&quot; AND (Not Installed)" Sequence="1399"/>
+    <ROW Action="AI_ResolveKnownFolders" Sequence="52"/>
+    <ROW Action="AI_EnableDebugLog" Sequence="51"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiInstallUISequenceComponent">
+    <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
+    <ROW Action="AI_ResolveKnownFolders" Sequence="53"/>
+    <ROW Action="AI_DpiContentScale" Sequence="52"/>
+    <ROW Action="AI_EnableDebugLog" Sequence="51"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiLaunchConditionsComponent">
+    <ROW Condition="(VersionNT &lt;&gt; 400)" Description="[ProductName] cannot be installed on [WindowsTypeNT40Display]." DescriptionLocId="AI.LaunchCondition.NoNT40" IsPredefined="true" Builds="DefaultBuild"/>
+    <ROW Condition="(VersionNT &lt;&gt; 500)" Description="[ProductName] cannot be installed on [WindowsTypeNT50Display]." DescriptionLocId="AI.LaunchCondition.NoNT50" IsPredefined="true" Builds="DefaultBuild"/>
+    <ROW Condition="(VersionNT64 OR ((VersionNT &lt;&gt; 501) OR (ServicePackLevel = 3))) AND ((VersionNT &lt;&gt; 502) OR (ServicePackLevel = 2))" Description="[ProductName] cannot be installed on [WindowsTypeNT5XDisplay]." DescriptionLocId="AI.LaunchCondition.NoNT5X" IsPredefined="true" Builds="DefaultBuild"/>
+    <ROW Condition="VersionNT" Description="[ProductName] cannot be installed on [WindowsType9XDisplay]." DescriptionLocId="AI.LaunchCondition.No9X" IsPredefined="true" Builds="DefaultBuild"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiRegsComponent">
+    <ROW Registry="Path" Root="-1" Key="Software\[Manufacturer]\[ProductName]" Name="Path" Value="[APPDIR]" Component_="ProductInformation"/>
+    <ROW Registry="Version" Root="-1" Key="Software\[Manufacturer]\[ProductName]" Name="Version" Value="[ProductVersion]" Component_="ProductInformation"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
+    <ROW Shortcut="SimpleRenamer" Directory_="SHORTCUTDIR" Name="SIMPLE~1|SimpleRenamer" Component_="SimpleRenamer.WPF_PrimaryOutput" Target="[#SimpleRenamer.exe]" Hotkey="0" IconIndex="0" ShowCmd="1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiThemeComponent">
+    <ATTRIBUTE name="UsedTheme" value="classic"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiUpgradeComponent">
+    <ROW UpgradeCode="[|UpgradeCode]" VersionMin="0.0.1" VersionMax="[|ProductVersion]" Attributes="257" ActionProperty="OLDPRODUCTS"/>
+    <ROW UpgradeCode="[|UpgradeCode]" VersionMin="[|ProductVersion]" Attributes="2" ActionProperty="AI_NEWERPRODUCTFOUND"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.VsProjectComponent">
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="PrimaryOutput" OutputFile="SimpleRenamer.exe" OutputFileShortcut="SimpleRenamer"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="PrimaryOutput" OutputFile="SimpleRenamer.exe.config"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="Sarjee.SimpleRenamer.Common.Movie.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="Sarjee.SimpleRenamer.Common.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="Sarjee.SimpleRenamer.Common.TV.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="Sarjee.SimpleRenamer.DependencyInjection.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="Sarjee.SimpleRenamer.Framework.Core.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="Sarjee.SimpleRenamer.Framework.Movie.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="Sarjee.SimpleRenamer.Framework.TV.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="Sarjee.SimpleRenamer.Framework.Logging.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="Newtonsoft.Json.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="RestSharp.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="Ninject.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="System.Threading.Tasks.Dataflow.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="log4net.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="OneTrueError.Client.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="OneTrueError.Client.Log4Net.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="Jot.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="log4net.dll_1"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="MahApps.Metro.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="MahApps.Metro.IconPacks.Material.dll"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="Newtonsoft.Json.dll_1"/>
+    <ROW ProjectId="{0213dbb7-a245-4403-8392-3b90be75df65}" ProjectName="SimpleRenamer.WPF" OutputGroup="References" OutputFile="System.Windows.Interactivity.dll"/>
+    <ROW ProjectId="{632054a4-2cfc-4e57-baee-fd4ddb8f9cd4}" ProjectName="SimpleRenamer.Common" OutputGroup="ContentOutput" OutputFile="RegexExpressions.json"/>
+  </COMPONENT>
+</DOCUMENT>

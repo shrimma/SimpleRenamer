@@ -247,3 +247,7 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
+# Installer Files
+/Source/SimpleRenamer.Installer/SimpleRenamer.Installer-cache
+/Source/SimpleRenamer.Installer/SimpleRenamer.Installer-SetupFiles

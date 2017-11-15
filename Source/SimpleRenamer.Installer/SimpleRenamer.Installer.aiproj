@@ -1,0 +1,39 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">All</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>9e4a29c6-d12b-467d-96d9-af87d8a3cbd8</ProjectGuid>
+    <OutputType>msi</OutputType>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>SimpleRenamer.Installer.aip</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <IsWindowsApplication>True</IsWindowsApplication>
+    <AssemblyName>SimpleRenamer.Installer</AssemblyName>
+    <Name>SimpleRenamer.Installer</Name>
+    <RootNamespace>SimpleRenamer.Installer</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'DefaultBuild' " />
+  <ItemGroup>
+    <Compile Include="SimpleRenamer.Installer.aip">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SimpleRenamer.Common\SimpleRenamer.Common.csproj">
+      <Name>SimpleRenamer.Common</Name>
+      <Project>{632054a4-2cfc-4e57-baee-fd4ddb8f9cd4}</Project>
+      <Private>True</Private>
+      <OutputsToImport>ContentOutput</OutputsToImport>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleRenamer.WPF\SimpleRenamer.WPF.csproj">
+      <Name>SimpleRenamer.WPF</Name>
+      <Project>{0213dbb7-a245-4403-8392-3b90be75df65}</Project>
+      <Private>True</Private>
+      <OutputsToImport>PrimaryOutput;References</OutputsToImport>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Condition="'$(AdvancedInstallerMSBuildTargets)' != ''" Project="$(AdvancedInstallerMSBuildTargets)\AdvInstExtTasks.Targets" />
+  <Import Condition="'$(AdvancedInstallerMSBuildTargets)' == ''" Project="$(MSBuildExtensionsPath32)\Caphyon\Advanced Installer\AdvInstExtTasks.Targets" />
+</Project>
