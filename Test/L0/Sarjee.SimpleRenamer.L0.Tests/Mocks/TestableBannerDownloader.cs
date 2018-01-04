@@ -11,7 +11,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
         {
         }
 
-        protected override Task<bool> Download(string tvdbBannerPath, string bannerPath)
+        protected override Task<bool> QueueDownload(string tvdbBannerPath, string bannerPath)
         {
             return Task.FromResult(true);
         }
