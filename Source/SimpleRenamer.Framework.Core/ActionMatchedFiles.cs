@@ -1,4 +1,5 @@
-﻿using Sarjee.SimpleRenamer.Common.EventArguments;
+﻿using Newtonsoft.Json;
+using Sarjee.SimpleRenamer.Common.EventArguments;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using System;
@@ -22,6 +23,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private IBackgroundQueue _backgroundQueue;
         private IFileMover _fileMover;
         private IConfigurationManager _configurationManager;
+        private IMessageSender _messageSender;
         private ISettings _settings;
         /// <summary>
         /// Fired whenever a preprocessor action is completed on a file
@@ -52,12 +54,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// or
         /// configManager
         /// </exception>
-        public ActionMatchedFiles(ILogger logger, IBackgroundQueue backgroundQueue, IFileMover fileMover, IConfigurationManager configManager)
+        public ActionMatchedFiles(ILogger logger, IBackgroundQueue backgroundQueue, IFileMover fileMover, IConfigurationManager configManager, IMessageSender messageSender)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _backgroundQueue = backgroundQueue ?? throw new ArgumentNullException(nameof(backgroundQueue));
             _fileMover = fileMover ?? throw new ArgumentNullException(nameof(fileMover));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
+            _messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
             _settings = _configurationManager.Settings;
         }
 
@@ -89,14 +92,23 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     filesToMove.AddRange(moviesToMove);
                 }
 
-                //move these files
+                //if we have files to move
                 if (filesToMove?.Count > 0)
                 {
+                    //send the stats to the cloud
+                    SendActionStatsToCloud(filesToMove);
+                    //move these files
                     await MoveFiles(filesToMove, ct);
                 }
 
                 return true;
             });
+        }
+
+        private void SendActionStatsToCloud(List<MatchedFile> files)
+        {
+            string jsonPayload = JsonConvert.SerializeObject(files);
+            _messageSender.SendAsync(jsonPayload);
         }
 
         /// <summary>
