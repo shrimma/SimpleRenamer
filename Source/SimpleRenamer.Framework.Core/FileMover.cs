@@ -86,12 +86,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                         if (!string.IsNullOrWhiteSpace(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
                         {
                             //Grab Show banner if required
-                            bannerResult = await _bannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
+                            bannerResult = await _bannerDownloader.QueueBannerDownload(episode.ShowImage, showDirectory);
                         }
                         if (!string.IsNullOrWhiteSpace(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))
                         {
                             //Grab Season banner if required
-                            bannerResult = await _bannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
+                            bannerResult = await _bannerDownloader.QueueBannerDownload(episode.SeasonImage, seasonDirectory);
                         }
                     }
                 }

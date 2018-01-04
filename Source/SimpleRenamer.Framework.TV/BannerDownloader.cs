@@ -55,7 +55,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <param name="destinationFolder">The destination folder to save the banner</param>
         /// <returns></returns>
         /// <inheritdoc />
-        public Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder)
+        public bool QueueBannerDownload(string tvdbBannerPath, string destinationFolder)
         {
             //throw if arguments are missing
             if (string.IsNullOrWhiteSpace(tvdbBannerPath))
@@ -70,22 +70,16 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             string fullBannerPath = Path.Combine(destinationFolder, "Folder.jpg");
             if (!File.Exists(fullBannerPath))
             {
-                _logger.TraceMessage($"Downloading banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
-                QueueDownload(tvdbBannerPath, fullBannerPath);
-                _logger.TraceMessage($"Downloaded banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
+                _logger.TraceMessage($"Queueing download of banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
+                _downloadQueue.Enqueue((new Uri(_tvdbManager.GetBannerUri(tvdbBannerPath)), fullBannerPath));
+                _logger.TraceMessage($"Queued download of banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
             }
             else
             {
                 _logger.TraceMessage($"No need to download as banner already exists at {destinationFolder}.", EventLevel.Verbose);
             }
 
-            return Task.FromResult(true);
-        }
-
-        private void QueueDownload(string tvdbBannerPath, string bannerPath)
-        {
-            (Uri tvdbUri, string bannerFilePath) downloadInfo = (new Uri(_tvdbManager.GetBannerUri(tvdbBannerPath)), bannerPath);
-            _downloadQueue.Enqueue(downloadInfo);
+            return true;
         }
 
         private async Task DownloadItemsFromQueue(CancellationToken cancellationToken)
