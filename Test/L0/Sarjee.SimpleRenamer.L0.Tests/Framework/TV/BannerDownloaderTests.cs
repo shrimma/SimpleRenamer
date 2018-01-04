@@ -74,6 +74,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         public void BannerDownloader_SaveBannerAsync_Success()
         {
             IBannerDownloader bannerDownloader = new TestableBannerDownloader(mockLogger.Object, mockTvdbManager.Object);
+            mockTvdbManager.Setup(x => x.GetBannerUri(It.IsAny<string>())).Returns("http://banner/banner.bmp");
 
             bool result = false;
             Func<Task> action1 = async () => result = await bannerDownloader.SaveBannerAsync("bannerPath", "destinationFolder");

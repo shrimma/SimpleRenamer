@@ -95,13 +95,18 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 cancellationToken.ThrowIfCancellationRequested();
                 if (_downloadQueue.TryDequeue(out (Uri tvdbUri, string bannerFilePath) currentItem))
                 {
-                    await _webClient.DownloadFileTaskAsync(currentItem.tvdbUri, currentItem.bannerFilePath);
+                    await DownloadItem(currentItem.tvdbUri, currentItem.bannerFilePath);
                 }
                 else
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
+        }
+        protected virtual async Task<bool> DownloadItem(Uri tvdbUri, string bannerFilePath)
+        {
+            await _webClient.DownloadFileTaskAsync(tvdbUri, bannerFilePath);
+            return true;
         }
 
         #region IDisposable Support
