@@ -104,9 +104,18 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
         private void SendActionStatsToCloud(List<MatchedFile> files)
         {
-            string jsonPayload = JsonConvert.SerializeObject(files);
-            //run the messaging sending in background
-            Task.Run(async () => await _messageSender.SendAsync(jsonPayload));
+            //do all the stuff for sending stats in background
+            Task.Run(async () =>
+            {
+                List<StatsFile> scanFiles = new List<StatsFile>();
+                foreach (MatchedFile file in files)
+                {
+                    scanFiles.Add(StatsFile.StatsFileFromMatchedFile(file));
+                }
+                string jsonPayload = JsonConvert.SerializeObject(scanFiles);
+                //run the messaging sending in background
+                await _messageSender.SendAsync(jsonPayload);
+            });
         }
 
         /// <summary>

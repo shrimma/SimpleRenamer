@@ -81,6 +81,7 @@
     <Compile Include="Interface\ILogger.cs" />
     <Compile Include="Interface\IActionsMatchedFiles.cs" />
     <Compile Include="Interface\IScanFiles.cs" />
+    <Compile Include="Model\StatsFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\RegexFile.cs" />
     <Compile Include="Model\Settings.cs" />
