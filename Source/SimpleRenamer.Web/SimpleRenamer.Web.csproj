@@ -5,11 +5,30 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="App.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="dropzone" Version="4.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SimpleRenamer.Common.Movie\SimpleRenamer.Common.Movie.csproj" />
+    <ProjectReference Include="..\SimpleRenamer.Common.TV\SimpleRenamer.Common.TV.csproj" />
+    <ProjectReference Include="..\SimpleRenamer.Common\SimpleRenamer.Common.csproj" />
+    <ProjectReference Include="..\SimpleRenamer.Framework.Core\SimpleRenamer.Framework.Core.csproj" />
+    <ProjectReference Include="..\SimpleRenamer.Framework.Movie\SimpleRenamer.Framework.Movie.csproj" />
+    <ProjectReference Include="..\SimpleRenamer.Framework.TV\SimpleRenamer.Framework.TV.csproj" />
+    <ProjectReference Include="..\SimpleRenamer.Logging\SimpleRenamer.Logging.csproj" />
   </ItemGroup>
 
 </Project>

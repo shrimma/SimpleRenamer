@@ -1,0 +1,71 @@
+﻿@model IEnumerable<Sarjee.SimpleRenamer.Common.Model.MatchedFile>
+
+@{
+    ViewData["Title"] = "Index - Scanned";
+}
+
+<h2>Scan</h2>
+
+<div>
+    @if (Model != null && Model.Count() >= 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Action
+                    </th>
+                    <th>
+                        Title
+                    </th>
+                    <th>
+                        Season
+                    </th>
+                    <th>
+                        Episode
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.FileType)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ActionThis)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ShowName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Season)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.EpisodeNumber)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.EpisodeName)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    @if (Model == null)
+    {
+        <p>No Results</p>
+    }
+</div>
+
+<div>
+    <a asp-action="Index">Return back</a>
+</div>
