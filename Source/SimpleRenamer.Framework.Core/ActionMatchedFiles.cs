@@ -72,37 +72,34 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         public async Task<bool> ActionAsync(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
-            return await Task.Run(async () =>
+            OnProgressTextChanged(new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
+            //perform pre actions on TVshows
+            List<MatchedFile> tvShowsToMove = await PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.TvShow).ToList(), ct);
+            //perform pre actions on movies
+            List<MatchedFile> moviesToMove = await PreProcessMovies(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.Movie).ToList(), ct);
+            OnProgressTextChanged(new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
+
+            //concat final list of files to move
+            List<MatchedFile> filesToMove = new List<MatchedFile>();
+            if (tvShowsToMove?.Count > 0)
             {
-                OnProgressTextChanged(new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
-                //perform pre actions on TVshows
-                List<MatchedFile> tvShowsToMove = await PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.TvShow).ToList(), ct);
-                //perform pre actions on movies
-                List<MatchedFile> moviesToMove = await PreProcessMovies(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.Movie).ToList(), ct);
-                OnProgressTextChanged(new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
+                filesToMove.AddRange(tvShowsToMove);
+            }
+            if (moviesToMove?.Count > 0)
+            {
+                filesToMove.AddRange(moviesToMove);
+            }
 
-                //concat final list of files to move
-                List<MatchedFile> filesToMove = new List<MatchedFile>();
-                if (tvShowsToMove?.Count > 0)
-                {
-                    filesToMove.AddRange(tvShowsToMove);
-                }
-                if (moviesToMove?.Count > 0)
-                {
-                    filesToMove.AddRange(moviesToMove);
-                }
+            //if we have files to move
+            if (filesToMove?.Count > 0)
+            {
+                //send the stats to the cloud
+                SendActionStatsToCloud(filesToMove);
+                //move these files
+                await MoveFiles(filesToMove, ct);
+            }
 
-                //if we have files to move
-                if (filesToMove?.Count > 0)
-                {
-                    //send the stats to the cloud
-                    SendActionStatsToCloud(filesToMove);
-                    //move these files
-                    await MoveFiles(filesToMove, ct);
-                }
-
-                return true;
-            });
+            return true;
         }
 
         private void SendActionStatsToCloud(List<MatchedFile> files)
