@@ -25,6 +25,6 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <param name="mapping">The mapping of the file to TVDB</param>
         /// <param name="downloadBanner">Whether to download a banner</param>
         /// <returns></returns>
-        Task<MatchedFile> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner);
+        MatchedFile CreateDirectoriesAndQueueDownloadBanners(MatchedFile episode, Mapping mapping, bool downloadBanner);
     }
 }

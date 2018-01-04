@@ -62,8 +62,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         {
             IBannerDownloader bannerDownloader = GetBannerDownloader();
 
-            Func<Task> action1 = async () => await bannerDownloader.QueueBannerDownload(string.Empty, string.Empty);
-            Func<Task> action2 = async () => await bannerDownloader.QueueBannerDownload("bannerPath", string.Empty);
+            Action action1 = () => bannerDownloader.QueueBannerDownload(string.Empty, string.Empty);
+            Action action2 = () => bannerDownloader.QueueBannerDownload("bannerPath", string.Empty);
 
             action1.ShouldThrow<ArgumentNullException>();
             action2.ShouldThrow<ArgumentNullException>();
@@ -77,7 +77,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             mockTvdbManager.Setup(x => x.GetBannerUri(It.IsAny<string>())).Returns("http://banner/banner.bmp");
 
             bool result = false;
-            Func<Task> action1 = async () => result = await bannerDownloader.QueueBannerDownload("bannerPath", "destinationFolder");
+            Action action1 = () => result = bannerDownloader.QueueBannerDownload("bannerPath", "destinationFolder");
 
             action1.ShouldNotThrow();
             result.Should().BeTrue();

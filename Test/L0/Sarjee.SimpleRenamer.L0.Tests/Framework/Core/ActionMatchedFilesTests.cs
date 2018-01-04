@@ -123,8 +123,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             //setup mocks            
             mockConfigurationManager.Setup(x => x.Settings).Returns(new Settings());
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == spectre), null, It.IsAny<bool>())).ReturnsAsync(spectre);
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == pomPoko), null, It.IsAny<bool>())).ReturnsAsync(pomPoko);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == spectre), null, It.IsAny<bool>())).Returns(spectre);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == pomPoko), null, It.IsAny<bool>())).Returns(pomPoko);
             mockFileMover.Setup(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             IActionMatchedFiles actionMatchedFiles = GetActionMatchedFilesWithBackgroundQueue();
@@ -134,7 +134,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             action1.ShouldNotThrow();
             result.Should().BeTrue();
-            mockFileMover.Verify(x => x.CreateDirectoriesAndDownloadBannersAsync(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(2));
+            mockFileMover.Verify(x => x.CreateDirectoriesAndQueueDownloadBanners(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(2));
             mockFileMover.Verify(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
             mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.Once);
         }
@@ -149,8 +149,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             //setup mocks
             mockConfigurationManager.Setup(x => x.Settings).Returns(new Settings());
             mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == castle1), null, It.IsAny<bool>())).ReturnsAsync(castle1);
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == castle2), null, It.IsAny<bool>())).ReturnsAsync(castle2);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == castle1), null, It.IsAny<bool>())).Returns(castle1);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == castle2), null, It.IsAny<bool>())).Returns(castle2);
             mockFileMover.Setup(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             IActionMatchedFiles actionMatchedFiles = GetActionMatchedFilesWithBackgroundQueue();
@@ -160,7 +160,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             action1.ShouldNotThrow();
             result.Should().BeTrue();
-            mockFileMover.Verify(x => x.CreateDirectoriesAndDownloadBannersAsync(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(2));
+            mockFileMover.Verify(x => x.CreateDirectoriesAndQueueDownloadBanners(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(2));
             mockFileMover.Verify(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
             mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.Once);
         }
@@ -177,10 +177,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             //setup mocks
             mockConfigurationManager.Setup(x => x.Settings).Returns(new Settings());
             mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == castle1), null, It.IsAny<bool>())).ReturnsAsync(castle1);
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == castle2), null, It.IsAny<bool>())).ReturnsAsync(castle2);
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == spectre), null, It.IsAny<bool>())).ReturnsAsync(spectre);
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == pomPoko), null, It.IsAny<bool>())).ReturnsAsync(pomPoko);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == castle1), null, It.IsAny<bool>())).Returns(castle1);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == castle2), null, It.IsAny<bool>())).Returns(castle2);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == spectre), null, It.IsAny<bool>())).Returns(spectre);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == pomPoko), null, It.IsAny<bool>())).Returns(pomPoko);
             mockFileMover.Setup(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             IActionMatchedFiles actionMatchedFiles = GetActionMatchedFilesWithBackgroundQueue();
@@ -190,7 +190,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             action1.ShouldNotThrow();
             result.Should().BeTrue();
-            mockFileMover.Verify(x => x.CreateDirectoriesAndDownloadBannersAsync(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(4));
+            mockFileMover.Verify(x => x.CreateDirectoriesAndQueueDownloadBanners(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(4));
             mockFileMover.Verify(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(4));
             mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.Once);
         }

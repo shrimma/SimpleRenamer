@@ -123,11 +123,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             ConcurrentBag<MatchedFile> processFiles = new ConcurrentBag<MatchedFile>();
             ShowNameMapping snm = _configurationManager.ShowNameMappings;
 
-            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
+            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>((file) =>
             {
                 ct.ThrowIfCancellationRequested();
                 Mapping mapping = snm.Mappings.FirstOrDefault(x => x.TVDBShowID.Equals(file.TVDBShowId));
-                MatchedFile result = await _fileMover.CreateDirectoriesAndDownloadBannersAsync(file, mapping, true);
+                MatchedFile result = _fileMover.CreateDirectoriesAndQueueDownloadBanners(file, mapping, true);
                 //fire event here
                 OnFilePreProcessed(new FilePreProcessedEventArgs());
                 if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
@@ -161,10 +161,10 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private async Task<List<MatchedFile>> PreProcessMovies(List<MatchedFile> scannedMovies, CancellationToken ct)
         {
             ConcurrentBag<MatchedFile> processFiles = new ConcurrentBag<MatchedFile>();
-            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
+            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>((file) =>
             {
                 ct.ThrowIfCancellationRequested();
-                MatchedFile result = await _fileMover.CreateDirectoriesAndDownloadBannersAsync(file, null, false);
+                MatchedFile result = _fileMover.CreateDirectoriesAndQueueDownloadBanners(file, null, false);
                 //fire event here
                 OnFilePreProcessed(new FilePreProcessedEventArgs());
                 if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
