@@ -12,6 +12,6 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// </summary>
         /// <param name="jsonPayload">The json payload.</param>
         /// <returns></returns>
-        void SendAsync(string jsonPayload);
+        Task SendAsync(string jsonPayload);
     }
 }
