@@ -15,7 +15,8 @@ namespace Sarjee.SimpleRenamer.Common.Model
         {
             return new StatsFile
             {
-                ExistingFileName = Path.GetFileName(matchedFile.SourceFilePath),
+                ExistingFileName = Path.GetFileNameWithoutExtension(matchedFile.SourceFilePath),
+                FileExtension = Path.GetExtension(matchedFile.SourceFilePath),
                 NewFileName = matchedFile.NewFileName,
                 FileMatchIdentifier = matchedFile.FileType == FileType.TvShow ? matchedFile.TVDBShowId : matchedFile.FileType == FileType.Movie ? matchedFile.TMDBShowId.ToString() : string.Empty,
                 MediaTitle = matchedFile.ShowName,
@@ -25,6 +26,9 @@ namespace Sarjee.SimpleRenamer.Common.Model
 
         [JsonProperty]
         public string ExistingFileName { get; set; }
+
+        [JsonProperty]
+        public string FileExtension { get; set; }
 
         [JsonProperty]
         public string NewFileName { get; set; }
