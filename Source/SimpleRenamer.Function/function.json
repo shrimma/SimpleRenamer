@@ -1,0 +1,31 @@
+﻿{
+  "bindings": [
+    {
+      "type": "serviceBusTrigger",
+      "name": "mySbMsg",
+      "connection": "sb-js-simplerenamer-test_RootManageSharedAccessKey_SERVICEBUS",
+      "queueName": "testing123",
+      "accessRights": "Listen",
+      "direction": "in"
+    },
+    {
+      "type": "documentDB",
+      "name": "outputTvShow",
+      "databaseName": "SimpleRenamerStats",
+      "collectionName": "RenamedTvShows",
+      "createIfNotExists": false,
+      "connection": "cosmos-js-simplerenamer-test_DOCUMENTDB",
+      "direction": "out"
+    },
+    {
+      "type": "documentDB",
+      "name": "outputMovie",
+      "databaseName": "SimpleRenamerStats",
+      "collectionName": "RenamedMovies",
+      "createIfNotExists": false,
+      "connection": "cosmos-js-simplerenamer-test_DOCUMENTDB",
+      "direction": "out"
+    }
+  ],
+  "disabled": false
+}
