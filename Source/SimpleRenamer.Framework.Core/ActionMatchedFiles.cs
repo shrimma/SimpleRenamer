@@ -1,4 +1,5 @@
-﻿using Sarjee.SimpleRenamer.Common.EventArguments;
+﻿using Newtonsoft.Json;
+using Sarjee.SimpleRenamer.Common.EventArguments;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using System;
@@ -22,6 +23,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private IBackgroundQueue _backgroundQueue;
         private IFileMover _fileMover;
         private IConfigurationManager _configurationManager;
+        private IMessageSender _messageSender;
         private ISettings _settings;
         /// <summary>
         /// Fired whenever a preprocessor action is completed on a file
@@ -52,12 +54,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// or
         /// configManager
         /// </exception>
-        public ActionMatchedFiles(ILogger logger, IBackgroundQueue backgroundQueue, IFileMover fileMover, IConfigurationManager configManager)
+        public ActionMatchedFiles(ILogger logger, IBackgroundQueue backgroundQueue, IFileMover fileMover, IConfigurationManager configManager, IMessageSender messageSender)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _backgroundQueue = backgroundQueue ?? throw new ArgumentNullException(nameof(backgroundQueue));
             _fileMover = fileMover ?? throw new ArgumentNullException(nameof(fileMover));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
+            _messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
             _settings = _configurationManager.Settings;
         }
 
@@ -69,33 +72,49 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         public async Task<bool> ActionAsync(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct)
         {
-            return await Task.Run(async () =>
+            OnProgressTextChanged(new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
+            //perform pre actions on TVshows
+            List<MatchedFile> tvShowsToMove = await PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.TvShow).ToList(), ct);
+            //perform pre actions on movies
+            List<MatchedFile> moviesToMove = await PreProcessMovies(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.Movie).ToList(), ct);
+            OnProgressTextChanged(new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
+
+            //concat final list of files to move
+            List<MatchedFile> filesToMove = new List<MatchedFile>();
+            if (tvShowsToMove?.Count > 0)
             {
-                OnProgressTextChanged(new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
-                //perform pre actions on TVshows
-                List<MatchedFile> tvShowsToMove = await PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.TvShow).ToList(), ct);
-                //perform pre actions on movies
-                List<MatchedFile> moviesToMove = await PreProcessMovies(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.Movie).ToList(), ct);
-                OnProgressTextChanged(new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
+                filesToMove.AddRange(tvShowsToMove);
+            }
+            if (moviesToMove?.Count > 0)
+            {
+                filesToMove.AddRange(moviesToMove);
+            }
 
-                //concat final list of files to move
-                List<MatchedFile> filesToMove = new List<MatchedFile>();
-                if (tvShowsToMove?.Count > 0)
-                {
-                    filesToMove.AddRange(tvShowsToMove);
-                }
-                if (moviesToMove?.Count > 0)
-                {
-                    filesToMove.AddRange(moviesToMove);
-                }
-
+            //if we have files to move
+            if (filesToMove?.Count > 0)
+            {
+                //send the stats to the cloud
+                SendActionStatsToCloud(filesToMove);
                 //move these files
-                if (filesToMove?.Count > 0)
-                {
-                    await MoveFiles(filesToMove, ct);
-                }
+                await MoveFiles(filesToMove, ct);
+            }
 
-                return true;
+            return true;
+        }
+
+        private void SendActionStatsToCloud(List<MatchedFile> files)
+        {
+            //do all the stuff for sending stats in background
+            Task.Run(async () =>
+            {
+                List<StatsFile> scanFiles = new List<StatsFile>();
+                foreach (MatchedFile file in files)
+                {
+                    scanFiles.Add(StatsFile.StatsFileFromMatchedFile(file));
+                }
+                string jsonPayload = JsonConvert.SerializeObject(scanFiles);
+                //run the messaging sending in background
+                await _messageSender.SendAsync(jsonPayload);
             });
         }
 
@@ -110,11 +129,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             ConcurrentBag<MatchedFile> processFiles = new ConcurrentBag<MatchedFile>();
             ShowNameMapping snm = _configurationManager.ShowNameMappings;
 
-            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
+            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>((file) =>
             {
                 ct.ThrowIfCancellationRequested();
                 Mapping mapping = snm.Mappings.FirstOrDefault(x => x.TVDBShowID.Equals(file.TVDBShowId));
-                MatchedFile result = await _fileMover.CreateDirectoriesAndDownloadBannersAsync(file, mapping, true);
+                MatchedFile result = _fileMover.CreateDirectoriesAndQueueDownloadBanners(file, mapping, true);
                 //fire event here
                 OnFilePreProcessed(new FilePreProcessedEventArgs());
                 if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))
@@ -148,10 +167,10 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private async Task<List<MatchedFile>> PreProcessMovies(List<MatchedFile> scannedMovies, CancellationToken ct)
         {
             ConcurrentBag<MatchedFile> processFiles = new ConcurrentBag<MatchedFile>();
-            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
+            var actionFilesAsyncBlock = new ActionBlock<MatchedFile>((file) =>
             {
                 ct.ThrowIfCancellationRequested();
-                MatchedFile result = await _fileMover.CreateDirectoriesAndDownloadBannersAsync(file, null, false);
+                MatchedFile result = _fileMover.CreateDirectoriesAndQueueDownloadBanners(file, null, false);
                 //fire event here
                 OnFilePreProcessed(new FilePreProcessedEventArgs());
                 if (!string.IsNullOrWhiteSpace(result.DestinationFilePath))

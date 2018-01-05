@@ -51,7 +51,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <param name="mapping">The mapping of the file to TVDB</param>
         /// <param name="downloadBanner">Whether to download a banner</param>
         /// <returns></returns>
-        public async Task<MatchedFile> CreateDirectoriesAndDownloadBannersAsync(MatchedFile episode, Mapping mapping, bool downloadBanner)
+        public MatchedFile CreateDirectoriesAndQueueDownloadBanners(MatchedFile episode, Mapping mapping, bool downloadBanner)
         {
             _logger.TraceMessage($"Creating Directories for {episode.SourceFilePath}", EventLevel.Verbose);
             string ext = Path.GetExtension(episode.SourceFilePath);
@@ -86,12 +86,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                         if (!string.IsNullOrWhiteSpace(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
                         {
                             //Grab Show banner if required
-                            bannerResult = await _bannerDownloader.SaveBannerAsync(episode.ShowImage, showDirectory);
+                            bannerResult = _bannerDownloader.QueueBannerDownload(episode.ShowImage, showDirectory);
                         }
                         if (!string.IsNullOrWhiteSpace(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))
                         {
                             //Grab Season banner if required
-                            bannerResult = await _bannerDownloader.SaveBannerAsync(episode.SeasonImage, seasonDirectory);
+                            bannerResult = _bannerDownloader.QueueBannerDownload(episode.SeasonImage, seasonDirectory);
                         }
                     }
                 }

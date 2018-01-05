@@ -89,43 +89,40 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         public async Task<List<MatchedFile>> ScanAsync(CancellationToken ct)
         {
-            return await Task.Run(async () =>
+            //search folders for a list of video file paths
+            List<string> videoFiles = await _fileWatcher.SearchFoldersAsync(ct);
+            //use regex to attempt to figure out some details about the files ie showname, episode number, etc
+            List<MatchedFile> matchedFiles = await _fileMatcher.SearchFilesAsync(videoFiles, ct);
+
+            //try and match the tv shows with any TV scrapers we have available
+            Task<List<MatchedFile>> scanTvShowsTask = MatchTVShows(matchedFiles.Where(x => x.FileType == FileType.TvShow).ToList(), ct);
+            //try and match movies with TMDB
+            Task<List<MatchedFile>> scanMovieTask = MatchMovies(matchedFiles.Where(x => x.FileType == FileType.Movie).ToList(), ct);
+            //check there aren't any completely unmatched files (due to undecypherable filenames)
+            List<MatchedFile> otherVideoFiles = matchedFiles.Where(x => x.FileType == FileType.Unknown).ToList();
+
+            //wait for tv and movie scanning to complete
+            await Task.WhenAll(scanTvShowsTask, scanMovieTask);
+            List<MatchedFile> scannedEpisodes = scanTvShowsTask.Result;
+            List<MatchedFile> scannedMovies = scanMovieTask.Result;
+
+            //add the tv shows and movies to the same list and return this
+            List<MatchedFile> scannedFiles = new List<MatchedFile>();
+            if (scannedEpisodes?.Count > 0)
             {
-                //search folders for a list of video file paths
-                List<string> videoFiles = await _fileWatcher.SearchFoldersAsync(ct);
-                //use regex to attempt to figure out some details about the files ie showname, episode number, etc
-                List<MatchedFile> matchedFiles = await _fileMatcher.SearchFilesAsync(videoFiles, ct);
+                scannedFiles.AddRange(scannedEpisodes);
+            }
+            if (scannedMovies?.Count > 0)
+            {
+                scannedFiles.AddRange(scannedMovies);
+            }
+            if (otherVideoFiles?.Count > 0)
+            {
+                scannedFiles.AddRange(otherVideoFiles);
+            }
 
-                //try and match the tv shows with any TV scrapers we have available
-                Task<List<MatchedFile>> scanTvShowsTask = MatchTVShows(matchedFiles.Where(x => x.FileType == FileType.TvShow).ToList(), ct);
-                //try and match movies with TMDB
-                Task<List<MatchedFile>> scanMovieTask = MatchMovies(matchedFiles.Where(x => x.FileType == FileType.Movie).ToList(), ct);
-                //check there aren't any completely unmatched files (due to undecypherable filenames)
-                List<MatchedFile> otherVideoFiles = matchedFiles.Where(x => x.FileType == FileType.Unknown).ToList();
-
-                //wait for tv and movie scanning to complete
-                await Task.WhenAll(scanTvShowsTask, scanMovieTask);
-                List<MatchedFile> scannedEpisodes = scanTvShowsTask.Result;
-                List<MatchedFile> scannedMovies = scanMovieTask.Result;
-
-                //add the tv shows and movies to the same list and return this
-                List<MatchedFile> scannedFiles = new List<MatchedFile>();
-                if (scannedEpisodes?.Count > 0)
-                {
-                    scannedFiles.AddRange(scannedEpisodes);
-                }
-                if (scannedMovies?.Count > 0)
-                {
-                    scannedFiles.AddRange(scannedMovies);
-                }
-                if (otherVideoFiles?.Count > 0)
-                {
-                    scannedFiles.AddRange(otherVideoFiles);
-                }
-
-                //return the full list of tv, movies, and unknown files
-                return scannedFiles;
-            });
+            //return the full list of tv, movies, and unknown files
+            return scannedFiles;
         }
 
         /// <summary>

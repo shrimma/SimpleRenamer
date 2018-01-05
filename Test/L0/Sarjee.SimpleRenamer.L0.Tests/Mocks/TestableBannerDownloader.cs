@@ -1,6 +1,7 @@
 ﻿using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Framework.TV;
+using System;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
@@ -11,7 +12,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
         {
         }
 
-        protected override Task<bool> Download(string tvdbBannerPath, string bannerPath)
+        protected override Task<bool> DownloadItem(Uri tvdbUri, string bannerFilePath)
         {
             return Task.FromResult(true);
         }

@@ -1,9 +1,11 @@
 ﻿using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.TV
@@ -17,6 +19,9 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private ILogger _logger;
         private ITvdbManager _tvdbManager;
         private WebClient _webClient;
+        private ConcurrentQueue<(Uri tvdbUri, string bannerFilePath)> _downloadQueue;
+        protected CancellationTokenSource _cancellationTokenSource;
+        protected Task _longRunningTask;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BannerDownloader"/> class.
@@ -33,6 +38,14 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _tvdbManager = tvdbManager ?? throw new ArgumentNullException(nameof(tvdbManager));
             _webClient = new WebClient();
+            _downloadQueue = new ConcurrentQueue<(Uri tvdbUri, string bannerFilePath)>();
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            //start out background task that polls for banners to download
+            _longRunningTask = Task.Factory.StartNew(async () =>
+            {
+                await DownloadItemsFromQueue(_cancellationTokenSource.Token);
+            }, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         /// <summary>
@@ -42,7 +55,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <param name="destinationFolder">The destination folder to save the banner</param>
         /// <returns></returns>
         /// <inheritdoc />
-        public async Task<bool> SaveBannerAsync(string tvdbBannerPath, string destinationFolder)
+        public bool QueueBannerDownload(string tvdbBannerPath, string destinationFolder)
         {
             //throw if arguments are missing
             if (string.IsNullOrWhiteSpace(tvdbBannerPath))
@@ -57,9 +70,9 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             string fullBannerPath = Path.Combine(destinationFolder, "Folder.jpg");
             if (!File.Exists(fullBannerPath))
             {
-                _logger.TraceMessage($"Downloading banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
-                await Download(tvdbBannerPath, fullBannerPath);
-                _logger.TraceMessage($"Downloaded banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
+                _logger.TraceMessage($"Queueing download of banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
+                _downloadQueue.Enqueue((new Uri(_tvdbManager.GetBannerUri(tvdbBannerPath)), fullBannerPath));
+                _logger.TraceMessage($"Queued download of banner {tvdbBannerPath} to {destinationFolder}.", EventLevel.Verbose);
             }
             else
             {
@@ -69,11 +82,24 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             return true;
         }
 
-        protected virtual async Task<bool> Download(string tvdbBannerPath, string bannerPath)
+        private async Task DownloadItemsFromQueue(CancellationToken cancellationToken)
         {
-
-            await _webClient.DownloadFileTaskAsync(new Uri(_tvdbManager.GetBannerUri(tvdbBannerPath)), bannerPath);
-
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (_downloadQueue.TryDequeue(out (Uri tvdbUri, string bannerFilePath) currentItem))
+                {
+                    await DownloadItem(currentItem.tvdbUri, currentItem.bannerFilePath);
+                }
+                else
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+            }
+        }
+        protected virtual async Task<bool> DownloadItem(Uri tvdbUri, string bannerFilePath)
+        {
+            await _webClient.DownloadFileTaskAsync(tvdbUri, bannerFilePath);
             return true;
         }
 
@@ -90,6 +116,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                     {
                         _webClient.Dispose();
                         _webClient = null;
+                    }
+                    if (_cancellationTokenSource != null)
+                    {
+                        _cancellationTokenSource.Dispose();
+                        _cancellationTokenSource = null;
                     }
                 }
 

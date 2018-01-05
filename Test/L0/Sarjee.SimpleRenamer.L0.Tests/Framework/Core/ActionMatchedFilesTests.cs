@@ -21,6 +21,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         private Mock<IBackgroundQueue> mockBackgroundQueue;
         private Mock<IFileMover> mockFileMover;
         private Mock<IConfigurationManager> mockConfigurationManager;
+        private Mock<IMessageSender> mockMessageSender;
 
 
         [TestInitialize]
@@ -30,11 +31,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             mockBackgroundQueue = mockRepository.Create<IBackgroundQueue>();
             mockFileMover = mockRepository.Create<IFileMover>();
             mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
+            mockMessageSender = mockRepository.Create<IMessageSender>();
         }
 
         private IActionMatchedFiles GetActionMatchedFiles()
         {
-            IActionMatchedFiles actionMatchedFiles = new ActionMatchedFiles(mockLogger.Object, mockBackgroundQueue.Object, mockFileMover.Object, mockConfigurationManager.Object);
+            IActionMatchedFiles actionMatchedFiles = new ActionMatchedFiles(mockLogger.Object, mockBackgroundQueue.Object, mockFileMover.Object, mockConfigurationManager.Object, mockMessageSender.Object);
             actionMatchedFiles.Should().NotBeNull();
             actionMatchedFiles.RaiseFilePreProcessedEvent += ActionMatchedFiles_RaiseFilePreProcessedEvent;
             actionMatchedFiles.RaiseFileMovedEvent += ActionMatchedFiles_RaiseFileMovedEvent;
@@ -44,7 +46,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
         private IActionMatchedFiles GetActionMatchedFilesWithBackgroundQueue()
         {
-            IActionMatchedFiles actionMatchedFiles = new ActionMatchedFiles(mockLogger.Object, new BackgroundQueue(), mockFileMover.Object, mockConfigurationManager.Object);
+            IActionMatchedFiles actionMatchedFiles = new ActionMatchedFiles(mockLogger.Object, new BackgroundQueue(), mockFileMover.Object, mockConfigurationManager.Object, mockMessageSender.Object);
             actionMatchedFiles.Should().NotBeNull();
             actionMatchedFiles.RaiseFilePreProcessedEvent += ActionMatchedFiles_RaiseFilePreProcessedEvent;
             actionMatchedFiles.RaiseFileMovedEvent += ActionMatchedFiles_RaiseFileMovedEvent;
@@ -72,15 +74,17 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         [TestCategory(TestCategories.Core)]
         public void ActionMatchedFilesCtor_NullArgument_ThrowsArgumentNullException()
         {
-            Action action1 = () => new ActionMatchedFiles(null, null, null, null);
-            Action action2 = () => new ActionMatchedFiles(mockLogger.Object, null, null, null);
-            Action action3 = () => new ActionMatchedFiles(mockLogger.Object, mockBackgroundQueue.Object, null, null);
-            Action action4 = () => new ActionMatchedFiles(mockLogger.Object, mockBackgroundQueue.Object, mockFileMover.Object, null);
+            Action action1 = () => new ActionMatchedFiles(null, null, null, null, null);
+            Action action2 = () => new ActionMatchedFiles(mockLogger.Object, null, null, null, null);
+            Action action3 = () => new ActionMatchedFiles(mockLogger.Object, mockBackgroundQueue.Object, null, null, null);
+            Action action4 = () => new ActionMatchedFiles(mockLogger.Object, mockBackgroundQueue.Object, mockFileMover.Object, null, null);
+            Action action5 = () => new ActionMatchedFiles(mockLogger.Object, mockBackgroundQueue.Object, mockFileMover.Object, mockConfigurationManager.Object, null);
 
             action1.ShouldThrow<ArgumentNullException>();
             action2.ShouldThrow<ArgumentNullException>();
             action3.ShouldThrow<ArgumentNullException>();
             action4.ShouldThrow<ArgumentNullException>();
+            action5.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -107,6 +111,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             action1.ShouldNotThrow();
             result.Should().BeTrue();
+            mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.Never);
         }
 
         [TestMethod]
@@ -118,8 +123,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             //setup mocks            
             mockConfigurationManager.Setup(x => x.Settings).Returns(new Settings());
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == spectre), null, It.IsAny<bool>())).ReturnsAsync(spectre);
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == pomPoko), null, It.IsAny<bool>())).ReturnsAsync(pomPoko);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == spectre), null, It.IsAny<bool>())).Returns(spectre);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == pomPoko), null, It.IsAny<bool>())).Returns(pomPoko);
             mockFileMover.Setup(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             IActionMatchedFiles actionMatchedFiles = GetActionMatchedFilesWithBackgroundQueue();
@@ -129,8 +134,9 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             action1.ShouldNotThrow();
             result.Should().BeTrue();
-            mockFileMover.Verify(x => x.CreateDirectoriesAndDownloadBannersAsync(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(2));
+            mockFileMover.Verify(x => x.CreateDirectoriesAndQueueDownloadBanners(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(2));
             mockFileMover.Verify(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+            mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.AtMostOnce);
         }
 
         [TestMethod]
@@ -143,8 +149,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             //setup mocks
             mockConfigurationManager.Setup(x => x.Settings).Returns(new Settings());
             mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == castle1), null, It.IsAny<bool>())).ReturnsAsync(castle1);
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == castle2), null, It.IsAny<bool>())).ReturnsAsync(castle2);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == castle1), null, It.IsAny<bool>())).Returns(castle1);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == castle2), null, It.IsAny<bool>())).Returns(castle2);
             mockFileMover.Setup(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             IActionMatchedFiles actionMatchedFiles = GetActionMatchedFilesWithBackgroundQueue();
@@ -154,8 +160,9 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             action1.ShouldNotThrow();
             result.Should().BeTrue();
-            mockFileMover.Verify(x => x.CreateDirectoriesAndDownloadBannersAsync(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(2));
+            mockFileMover.Verify(x => x.CreateDirectoriesAndQueueDownloadBanners(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(2));
             mockFileMover.Verify(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+            mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.AtMostOnce);
         }
 
         [TestMethod]
@@ -170,10 +177,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             //setup mocks
             mockConfigurationManager.Setup(x => x.Settings).Returns(new Settings());
             mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == castle1), null, It.IsAny<bool>())).ReturnsAsync(castle1);
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == castle2), null, It.IsAny<bool>())).ReturnsAsync(castle2);
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == spectre), null, It.IsAny<bool>())).ReturnsAsync(spectre);
-            mockFileMover.Setup(x => x.CreateDirectoriesAndDownloadBannersAsync(It.Is<MatchedFile>(i => i == pomPoko), null, It.IsAny<bool>())).ReturnsAsync(pomPoko);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == castle1), null, It.IsAny<bool>())).Returns(castle1);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == castle2), null, It.IsAny<bool>())).Returns(castle2);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == spectre), null, It.IsAny<bool>())).Returns(spectre);
+            mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == pomPoko), null, It.IsAny<bool>())).Returns(pomPoko);
             mockFileMover.Setup(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             IActionMatchedFiles actionMatchedFiles = GetActionMatchedFilesWithBackgroundQueue();
@@ -183,8 +190,9 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             action1.ShouldNotThrow();
             result.Should().BeTrue();
-            mockFileMover.Verify(x => x.CreateDirectoriesAndDownloadBannersAsync(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(4));
+            mockFileMover.Verify(x => x.CreateDirectoriesAndQueueDownloadBanners(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(4));
             mockFileMover.Verify(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(4));
+            mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.AtMostOnce);
         }
         #endregion Action
     }
