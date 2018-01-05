@@ -136,7 +136,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             result.Should().BeTrue();
             mockFileMover.Verify(x => x.CreateDirectoriesAndQueueDownloadBanners(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(2));
             mockFileMover.Verify(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
-            mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.Once);
+            mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.AtMostOnce);
         }
 
         [TestMethod]
@@ -162,7 +162,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             result.Should().BeTrue();
             mockFileMover.Verify(x => x.CreateDirectoriesAndQueueDownloadBanners(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(2));
             mockFileMover.Verify(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
-            mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.Once);
+            mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.AtMostOnce);
         }
 
         [TestMethod]
@@ -192,7 +192,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             result.Should().BeTrue();
             mockFileMover.Verify(x => x.CreateDirectoriesAndQueueDownloadBanners(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(4));
             mockFileMover.Verify(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(4));
-            mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.Once);
+            mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.AtMostOnce);
         }
         #endregion Action
     }
