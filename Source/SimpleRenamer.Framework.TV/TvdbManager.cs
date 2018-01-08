@@ -7,6 +7,7 @@ using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.TV
@@ -18,10 +19,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
     public class TvdbManager : ITvdbManager
     {
         private string _apiKey;
-        private int _maxRetryCount = 10;
-        private int _maxBackoffSeconds = 2;
+        private const int _maxRetryCount = 10;
+        private const int _maxBackoffSeconds = 2;
         private IHelper _helper;
         private IRestClient _restClient;
+        private const string _baseUrl = "https://api.thetvdb.com";
         private JsonSerializerSettings _jsonSerializerSettings;
 
         /// <summary>
@@ -43,8 +45,15 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
 
             _apiKey = configManager.TvDbApiKey;
-            _restClient = new RestClient("https://api.thetvdb.com");
+
+            //create rest client
+            _restClient = new RestClient(_baseUrl);
             _restClient.AddDefaultHeader("content-type", "application/json");
+
+            //setup lease timeout to account for DNS changes
+            ServicePoint sp = ServicePointManager.FindServicePoint(new Uri(_baseUrl));
+            sp.ConnectionLeaseTimeout = 60 * 1000; // 1 minute
+
             _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
         }
 

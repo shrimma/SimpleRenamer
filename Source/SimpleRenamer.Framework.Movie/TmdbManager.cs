@@ -6,6 +6,7 @@ using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
 using System.Globalization;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.Movie
@@ -17,11 +18,12 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
     public class TmdbManager : ITmdbManager
     {
         private string _posterBaseUri;
-        private int _maxRetryCount = 10;
-        private int _maxBackoffSeconds = 2;
+        private const int _maxRetryCount = 10;
+        private const int _maxBackoffSeconds = 2;
         private IRestClient _restClient;
         private IHelper _helper;
         private JsonSerializerSettings _jsonSerializerSettings;
+        private const string _baseUrl = "https://api.themoviedb.org";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TmdbManager"/> class.
@@ -41,10 +43,16 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             }
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
 
-            _restClient = new RestClient("https://api.themoviedb.org");
+            //create the rest client
+            _restClient = new RestClient(_baseUrl);
             _restClient.AddDefaultHeader("content-type", "application/json");
             _restClient.AddDefaultParameter("api_key", configManager.TmDbApiKey, ParameterType.QueryString);
             _restClient.AddDefaultParameter("language", CultureInfo.CurrentCulture.Name, ParameterType.QueryString);
+
+            //setup lease timeout to account for DNS changes
+            ServicePoint sp = ServicePointManager.FindServicePoint(new Uri(_baseUrl));
+            sp.ConnectionLeaseTimeout = 60 * 1000; // 1 minute
+
             _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
         }
 
