@@ -68,16 +68,21 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// Performs preprocessor actions and then moves a list of scanned and matched episodes
         /// </summary>
         /// <param name="scannedEpisodes">The episodes to action</param>
-        /// <param name="ct">CancellationToken</param>
+        /// <param name="cancellationToken">CancellationToken</param>
         /// <returns></returns>
-        public async Task<bool> ActionAsync(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct)
+        public async Task<bool> ActionAsync(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken cancellationToken)
         {
             OnProgressTextChanged(new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
-            //perform pre actions on TVshows
-            List<MatchedFile> tvShowsToMove = await PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.TvShow).ToList(), ct);
+            //perform pre actions on TVshows            
+            Task<List<MatchedFile>> tvShowTask = PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.TvShow).ToList(), cancellationToken);
             //perform pre actions on movies
-            List<MatchedFile> moviesToMove = await PreProcessMovies(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.Movie).ToList(), ct);
+            Task<List<MatchedFile>> movieTask = PreProcessMovies(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.Movie).ToList(), cancellationToken);
+            //await both to complete
+            await Task.WhenAll(tvShowTask, movieTask);
+            List<MatchedFile> tvShowsToMove = tvShowTask.Result;
+            List<MatchedFile> moviesToMove = movieTask.Result;
             OnProgressTextChanged(new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
+            cancellationToken.ThrowIfCancellationRequested();
 
             //concat final list of files to move
             List<MatchedFile> filesToMove = new List<MatchedFile>();
@@ -96,7 +101,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 //send the stats to the cloud
                 SendActionStatsToCloud(filesToMove);
                 //move these files
-                await MoveFiles(filesToMove, ct);
+                await MoveFiles(filesToMove, cancellationToken);
             }
 
             return true;
@@ -122,16 +127,16 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// Pres the process tv shows.
         /// </summary>
         /// <param name="scannedEpisodes">The scanned episodes.</param>
-        /// <param name="ct">The ct.</param>
+        /// <param name="cancellationToken">The ct.</param>
         /// <returns></returns>
-        private async Task<List<MatchedFile>> PreProcessTVShows(List<MatchedFile> scannedEpisodes, CancellationToken ct)
+        private async Task<List<MatchedFile>> PreProcessTVShows(List<MatchedFile> scannedEpisodes, CancellationToken cancellationToken)
         {
             ConcurrentBag<MatchedFile> processFiles = new ConcurrentBag<MatchedFile>();
             ShowNameMapping snm = _configurationManager.ShowNameMappings;
 
             var actionFilesAsyncBlock = new ActionBlock<MatchedFile>((file) =>
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 Mapping mapping = snm.Mappings.FirstOrDefault(x => x.TVDBShowID.Equals(file.TVDBShowId));
                 MatchedFile result = _fileMover.CreateDirectoriesAndQueueDownloadBanners(file, mapping, true);
                 //fire event here
@@ -162,14 +167,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// Pres the process movies.
         /// </summary>
         /// <param name="scannedMovies">The scanned movies.</param>
-        /// <param name="ct">The ct.</param>
+        /// <param name="cancellationToken">The ct.</param>
         /// <returns></returns>
-        private async Task<List<MatchedFile>> PreProcessMovies(List<MatchedFile> scannedMovies, CancellationToken ct)
+        private async Task<List<MatchedFile>> PreProcessMovies(List<MatchedFile> scannedMovies, CancellationToken cancellationToken)
         {
             ConcurrentBag<MatchedFile> processFiles = new ConcurrentBag<MatchedFile>();
             var actionFilesAsyncBlock = new ActionBlock<MatchedFile>((file) =>
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 MatchedFile result = _fileMover.CreateDirectoriesAndQueueDownloadBanners(file, null, false);
                 //fire event here
                 OnFilePreProcessed(new FilePreProcessedEventArgs());
@@ -199,15 +204,15 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// Moves the files.
         /// </summary>
         /// <param name="filesToMove">The files to move.</param>
-        /// <param name="ct">The ct.</param>
+        /// <param name="cancellationToken">The ct.</param>
         /// <returns></returns>
-        private async Task<bool> MoveFiles(List<MatchedFile> filesToMove, CancellationToken ct)
+        private async Task<bool> MoveFiles(List<MatchedFile> filesToMove, CancellationToken cancellationToken)
         {
             var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 OnProgressTextChanged(new ProgressTextEventArgs($"Moving file {file.SourceFilePath} to {file.DestinationFilePath}."));
-                bool result = await await _backgroundQueue.QueueTaskAsync(() => _fileMover.MoveFileAsync(file, ct));
+                bool result = await await _backgroundQueue.QueueTaskAsync(() => _fileMover.MoveFileAsync(file, cancellationToken));
                 if (result)
                 {
                     OnFileMoved(new FileMovedEventArgs(file));

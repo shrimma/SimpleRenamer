@@ -52,9 +52,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// Processes a list of files trying to match the filenames against the regular expressions
         /// </summary>
         /// <param name="files">The files.</param>
-        /// <param name="ct">The cancellationtoken.</param>
+        /// <param name="cancellationToken">The cancellationtoken.</param>
         /// <returns></returns>
-        public async Task<List<MatchedFile>> SearchFilesAsync(List<string> files, CancellationToken ct)
+        public async Task<List<MatchedFile>> SearchFilesAsync(List<string> files, CancellationToken cancellationToken)
         {
             _logger.TraceMessage($"Parsing all found files against the regular expressions.", EventLevel.Verbose);
             OnProgressTextChanged(new ProgressTextEventArgs($"Parsing file names for show or movie details"));
@@ -66,7 +66,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             //block for searching the files
             var searchFilesAsyncBlock = new ActionBlock<string>((file) =>
             {
-                MatchedFile matchedFile = SearchFileName(file, ct);
+                cancellationToken.ThrowIfCancellationRequested();
+                MatchedFile matchedFile = SearchFileName(file, cancellationToken);
                 if (matchedFile != null)
                 {
                     //if episode is not null then we matched so add to the output list                    
@@ -111,9 +112,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// Searches the file name.
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
-        /// <param name="ct">The cancellationToken.</param>
+        /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns></returns>
-        private MatchedFile SearchFileName(string fileName, CancellationToken ct)
+        private MatchedFile SearchFileName(string fileName, CancellationToken cancellationToken)
         {
             _logger.TraceMessage($"Checking {fileName} against regular expressions.", EventLevel.Verbose);
             string showname = null;
@@ -125,7 +126,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
             foreach ((Regex regex, bool isForTv) regEx in _activeRegex)
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
                     //if this expression is enabled then match against the filename                    
@@ -165,7 +166,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     //we don't really care if one of the regex fails so swallow this exception
                     _logger.TraceException(ex, $"The RegularExpression {regEx.regex.ToString()} failed on {fileName}.");
                 }
-                ct.ThrowIfCancellationRequested();
             }
 
             _logger.TraceMessage($"No regex could match {fileName}.", EventLevel.Warning);

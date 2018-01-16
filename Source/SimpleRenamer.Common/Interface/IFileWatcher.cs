@@ -14,9 +14,9 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <summary>
         /// Searches the configured folders for any video files
         /// </summary>
-        /// <param name="ct">Cancellation Token</param>
+        /// <param name="cancellationToken">CancellationToken</param>
         /// <returns>A list of file paths of video files</returns>
-        Task<List<string>> SearchFoldersAsync(CancellationToken ct);
+        Task<List<string>> SearchFoldersAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

@@ -15,9 +15,9 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <summary>
         /// Scans the watch folders and matches files against shows/movies
         /// </summary>
-        /// <param name="ct">CancellationToken</param>
+        /// <param name="cancellationToken">CancellationToken</param>
         /// <returns></returns>
-        Task<List<MatchedFile>> ScanAsync(CancellationToken ct);
+        Task<List<MatchedFile>> ScanAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made
