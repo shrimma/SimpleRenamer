@@ -16,9 +16,9 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// Processes a list of files trying to match the filenames against the regular expressions
         /// </summary>
         /// <param name="files">The files.</param>
-        /// <param name="ct">The cancellationtoken.</param>
+        /// <param name="cancellationToken">CancellationToken.</param>
         /// <returns></returns>
-        Task<List<MatchedFile>> SearchFilesAsync(List<string> files, CancellationToken ct);
+        Task<List<MatchedFile>> SearchFilesAsync(List<string> files, CancellationToken cancellationToken);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

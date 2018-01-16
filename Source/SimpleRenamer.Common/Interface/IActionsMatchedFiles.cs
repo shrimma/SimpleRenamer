@@ -31,8 +31,8 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// Performs preprocessor actions and then moves a list of scanned and matched episodes
         /// </summary>
         /// <param name="scannedEpisodes">The episodes to action</param>
-        /// <param name="ct">CancellationToken</param>
+        /// <param name="cancellationToken">CancellationToken</param>
         /// <returns></returns>
-        Task<bool> ActionAsync(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken ct);
+        Task<bool> ActionAsync(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken cancellationToken);
     }
 }

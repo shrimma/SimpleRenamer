@@ -122,9 +122,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// Moves a file to the destination file path. If configured will also rename the file.
         /// </summary>
         /// <param name="episode">The file to move</param>
-        /// <param name="ct">The cancellationtoken.</param>
+        /// <param name="cancellationToken">The cancellationtoken.</param>
         /// <returns></returns>
-        public async Task<bool> MoveFileAsync(MatchedFile episode, CancellationToken ct)
+        public async Task<bool> MoveFileAsync(MatchedFile episode, CancellationToken cancellationToken)
         {
             _logger.TraceMessage($"Moving File {episode.SourceFilePath} to {episode.DestinationFilePath}.", EventLevel.Verbose);
             FileInfo fromFile = new FileInfo(episode.SourceFilePath);
@@ -135,7 +135,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
             else
             {
-                await CopyItOurselfAsync(fromFile, toFile, ct);
+                await CopyItOurselfAsync(fromFile, toFile, cancellationToken);
             }
 
             _logger.TraceMessage($"Moved File {episode.SourceFilePath} to {episode.DestinationFilePath}.", EventLevel.Verbose);
@@ -225,8 +225,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <param name="settings">The settings.</param>
         /// <param name="fromFile">From file.</param>
         /// <param name="toFile">To file.</param>
-        /// <param name="ct">The ct.</param>
-        private async Task CopyItOurselfAsync(FileInfo fromFile, FileInfo toFile, CancellationToken ct)
+        /// <param name="cancellationToken">CancellationToken</param>
+        private async Task CopyItOurselfAsync(FileInfo fromFile, FileInfo toFile, CancellationToken cancellationToken)
         {
             _logger.TraceMessage("CopyItOurself - Start", EventLevel.Verbose);
 
@@ -239,7 +239,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     using (var destinationStream = new FileStream(toFile.FullName, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize, fileOptions))
                     {
-                        await sourceStream.CopyToAsync(destinationStream, bufferSize, ct);
+                        await sourceStream.CopyToAsync(destinationStream, bufferSize, cancellationToken);
                     }
                 }
 

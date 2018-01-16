@@ -85,19 +85,20 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <summary>
         /// Scans the watch folders and matches files against shows/movies
         /// </summary>
-        /// <param name="ct">CancellationToken</param>
+        /// <param name="cancellationToken">CancellationToken</param>
         /// <returns></returns>
-        public async Task<List<MatchedFile>> ScanAsync(CancellationToken ct)
+        public async Task<List<MatchedFile>> ScanAsync(CancellationToken cancellationToken)
         {
             //search folders for a list of video file paths
-            List<string> videoFiles = await _fileWatcher.SearchFoldersAsync(ct);
+            List<string> videoFiles = await _fileWatcher.SearchFoldersAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             //use regex to attempt to figure out some details about the files ie showname, episode number, etc
-            List<MatchedFile> matchedFiles = await _fileMatcher.SearchFilesAsync(videoFiles, ct);
-
+            List<MatchedFile> matchedFiles = await _fileMatcher.SearchFilesAsync(videoFiles, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             //try and match the tv shows with any TV scrapers we have available
-            Task<List<MatchedFile>> scanTvShowsTask = MatchTVShows(matchedFiles.Where(x => x.FileType == FileType.TvShow).ToList(), ct);
+            Task<List<MatchedFile>> scanTvShowsTask = MatchTVShows(matchedFiles.Where(x => x.FileType == FileType.TvShow).ToList(), cancellationToken);
             //try and match movies with TMDB
-            Task<List<MatchedFile>> scanMovieTask = MatchMovies(matchedFiles.Where(x => x.FileType == FileType.Movie).ToList(), ct);
+            Task<List<MatchedFile>> scanMovieTask = MatchMovies(matchedFiles.Where(x => x.FileType == FileType.Movie).ToList(), cancellationToken);
             //check there aren't any completely unmatched files (due to undecypherable filenames)
             List<MatchedFile> otherVideoFiles = matchedFiles.Where(x => x.FileType == FileType.Unknown).ToList();
 
@@ -106,6 +107,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             List<MatchedFile> scannedEpisodes = scanTvShowsTask.Result;
             List<MatchedFile> scannedMovies = scanMovieTask.Result;
 
+            cancellationToken.ThrowIfCancellationRequested();
             //add the tv shows and movies to the same list and return this
             List<MatchedFile> scannedFiles = new List<MatchedFile>();
             if (scannedEpisodes?.Count > 0)
@@ -129,9 +131,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// Matches the tv shows.
         /// </summary>
         /// <param name="matchedFiles">The matched files.</param>
-        /// <param name="ct">The ct.</param>
+        /// <param name="cancellationToken">CancellationToken</param>
         /// <returns></returns>
-        private async Task<List<MatchedFile>> MatchTVShows(List<MatchedFile> matchedFiles, CancellationToken ct)
+        private async Task<List<MatchedFile>> MatchTVShows(List<MatchedFile> matchedFiles, CancellationToken cancellationToken)
         {
             object lockList = new object();
             ConcurrentBag<CompleteSeries> matchedSeries = new ConcurrentBag<CompleteSeries>();
@@ -140,11 +142,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             ShowNameMapping originalMapping = _configurationManager.ShowNameMappings;
 
             //fixup mismatch titles
-            parallelOptions.CancellationToken = ct;
+            parallelOptions.CancellationToken = cancellationToken;
             Parallel.ForEach(matchedFiles, parallelOptions, (file) =>
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 _tvShowMatcher.FixShowsFromMappings(file);
             });
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             //ONLY DO ALL THIS STUFF IF WE ARE RENAMING FILES
             //find unique show ids or show names                        
@@ -154,7 +159,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             //block for searching unique show ids
             var searchShowIdsAsyncBlock = new ActionBlock<string>(async (showId) =>
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 CompleteSeries series = await _tvShowMatcher.SearchShowByIdAsync(showId);
                 if (series != null)
                 {
@@ -166,7 +171,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             //block for searching unique shownames
             var searchShowNamesAsyncBlock = new ActionBlock<string>(async (showName) =>
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 CompleteSeries series = await _tvShowMatcher.SearchShowByNameAsync(showName);
                 if (series != null)
                 {
@@ -191,14 +196,15 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
             //wait for both searches to complete
             await Task.WhenAll(searchShowIdsAsyncBlock.Completion, searchShowNamesAsyncBlock.Completion);
+            cancellationToken.ThrowIfCancellationRequested();
 
             //for each series we matched
             foreach (CompleteSeries series in matchedSeries.Distinct())
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 Parallel.ForEach(matchedFiles, parallelOptions, (file) =>
                 {
-                    ct.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
                     //if the file had showid set
                     if (file.TVDBShowId != null)
                     {
@@ -226,7 +232,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             //final check that files need moving and are not already in correct location
             var ensureFileNeedsMovingBlock = new ActionBlock<MatchedFile>((file) =>
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 //only add the file if it needs renaming/moving
                 string destinationDirectory = Path.Combine(_settings.DestinationFolderTV, file.ShowName, string.Format("Season {0}", file.Season));
                 string destinationFilePath = Path.Combine(destinationDirectory, file.NewFileName + Path.GetExtension(file.SourceFilePath));
@@ -250,6 +256,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             ensureFileNeedsMovingBlock.Complete();
             await ensureFileNeedsMovingBlock.Completion;
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (showNameMapping.Mappings != originalMapping.Mappings || showNameMapping.Mappings.Count != originalMapping.Mappings.Count)
             {
                 _configurationManager.ShowNameMappings = showNameMapping;
@@ -262,16 +270,16 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// Matches the movies.
         /// </summary>
         /// <param name="matchedFiles">The matched files.</param>
-        /// <param name="ct">The ct.</param>
+        /// <param name="cancellationToken">CancellationToken</param>
         /// <returns></returns>
-        private async Task<List<MatchedFile>> MatchMovies(List<MatchedFile> matchedFiles, CancellationToken ct)
+        private async Task<List<MatchedFile>> MatchMovies(List<MatchedFile> matchedFiles, CancellationToken cancellationToken)
         {
             ConcurrentBag<MatchedFile> scannedMovies = new ConcurrentBag<MatchedFile>();
 
             //for each file
             var searchFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 file = await _movieMatcher.ScrapeDetailsAsync(file);
 
                 //only add the file if it needs renaming/moving

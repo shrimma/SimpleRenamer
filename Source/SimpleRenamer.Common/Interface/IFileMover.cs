@@ -14,9 +14,9 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// </summary>
         /// <param name="episode">The file to move</param>
         /// <param name="destinationFilePath">The destination path for the file</param>
-        /// <param name="ct">The cancellationtoken.</param>
+        /// <param name="cancellationToken">CancellationToken.</param>
         /// <returns></returns>
-        Task<bool> MoveFileAsync(MatchedFile episode, CancellationToken ct);
+        Task<bool> MoveFileAsync(MatchedFile episode, CancellationToken cancellationToken);
 
         /// <summary>
         /// Create the folder structure and downloads banners if configured
