@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Common.Movie.Interface
 {
@@ -40,7 +39,7 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Interface
         /// </summary>
         /// <param name="movieId">The TMDB movie ID</param>
         /// <returns>Populated MovieInfo object</returns>
-        Task<(Model.Movie movie, BitmapImage banner)> GetMovieWithBannerAsync(string movieId, CancellationToken ct);
+        Task<(Model.Movie movie, Uri bannerUri)> GetMovieWithBannerAsync(string movieId, CancellationToken ct);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made
