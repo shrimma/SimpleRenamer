@@ -60,14 +60,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SimpleRenamer.Common\SimpleRenamer.Common.csproj">
-      <Project>{632054A4-2CFC-4E57-BAEE-FD4DDB8F9CD4}</Project>
-      <Name>SimpleRenamer.Common</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SimpleRenamer.Common\SimpleRenamer.Common.csproj">
+      <Project>{632054a4-2cfc-4e57-baee-fd4ddb8f9cd4}</Project>
+      <Name>SimpleRenamer.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

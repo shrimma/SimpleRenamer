@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
     <AssemblyName>Sarjee.SimpleRenamer.Common.Movie</AssemblyName>
     <RootNamespace>Sarjee.SimpleRenamer.Common.Movie</RootNamespace>
     <Company>Sarjee</Company>
