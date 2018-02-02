@@ -87,6 +87,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AppConfigurationManager.cs" />
     <Compile Include="EventArguments\SelectShowEventArgs.cs" />
     <Compile Include="ThemeManagerHelper\AccentItem.cs" />
     <Compile Include="ValueConverters\IconFileTypeConverter.cs" />

@@ -98,7 +98,6 @@
     <Compile Include="Common\Model\IgnoreListTests.cs" />
     <Compile Include="Common\Model\DetailViewTests.cs" />
     <Compile Include="Framework\Core\ActionMatchedFilesTests.cs" />
-    <Compile Include="Framework\Core\AppConfigurationManagerTests.cs" />
     <Compile Include="Framework\Core\FileMatcherTests.cs" />
     <Compile Include="Framework\Core\FileMoverTests.cs" />
     <Compile Include="Framework\Core\FileWatcherTests.cs" />
@@ -109,7 +108,6 @@
     <Compile Include="Framework\TV\TvdbManagerTests.cs" />
     <Compile Include="Framework\TV\TvShowMatcherTests.cs" />
     <Compile Include="Logging\LoggerTests.cs" />
-    <Compile Include="Mocks\TestableAppConfigurationManager.cs" />
     <Compile Include="Mocks\TestableBannerDownloader.cs" />
     <Compile Include="Mocks\TestableHelper.cs" />
     <Compile Include="Mocks\TestableMovieMatcher.cs" />
