@@ -351,7 +351,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         {
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
 
-            (CompleteSeries series, BitmapImage banner) result = (null, null);
+            (CompleteSeries series, Uri banner) result = (null, null);
             Func<Task> action1 = async () => result = await tvShowMatcher.GetShowWithBannerAsync(string.Empty);
 
             action1.ShouldThrow<ArgumentNullException>();
@@ -369,7 +369,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             mockTvdbManager.Setup(x => x.GetBannerUri(It.IsAny<string>())).Returns("http://www.uri.com");
 
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher(true);
-            (CompleteSeries series, BitmapImage banner) result = (null, null);
+            (CompleteSeries series, Uri banner) result = (null, null);
             Func<Task> action1 = async () => result = await tvShowMatcher.GetShowWithBannerAsync("showId");
 
             action1.ShouldNotThrow();

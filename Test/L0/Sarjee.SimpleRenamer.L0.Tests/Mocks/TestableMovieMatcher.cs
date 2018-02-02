@@ -11,15 +11,5 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
         public TestableMovieMatcher(ILogger logger, ITmdbManager tmdbManager, IHelper helper) : base(logger, tmdbManager, helper)
         {
         }
-
-        protected override BitmapImage InitializeBannerImage(Uri uri)
-        {
-            BitmapImage bitmapImage = new BitmapImage
-            {
-                BaseUri = new Uri("http://www.uri.com")
-            };
-
-            return bitmapImage;
-        }
     }
 }
