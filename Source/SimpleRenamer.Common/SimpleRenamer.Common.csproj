@@ -1,110 +1,25 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{632054A4-2CFC-4E57-BAEE-FD4DDB8F9CD4}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <Product>Sarjee.SimpleRenamer.Common</Product>
+    <Company>Sarjee</Company>
+    <Authors>Sarjee</Authors>
     <RootNamespace>Sarjee.SimpleRenamer.Common</RootNamespace>
     <AssemblyName>Sarjee.SimpleRenamer.Common</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="RestSharp, Version=106.2.1.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RestSharp.106.2.1\lib\net452\RestSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.ValueTuple.4.4.0\lib\net47\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <None Remove="RegexExpressions.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BackgroundQueue.cs" />
-    <Compile Include="Helpers\ThreadLocalRandom.cs" />
-    <Compile Include="Interface\IMessageSender.cs" />
-    <Compile Include="Interface\ISettings.cs" />
-    <Compile Include="Model\FileType.cs" />
-    <Compile Include="Model\IgnoreList.cs" />
-    <Compile Include="Model\Mapping.cs" />
-    <Compile Include="Model\RegexExpression.cs" />
-    <Compile Include="Model\ShowNameMapping.cs" />
-    <Compile Include="Model\DetailView.cs" />
-    <Compile Include="EventArguments\FileMovedEventArgs.cs" />
-    <Compile Include="EventArguments\ProgressTextEventArgs.cs" />
-    <Compile Include="EventArguments\FilePreProcessedEventArgs.cs" />
-    <Compile Include="Helper.cs" />
-    <Compile Include="Interface\IBackgroundQueue.cs" />
-    <Compile Include="Interface\IConfigurationManager.cs" />
-    <Compile Include="Interface\IDependencyInjectionContext.cs" />
-    <Compile Include="Interface\IFileMatcher.cs" />
-    <Compile Include="Interface\IFileMover.cs" />
-    <Compile Include="Interface\IFileWatcher.cs" />
-    <Compile Include="Interface\IHelper.cs" />
-    <Compile Include="Interface\ILogger.cs" />
-    <Compile Include="Interface\IActionsMatchedFiles.cs" />
-    <Compile Include="Interface\IScanFiles.cs" />
-    <Compile Include="Model\StatsFile.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Model\RegexFile.cs" />
-    <Compile Include="Model\Settings.cs" />
-    <Compile Include="Model\MatchedFile.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
     <Content Include="RegexExpressions.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
+    <PackageReference Include="RestSharp" Version="106.2.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
 </Project>
