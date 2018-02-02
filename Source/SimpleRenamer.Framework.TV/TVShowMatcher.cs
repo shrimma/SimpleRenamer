@@ -270,6 +270,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                             string desc = string.Empty;
                             if (series.Overview?.Length > 50)
                             {
+                                //TODO use Span
                                 desc = string.Format("{0}...", series.Overview.Substring(0, 50));
                             }
                             else if (series.Overview?.Length <= 50)
@@ -343,7 +344,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// </summary>
         /// <param name="showId">The show identifier.</param>
         /// <returns></returns>
-        public async Task<(CompleteSeries series, BitmapImage banner)> GetShowWithBannerAsync(string showId)
+        public async Task<(CompleteSeries series, Uri bannerUri)> GetShowWithBannerAsync(string showId)
         {
             if (string.IsNullOrWhiteSpace(showId))
             {
@@ -352,37 +353,27 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
             _logger.TraceMessage($"Getting show and banner for ShowId: {showId}.", EventLevel.Verbose);
             CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(showId);
-            BitmapImage bannerImage = null;
+            Uri bannerUri = null;
+
             if (matchedSeries?.SeriesBanners?.Count > 0)
             {
                 SeriesImageQueryResult banner = matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault();
                 if (!string.IsNullOrWhiteSpace(banner?.FileName))
                 {
-                    bannerImage = InitializeBannerImage(new Uri(_tvdbManager.GetBannerUri(banner.FileName)));
+                    bannerUri = new Uri(_tvdbManager.GetBannerUri(banner.FileName));
                 }
                 else
                 {
-                    bannerImage = new BitmapImage();
+                    //TODO create a no image uri for banner
                 }
             }
             else
             {
-                //TODO create a no image found banner
-                bannerImage = new BitmapImage();
+                //TODO create a no image found banner                
             }
 
             _logger.TraceMessage($"Got show and banner for ShowId: {showId}.", EventLevel.Verbose);
-            return (matchedSeries, bannerImage);
-        }
-
-        protected virtual BitmapImage InitializeBannerImage(Uri uri)
-        {
-            BitmapImage banner = new BitmapImage();
-            banner.BeginInit();
-            banner.UriSource = uri;
-            banner.EndInit();
-
-            return banner;
+            return (matchedSeries, bannerUri);
         }
 
         protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)
