@@ -8,7 +8,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Tpl.Dataflow" Version="4.5.24" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="WindowsAzure.ServiceBus" Version="4.1.6" />
   </ItemGroup>
   <ItemGroup>
