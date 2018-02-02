@@ -6,10 +6,7 @@
     <Authors>Sarjee</Authors>
     <RootNamespace>Sarjee.SimpleRenamer.Common</RootNamespace>
     <AssemblyName>Sarjee.SimpleRenamer.Common</AssemblyName>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="RegexExpressions.json" />
-  </ItemGroup>
+  </PropertyGroup>  
   <ItemGroup>
     <Content Include="RegexExpressions.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
