@@ -70,7 +70,7 @@ namespace Sarjee.SimpleRenamer.Views
             _logger.TraceMessage($"Getting SeriesInfo for {showId}", EventLevel.Verbose);
             LoadingProgress.IsActive = true;
 
-            (CompleteSeries series, BitmapImage banner) = await _showMatcher.GetShowWithBannerAsync(showId);
+            (CompleteSeries series, Uri bannerUri) = await _showMatcher.GetShowWithBannerAsync(showId);
 
             //set the title, show description, rating and firstaired values
             this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.SeriesName, string.IsNullOrWhiteSpace(series.Series.SiteRating.ToString()) ? "0.0" : series.Series.SiteRating.ToString(), string.IsNullOrWhiteSpace(series.Series.FirstAired.ToString()) ? "1900" : series.Series.FirstAired.ToString());
@@ -83,6 +83,13 @@ namespace Sarjee.SimpleRenamer.Views
             EpisodesListBox.ItemsSource = series.Episodes.OrderBy(x => x.AiredEpisodeNumber).OrderBy(x => x.AiredSeason);
 
             //set the banner
+            BitmapImage banner = new BitmapImage();
+            if (bannerUri != null)
+            {
+                banner.BeginInit();
+                banner.UriSource = bannerUri;
+                banner.EndInit();
+            }
             BannerImage.Source = banner;
 
             _logger.TraceMessage($"Got SeriesInfo for {showId}.", EventLevel.Verbose);
