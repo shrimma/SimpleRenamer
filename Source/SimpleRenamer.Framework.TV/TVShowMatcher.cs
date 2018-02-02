@@ -10,7 +10,6 @@ using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Framework.TV
 {
