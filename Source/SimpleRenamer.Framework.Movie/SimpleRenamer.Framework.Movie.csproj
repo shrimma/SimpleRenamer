@@ -65,18 +65,18 @@
     <Compile Include="TmdbManager.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\SimpleRenamer.Common.Movie\SimpleRenamer.Common.Movie.csproj">
-      <Project>{3429D31C-DADA-4947-A04B-D3B798601491}</Project>
+      <Project>{3429d31c-dada-4947-a04b-d3b798601491}</Project>
       <Name>SimpleRenamer.Common.Movie</Name>
     </ProjectReference>
     <ProjectReference Include="..\SimpleRenamer.Common\SimpleRenamer.Common.csproj">
-      <Project>{632054A4-2CFC-4E57-BAEE-FD4DDB8F9CD4}</Project>
+      <Project>{632054a4-2cfc-4e57-baee-fd4ddb8f9cd4}</Project>
       <Name>SimpleRenamer.Common</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

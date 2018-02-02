@@ -68,6 +68,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                         {
                             if (s.Overview.Length > 50)
                             {
+                                //TODO use Span
                                 desc = string.Format("{0}...", s.Overview.Substring(0, 50));
                             }
                             else
@@ -164,34 +165,14 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <param name="movieId">The movie identifier.</param>
         /// <param name="ct">The ct.</param>
         /// <returns></returns>
-        public async Task<(Common.Movie.Model.Movie movie, BitmapImage banner)> GetMovieWithBannerAsync(string movieId, CancellationToken ct)
+        public async Task<(Common.Movie.Model.Movie movie, Uri bannerUri)> GetMovieWithBannerAsync(string movieId, CancellationToken ct)
         {
             _logger.TraceMessage($"Getting MovieInfo for MovieId: {movieId}.", EventLevel.Verbose);
             Common.Movie.Model.Movie matchedMovie = await _tmdbManager.GetMovieAsync(movieId);
-
-            BitmapImage bannerImage = null;
-            if (!string.IsNullOrWhiteSpace(matchedMovie.PosterPath))
-            {
-                bannerImage = InitializeBannerImage(new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath)));
-            }
-            else
-            {
-                //TODO add a not found poster
-                bannerImage = new BitmapImage();
-            }
+            Uri bannerUri = new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath));
 
             _logger.TraceMessage("Got MovieInfo for MovieId: {movieId}", EventLevel.Verbose);
-            return (matchedMovie, bannerImage);
-        }
-
-        protected virtual BitmapImage InitializeBannerImage(Uri uri)
-        {
-            BitmapImage banner = new BitmapImage();
-            banner.BeginInit();
-            banner.UriSource = uri;
-            banner.EndInit();
-
-            return banner;
+            return (matchedMovie, bannerUri);
         }
 
         protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)
