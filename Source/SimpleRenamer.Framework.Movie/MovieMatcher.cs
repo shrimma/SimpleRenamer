@@ -168,7 +168,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         {
             _logger.TraceMessage($"Getting MovieInfo for MovieId: {movieId}.", EventLevel.Verbose);
             Common.Movie.Model.Movie matchedMovie = await _tmdbManager.GetMovieAsync(movieId);
-            Uri bannerUri = new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath));
+            Uri bannerUri = string.IsNullOrWhiteSpace(matchedMovie.PosterPath) ? null : new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath));
 
             _logger.TraceMessage("Got MovieInfo for MovieId: {movieId}", EventLevel.Verbose);
             return (matchedMovie, bannerUri);

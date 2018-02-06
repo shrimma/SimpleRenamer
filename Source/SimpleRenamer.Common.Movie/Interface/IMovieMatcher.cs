@@ -38,8 +38,11 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Interface
         /// Gets a movie and it's banner
         /// </summary>
         /// <param name="movieId">The TMDB movie ID</param>
-        /// <returns>Populated MovieInfo object</returns>
-        Task<(Model.Movie movie, Uri bannerUri)> GetMovieWithBannerAsync(string movieId, CancellationToken ct);
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// Populated MovieInfo object
+        /// </returns>
+        Task<(Model.Movie movie, Uri bannerUri)> GetMovieWithBannerAsync(string movieId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

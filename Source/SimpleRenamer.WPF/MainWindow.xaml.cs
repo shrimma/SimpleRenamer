@@ -541,17 +541,18 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
+                cts = new CancellationTokenSource();
                 _logger.TraceMessage("Detail button clicked.", EventLevel.Verbose);
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 if (tempEp?.FileType == FileType.TvShow)
                 {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                    showDetailsWindow.GetSeriesInfo(tempEp.TVDBShowId);
+                    showDetailsWindow.GetSeriesInfo(tempEp.TVDBShowId, cts.Token);
                     showDetailsWindow.ShowDialog();
                 }
                 else if (tempEp?.FileType == FileType.Movie)
                 {
-                    movieDetailsWindow.GetMovieInfo(tempEp.TMDBShowId.ToString());
+                    movieDetailsWindow.GetMovieInfo(tempEp.TMDBShowId.ToString(), cts.Token);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                     movieDetailsWindow.ShowDialog();
                 }
