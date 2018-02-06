@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common
@@ -91,8 +92,9 @@ namespace Sarjee.SimpleRenamer.Common
         /// <param name="retryCount">The retry count.</param>
         /// <param name="maxBackoffSeconds">The maximum backoff seconds.</param>
         /// <returns></returns>
-        public async Task ExponentialDelayAsync(int offsetMilliseconds, int retryCount, int maxBackoffSeconds)
+        public async Task ExponentialDelayAsync(int offsetMilliseconds, int retryCount, int maxBackoffSeconds, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             //generate a TimeSpan to use for backoff based on offset * 2^retries
             TimeSpan backoff = TimeSpan.FromMilliseconds(offsetMilliseconds * (int)Math.Pow(2, retryCount));
 
@@ -103,7 +105,7 @@ namespace Sarjee.SimpleRenamer.Common
             }
 
             //await the backoff delay
-            await Task.Delay(backoff);
+            await Task.Delay(backoff, cancellationToken);
         }
 
         /// <summary>
@@ -112,9 +114,9 @@ namespace Sarjee.SimpleRenamer.Common
         /// <param name="request">The request.</param>
         /// <returns></returns>
         /// <remarks>virtual method for testability</remarks>
-        protected virtual async Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request)
+        protected virtual async Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request, CancellationToken cancellationToken)
         {
-            return await restClient.ExecuteTaskAsync(request);
+            return await restClient.ExecuteTaskAsync(request, cancellationToken);
         }
 
         private int[] httpStatusCodesWorthRetrying = { 408, 500, 502, 503, 504, 598, 599 };
@@ -127,21 +129,23 @@ namespace Sarjee.SimpleRenamer.Common
         /// <param name="jsonSerializerSettings">The json serializer settings.</param>
         /// <param name="maxRetryCount">The maximum retry count.</param>
         /// <param name="maxBackoffSeconds">The maximum backoff seconds.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="loginCallback">The login callback.</param>
         /// <returns></returns>
         /// <exception cref="TimeoutException"></exception>
         /// <exception cref="UnauthorizedAccessException"></exception>
-        /// <exception cref="InvalidOperationException"></exception>        
-        public async Task<T> ExecuteRestRequestAsync<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, Func<Task> loginCallback = null) where T : class
+        /// <exception cref="InvalidOperationException"></exception>
+        public async Task<T> ExecuteRestRequestAsync<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, CancellationToken cancellationToken, Func<Task> loginCallback = null) where T : class
         {
             int currentRetry = 0;
             int offset = ThreadLocalRandom.Instance.Next(100, 500);
             while (currentRetry < maxRetryCount)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
                     //execute the request
-                    IRestResponse response = await ExecuteRequestAsync(restClient, restRequest);
+                    IRestResponse response = await ExecuteRequestAsync(restClient, restRequest, cancellationToken);
                     //if no errors and statuscode ok then deserialize the response
                     if (response.ErrorException == null && response?.StatusCode == HttpStatusCode.OK)
                     {
@@ -174,12 +178,12 @@ namespace Sarjee.SimpleRenamer.Common
                 catch (TimeoutException)
                 {
                     currentRetry++;
-                    await ExponentialDelayAsync(offset, currentRetry, maxBackoffSeconds);
+                    await ExponentialDelayAsync(offset, currentRetry, maxBackoffSeconds, cancellationToken);
                 }
                 catch (WebException)
                 {
                     currentRetry++;
-                    await ExponentialDelayAsync(offset, currentRetry, maxBackoffSeconds);
+                    await ExponentialDelayAsync(offset, currentRetry, maxBackoffSeconds, cancellationToken);
                 }
                 catch (UnauthorizedAccessException)
                 {
