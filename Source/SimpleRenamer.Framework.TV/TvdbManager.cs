@@ -8,6 +8,7 @@ using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.TV
@@ -57,7 +58,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
         }
 
-        public void HandleDeserializationError(object sender, ErrorEventArgs errorArgs)
+        private void HandleDeserializationError(object sender, ErrorEventArgs errorArgs)
         {
             //TODO log the error
             //errorArgs.ErrorContext.Error.Message;
@@ -68,7 +69,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// Logs into the API.
         /// </summary>
         /// <returns></returns>
-        private async Task Login()
+        private async Task Login(CancellationToken cancellationToken)
         {
             //create rest request
             Auth auth = new Auth()
@@ -79,7 +80,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddParameter("application/json", auth.ToJson(), ParameterType.RequestBody);
 
             //execute the request
-            Token token = await _helper.ExecuteRestRequestAsync<Token>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
+            Token token = await _helper.ExecuteRestRequestAsync<Token>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
             if (token != null)
             {
                 _restClient.Authenticator = new JwtAuthenticator(token._Token);
@@ -107,7 +108,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <param name="tmdbId">The TMDB identifier.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">tmdbId</exception>
-        public async Task<CompleteSeries> GetSeriesByIdAsync(string tmdbId)
+        public async Task<CompleteSeries> GetSeriesByIdAsync(string tmdbId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(tmdbId))
             {
@@ -116,27 +117,27 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
             if (_restClient.Authenticator == null)
             {
-                await Login();
+                await Login(cancellationToken);
             }
 
             //get series
-            Task<SeriesData> getSeriesTask = GetSeries(tmdbId);
+            Task<SeriesData> getSeriesTask = GetSeries(tmdbId, cancellationToken);
             //get actors
-            Task<SeriesActors> getActorsTask = GetActors(tmdbId);
+            Task<SeriesActors> getActorsTask = GetActors(tmdbId, cancellationToken);
             //wait for series and actors
             await Task.WhenAll(getSeriesTask, getActorsTask);
 
             //get episodes                        
-            Task<SeriesEpisodes> getEpisodesTask = GetEpisodes(tmdbId);
+            Task<SeriesEpisodes> getEpisodesTask = GetEpisodes(tmdbId, cancellationToken);
             //get series posters            
-            Task<SeriesImageQueryResults> getSeriesPostersTask = GetSeriesPosters(tmdbId);
+            Task<SeriesImageQueryResults> getSeriesPostersTask = GetSeriesPosters(tmdbId, cancellationToken);
             //wait for episodes and series posters
             await Task.WhenAll(getEpisodesTask, getSeriesPostersTask);
 
             //get season specific posters                        
-            Task<SeriesImageQueryResults> getSeasonPostersTask = GetSeasonPosters(tmdbId);
+            Task<SeriesImageQueryResults> getSeasonPostersTask = GetSeasonPosters(tmdbId, cancellationToken);
             //get series banners            
-            Task<SeriesImageQueryResults> getSeriesBannersTask = GetSeriesBanners(tmdbId);
+            Task<SeriesImageQueryResults> getSeriesBannersTask = GetSeriesBanners(tmdbId, cancellationToken);
             //wait for season and series posters
             await Task.WhenAll(getSeasonPostersTask, getSeasonPostersTask);
 
@@ -163,61 +164,65 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// Gets the series.
         /// </summary>
         /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
-        private async Task<SeriesData> GetSeries(string tmdbId)
+        private async Task<SeriesData> GetSeries(string tmdbId, CancellationToken cancellationToken)
         {
             //create the request
             IRestRequest request = new RestRequest($"series/{tmdbId}", Method.GET);
 
             //execute the request
-            return await _helper.ExecuteRestRequestAsync<SeriesData>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
+            return await _helper.ExecuteRestRequestAsync<SeriesData>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
         }
 
         /// <summary>
         /// Gets the actors.
         /// </summary>
         /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
-        private async Task<SeriesActors> GetActors(string tmdbId)
+        private async Task<SeriesActors> GetActors(string tmdbId, CancellationToken cancellationToken)
         {
             //create the request
             IRestRequest request = new RestRequest($"/series/{tmdbId}/actors", Method.GET);
 
             //execute the request
-            return await _helper.ExecuteRestRequestAsync<SeriesActors>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
+            return await _helper.ExecuteRestRequestAsync<SeriesActors>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
         }
 
         /// <summary>
         /// Gets the episodes.
         /// </summary>
         /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
-        private async Task<SeriesEpisodes> GetEpisodes(string tmdbId)
+        private async Task<SeriesEpisodes> GetEpisodes(string tmdbId, CancellationToken cancellationToken)
         {
             //create the request
             IRestRequest request = new RestRequest($"/series/{tmdbId}/episodes", Method.GET);
 
             //execute the request
-            return await _helper.ExecuteRestRequestAsync<SeriesEpisodes>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
+            return await _helper.ExecuteRestRequestAsync<SeriesEpisodes>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
         }
 
         /// <summary>
         /// Gets the series posters.
         /// </summary>
         /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
-        private async Task<SeriesImageQueryResults> GetSeriesPosters(string tmdbId)
+        private async Task<SeriesImageQueryResults> GetSeriesPosters(string tmdbId, CancellationToken cancellationToken)
         {
             //create the request
             IRestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
             request.AddParameter("keyType", "poster", ParameterType.QueryString);
 
             //execute the request
-            SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
+            SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
             if (results == null)
             {
                 results = new SeriesImageQueryResults();
@@ -229,16 +234,17 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// Gets the season posters.
         /// </summary>
         /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
-        private async Task<SeriesImageQueryResults> GetSeasonPosters(string tmdbId)
+        private async Task<SeriesImageQueryResults> GetSeasonPosters(string tmdbId, CancellationToken cancellationToken)
         {
             //create the request
             IRestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
             request.AddParameter("keyType", "season", ParameterType.QueryString);
 
             //execute the request
-            SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
+            SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
             if (results == null)
             {
                 results = new SeriesImageQueryResults();
@@ -250,16 +256,17 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// Gets the series banners.
         /// </summary>
         /// <param name="tmdbId">The TMDB identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
-        private async Task<SeriesImageQueryResults> GetSeriesBanners(string tmdbId)
+        private async Task<SeriesImageQueryResults> GetSeriesBanners(string tmdbId, CancellationToken cancellationToken)
         {
             //create the request
             IRestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
             request.AddParameter("keyType", "series", ParameterType.QueryString);
 
             //execute the request
-            SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
+            SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
             if (results == null)
             {
                 results = new SeriesImageQueryResults();
@@ -271,9 +278,10 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// Searches the series by name asynchronous.
         /// </summary>
         /// <param name="seriesName">Name of the series.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">seriesName</exception>
-        public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName)
+        public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(seriesName))
             {
@@ -283,7 +291,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             //login if this is the first call
             if (_restClient.Authenticator == null)
             {
-                await Login();
+                await Login(cancellationToken);
             }
 
             //create the request
@@ -291,7 +299,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             request.AddParameter("name", seriesName, ParameterType.QueryString);
 
             //execute the request
-            SeriesSearchDataList searchData = await _helper.ExecuteRestRequestAsync<SeriesSearchDataList>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, Login);
+            SeriesSearchDataList searchData = await _helper.ExecuteRestRequestAsync<SeriesSearchDataList>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
             if (searchData?.SearchResults != null)
             {
                 return searchData.SearchResults;
