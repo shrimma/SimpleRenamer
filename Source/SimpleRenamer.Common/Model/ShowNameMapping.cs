@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("Sarjee.SimpleRenamer.L0.Tests")]
 namespace Sarjee.SimpleRenamer.Common.Model
 {
     /// <summary>

@@ -3,8 +3,8 @@ using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.Common.TV.Interface
 {
@@ -58,11 +58,13 @@ namespace Sarjee.SimpleRenamer.Common.TV.Interface
         Task<MatchedFile> UpdateEpisodeWithMatchedSeriesAsync(string selectedSeriesId, MatchedFile episode);
 
         /// <summary>
-        /// Gets a show and it's banner
+        /// Gets a show and its banner
         /// </summary>
         /// <param name="showId">The TVDB show ID to grab banner for</param>
-        /// <returns>Populated SeriesWithBanner object</returns>
-        Task<(CompleteSeries series, BitmapImage banner)> GetShowWithBannerAsync(string showId);
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>        
+        /// </returns>
+        Task<(CompleteSeries series, Uri bannerUri)> GetShowWithBannerAsync(string showId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

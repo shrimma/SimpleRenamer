@@ -1,5 +1,6 @@
 ﻿using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.DependencyInjection;
+using Sarjee.SimpleRenamer.Framework.Core;
 using System;
 using System.Windows;
 
@@ -24,6 +25,7 @@ namespace Sarjee.SimpleRenamer
         {
             injection = new DependencyInjectionContext();
             injection.Initialize();
+            injection.BindConstant<IConfigurationManager>(new AppConfigurationManager());
         }
 
         private void ComposeObjects()

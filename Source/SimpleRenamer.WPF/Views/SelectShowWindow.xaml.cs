@@ -20,7 +20,7 @@ namespace Sarjee.SimpleRenamer.Views
     public partial class SelectShowWindow
     {
         public event EventHandler<SelectShowEventArgs> RaiseSelectShowWindowEvent;
-
+        private CancellationTokenSource _cancellationTokenSource;
         private ILogger logger;
         private ITVShowMatcher showMatcher;
         private IMovieMatcher movieMatcher;
@@ -138,18 +138,19 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void ViewButton_Click(object sender, RoutedEventArgs e)
         {
+            _cancellationTokenSource = new CancellationTokenSource();
             DetailView current = (DetailView)ShowListBox.SelectedItem;
             if (current != null)
             {
                 if (currentFileType == FileType.TvShow)
                 {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                    showDetailsWindow.GetSeriesInfo(current.Id);
+                    showDetailsWindow.GetSeriesInfo(current.Id, _cancellationTokenSource.Token);
                     showDetailsWindow.ShowDialog();
                 }
                 else if (currentFileType == FileType.Movie)
                 {
-                    movieDetailsWindow.GetMovieInfo(current.Id);
+                    movieDetailsWindow.GetMovieInfo(current.Id, _cancellationTokenSource.Token);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                     movieDetailsWindow.ShowDialog();
                 }

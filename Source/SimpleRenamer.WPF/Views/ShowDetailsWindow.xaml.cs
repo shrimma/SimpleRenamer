@@ -5,6 +5,7 @@ using Sarjee.SimpleRenamer.WPF;
 using System;
 using System.Diagnostics.Tracing;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -65,12 +66,13 @@ namespace Sarjee.SimpleRenamer.Views
             WpfHelper.UpdateColumnsWidth(sender as ListView);
         }
 
-        public async Task GetSeriesInfo(string showId)
+        public async Task GetSeriesInfo(string showId, CancellationToken cancellationToken)
         {
             _logger.TraceMessage($"Getting SeriesInfo for {showId}", EventLevel.Verbose);
+            cancellationToken.ThrowIfCancellationRequested();
             LoadingProgress.IsActive = true;
 
-            (CompleteSeries series, BitmapImage banner) = await _showMatcher.GetShowWithBannerAsync(showId);
+            (CompleteSeries series, Uri bannerUri) = await _showMatcher.GetShowWithBannerAsync(showId, cancellationToken);
 
             //set the title, show description, rating and firstaired values
             this.Title = string.Format("{0} - Rating {1} - First Aired {2}", series.Series.SeriesName, string.IsNullOrWhiteSpace(series.Series.SiteRating.ToString()) ? "0.0" : series.Series.SiteRating.ToString(), string.IsNullOrWhiteSpace(series.Series.FirstAired.ToString()) ? "1900" : series.Series.FirstAired.ToString());
@@ -83,6 +85,14 @@ namespace Sarjee.SimpleRenamer.Views
             EpisodesListBox.ItemsSource = series.Episodes.OrderBy(x => x.AiredEpisodeNumber).OrderBy(x => x.AiredSeason);
 
             //set the banner
+            BitmapImage banner = new BitmapImage();
+            if (bannerUri != null)
+            {
+                banner.BeginInit();
+                cancellationToken.ThrowIfCancellationRequested();
+                banner.UriSource = bannerUri;
+                banner.EndInit();
+            }
             BannerImage.Source = banner;
 
             _logger.TraceMessage($"Got SeriesInfo for {showId}.", EventLevel.Verbose);

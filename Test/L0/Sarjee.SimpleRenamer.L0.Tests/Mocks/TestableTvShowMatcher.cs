@@ -11,15 +11,5 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
         public TestableTvShowMatcher(ILogger logger, IConfigurationManager configManager, ITvdbManager tvdbManager, IHelper helper) : base(logger, configManager, tvdbManager, helper)
         {
         }
-
-        protected override BitmapImage InitializeBannerImage(Uri uri)
-        {
-            BitmapImage bitmapImage = new BitmapImage
-            {
-                BaseUri = new Uri("http://www.uri.com")
-            };
-
-            return bitmapImage;
-        }
     }
 }

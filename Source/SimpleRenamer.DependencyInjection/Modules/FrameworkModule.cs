@@ -19,7 +19,6 @@ namespace Sarjee.SimpleRenamer.DependencyInjection.Modules
         {
             Bind<ILogger>().To<Logger>().InSingletonScope();
             Bind<IBackgroundQueue>().To<BackgroundQueue>().InSingletonScope();
-            Bind<IConfigurationManager>().To<AppConfigurationManager>().InSingletonScope();
             Bind<IHelper>().To<Helper>().InSingletonScope();
             Bind<IMessageSender>().To<ServiceBusSender>().InTransientScope();
         }

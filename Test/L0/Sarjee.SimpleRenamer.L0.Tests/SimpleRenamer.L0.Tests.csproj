@@ -98,7 +98,6 @@
     <Compile Include="Common\Model\IgnoreListTests.cs" />
     <Compile Include="Common\Model\DetailViewTests.cs" />
     <Compile Include="Framework\Core\ActionMatchedFilesTests.cs" />
-    <Compile Include="Framework\Core\AppConfigurationManagerTests.cs" />
     <Compile Include="Framework\Core\FileMatcherTests.cs" />
     <Compile Include="Framework\Core\FileMoverTests.cs" />
     <Compile Include="Framework\Core\FileWatcherTests.cs" />
@@ -109,7 +108,6 @@
     <Compile Include="Framework\TV\TvdbManagerTests.cs" />
     <Compile Include="Framework\TV\TvShowMatcherTests.cs" />
     <Compile Include="Logging\LoggerTests.cs" />
-    <Compile Include="Mocks\TestableAppConfigurationManager.cs" />
     <Compile Include="Mocks\TestableBannerDownloader.cs" />
     <Compile Include="Mocks\TestableHelper.cs" />
     <Compile Include="Mocks\TestableMovieMatcher.cs" />
@@ -119,15 +117,15 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Source\SimpleRenamer.Common.Movie\SimpleRenamer.Common.Movie.csproj">
-      <Project>{3429D31C-DADA-4947-A04B-D3B798601491}</Project>
+      <Project>{3429d31c-dada-4947-a04b-d3b798601491}</Project>
       <Name>SimpleRenamer.Common.Movie</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Source\SimpleRenamer.Common.TV\SimpleRenamer.Common.TV.csproj">
-      <Project>{A164E72C-8022-4D61-96EE-1754FC5A7D9F}</Project>
+      <Project>{a164e72c-8022-4d61-96ee-1754fc5a7d9f}</Project>
       <Name>SimpleRenamer.Common.TV</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Source\SimpleRenamer.Common\SimpleRenamer.Common.csproj">
-      <Project>{632054A4-2CFC-4E57-BAEE-FD4DDB8F9CD4}</Project>
+      <Project>{632054a4-2cfc-4e57-baee-fd4ddb8f9cd4}</Project>
       <Name>SimpleRenamer.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Source\SimpleRenamer.Framework.Core\SimpleRenamer.Framework.Core.csproj">
