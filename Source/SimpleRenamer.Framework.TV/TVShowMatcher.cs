@@ -290,7 +290,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
                 _logger.TraceMessage($"Found {shows.Count} possible matches for show: {showName}.", EventLevel.Verbose);
                 return shows.ToList();
-            });
+            }, cancellationToken);
         }
 
         /// <summary>

@@ -29,7 +29,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private IMovieMatcher _movieMatcher;
         private IFileMatcher _fileMatcher;
         private ISettings _settings;
-        private ParallelOptions parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
+        private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
         /// <summary>
         /// Fired whenever some noticeable progress is made
         /// </summary>
@@ -142,8 +142,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             ShowNameMapping originalMapping = _configurationManager.ShowNameMappings;
 
             //fixup mismatch titles
-            parallelOptions.CancellationToken = cancellationToken;
-            Parallel.ForEach(matchedFiles, parallelOptions, (file) =>
+            _parallelOptions.CancellationToken = cancellationToken;
+            Parallel.ForEach(matchedFiles, _parallelOptions, (file) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 _tvShowMatcher.FixShowsFromMappings(file);
@@ -202,7 +202,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             foreach (CompleteSeries series in matchedSeries.Distinct())
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                Parallel.ForEach(matchedFiles, parallelOptions, (file) =>
+                Parallel.ForEach(matchedFiles, _parallelOptions, (file) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     //if the file had showid set

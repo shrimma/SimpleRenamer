@@ -123,7 +123,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     string jsonPayload = JsonConvert.SerializeObject(scanFiles);
                     //run the messaging sending in background
                     await _messageSender.SendAsync(jsonPayload);
-                });
+                }, cancellationToken);
             }
             catch (Exception ex)
             {

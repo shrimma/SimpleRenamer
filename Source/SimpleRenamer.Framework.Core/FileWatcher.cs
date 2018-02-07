@@ -106,7 +106,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     foundFiles.Add(file);
                 }
-            }));
+            }), cancellationToken);
 
             await result;
 
