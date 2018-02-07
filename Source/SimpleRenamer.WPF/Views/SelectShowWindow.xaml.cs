@@ -21,20 +21,20 @@ namespace Sarjee.SimpleRenamer.Views
     {
         public event EventHandler<SelectShowEventArgs> RaiseSelectShowWindowEvent;
         private CancellationTokenSource _cancellationTokenSource;
-        private ILogger logger;
-        private ITVShowMatcher showMatcher;
-        private IMovieMatcher movieMatcher;
-        private ShowDetailsWindow showDetailsWindow;
-        private MovieDetailsWindow movieDetailsWindow;
-        private FileType currentFileType;
+        private ILogger _logger;
+        private ITVShowMatcher _showMatcher;
+        private IMovieMatcher _movieMatcher;
+        private ShowDetailsWindow _showDetailsWindow;
+        private MovieDetailsWindow _movieDetailsWindow;
+        private FileType _currentFileType;
 
-        public SelectShowWindow(ILogger log, ITVShowMatcher showMatch, IMovieMatcher movieMatch, ShowDetailsWindow showDetails, MovieDetailsWindow movieDetails)
+        public SelectShowWindow(ILogger logger, ITVShowMatcher showMatcher, IMovieMatcher movieMatcher, ShowDetailsWindow showDetailsWindow, MovieDetailsWindow movieDetailsWindow)
         {
-            logger = log ?? throw new ArgumentNullException(nameof(log));
-            showMatcher = showMatch ?? throw new ArgumentNullException(nameof(showMatch));
-            movieMatcher = movieMatch ?? throw new ArgumentNullException(nameof(movieMatch));
-            showDetailsWindow = showDetails ?? throw new ArgumentNullException(nameof(showDetails));
-            movieDetailsWindow = movieDetails ?? throw new ArgumentNullException(nameof(movieDetails));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _showMatcher = showMatcher ?? throw new ArgumentNullException(nameof(showMatcher));
+            _movieMatcher = movieMatcher ?? throw new ArgumentNullException(nameof(movieMatcher));
+            _showDetailsWindow = showDetailsWindow ?? throw new ArgumentNullException(nameof(showDetailsWindow));
+            _movieDetailsWindow = movieDetailsWindow ?? throw new ArgumentNullException(nameof(movieDetailsWindow));
 
             InitializeComponent();
             this.ShowListBox.SizeChanged += ListView_SizeChanged;
@@ -70,7 +70,7 @@ namespace Sarjee.SimpleRenamer.Views
         {
             if (this.Visibility == Visibility.Visible)
             {
-                RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(null, currentFileType));
+                RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(null, _currentFileType));
                 e.Cancel = true;
                 //clear the item list
                 this.ShowListBox.ItemsSource = null;
@@ -85,7 +85,7 @@ namespace Sarjee.SimpleRenamer.Views
             DisableUi();
             this.SearchTextBox.Text = searchString;
             this.Title = title;
-            currentFileType = fileType;
+            _currentFileType = fileType;
             ShowListBox.ItemsSource = null;
 
             //grab possible matches
@@ -118,7 +118,7 @@ namespace Sarjee.SimpleRenamer.Views
         {
             this.ConfirmationFlyout.IsOpen = false;
             DetailView current = (DetailView)ShowListBox.SelectedItem;
-            RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(current.Id, currentFileType));
+            RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(current.Id, _currentFileType));
             //clear the item list
             this.ShowListBox.ItemsSource = null;
             this.Hide();
@@ -131,7 +131,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void SkipButton_Click(object sender, RoutedEventArgs e)
         {
-            RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(null, currentFileType));
+            RaiseSelectShowWindowEvent(this, new SelectShowEventArgs(null, _currentFileType));
             //clear the item list
             this.ShowListBox.ItemsSource = null;
             this.Hide();
@@ -143,17 +143,17 @@ namespace Sarjee.SimpleRenamer.Views
             DetailView current = (DetailView)ShowListBox.SelectedItem;
             if (current != null)
             {
-                if (currentFileType == FileType.TvShow)
+                if (_currentFileType == FileType.TvShow)
                 {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                    showDetailsWindow.GetSeriesInfo(current.Id, _cancellationTokenSource.Token);
-                    showDetailsWindow.ShowDialog();
+                    _showDetailsWindow.GetSeriesInfo(current.Id, _cancellationTokenSource.Token);
+                    _showDetailsWindow.ShowDialog();
                 }
-                else if (currentFileType == FileType.Movie)
+                else if (_currentFileType == FileType.Movie)
                 {
-                    movieDetailsWindow.GetMovieInfo(current.Id, _cancellationTokenSource.Token);
+                    _movieDetailsWindow.GetMovieInfo(current.Id, _cancellationTokenSource.Token);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                    movieDetailsWindow.ShowDialog();
+                    _movieDetailsWindow.ShowDialog();
                 }
             }
         }
@@ -161,13 +161,13 @@ namespace Sarjee.SimpleRenamer.Views
         private async Task<List<DetailView>> GetMatches(string searchText, FileType fileType, CancellationToken cancellationToken)
         {
             List<DetailView> possibleMatches = null;
-            if (currentFileType == FileType.TvShow)
+            if (_currentFileType == FileType.TvShow)
             {
-                possibleMatches = await showMatcher.GetPossibleShowsForEpisodeAsync(searchText, cancellationToken);
+                possibleMatches = await _showMatcher.GetPossibleShowsForEpisodeAsync(searchText, cancellationToken);
             }
             else
             {
-                possibleMatches = await movieMatcher.GetPossibleMoviesForFileAsync(searchText, cancellationToken);
+                possibleMatches = await _movieMatcher.GetPossibleMoviesForFileAsync(searchText, cancellationToken);
             }
 
             return possibleMatches;
@@ -177,7 +177,7 @@ namespace Sarjee.SimpleRenamer.Views
         {
             CancellationTokenSource cts = new CancellationTokenSource();
             string searchText = e.Parameter.ToString();
-            await SearchForMatches(this.Title, searchText, currentFileType);
+            await SearchForMatches(this.Title, searchText, _currentFileType);
         }
 
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)

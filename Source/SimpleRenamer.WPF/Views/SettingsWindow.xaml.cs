@@ -18,36 +18,36 @@ namespace Sarjee.SimpleRenamer.Views
     /// </summary>
     public partial class SettingsWindow
     {
-        private Settings originalSettings;
-        private ObservableCollection<string> watchFolders;
-        private ObservableCollection<string> validExtensions;
-        private IConfigurationManager configurationManager;
-        private IHelper helper;
-        private AddExtensionsWindow addExtensionsWindow;
-        private RegexExpressionsWindow regexExpressionsWindow;
-        private (AppTheme appTheme, Accent accent) currentTheme;
-        private List<AccentItem> accentItems;
+        private Settings _originalSettings;
+        private ObservableCollection<string> _watchFolders;
+        private ObservableCollection<string> _validExtensions;
+        private IConfigurationManager _configurationManager;
+        private IHelper _helper;
+        private AddExtensionsWindow _addExtensionsWindow;
+        private RegexExpressionsWindow _regexExpressionsWindow;
+        private (AppTheme appTheme, Accent accent) _currentTheme;
+        private List<AccentItem> _accentItems;
 
-        public SettingsWindow(IConfigurationManager configManager, IHelper help, AddExtensionsWindow extWindow, RegexExpressionsWindow expWindow)
+        public SettingsWindow(IConfigurationManager configurationManager, IHelper helper, AddExtensionsWindow addExtensionsWindow, RegexExpressionsWindow regexExpressionsWindow)
         {
             //init our interfaces
-            addExtensionsWindow = extWindow ?? throw new ArgumentNullException(nameof(extWindow));
-            regexExpressionsWindow = expWindow ?? throw new ArgumentNullException(nameof(expWindow));
-            configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-            helper = help ?? throw new ArgumentNullException(nameof(help));
+            _addExtensionsWindow = addExtensionsWindow ?? throw new ArgumentNullException(nameof(addExtensionsWindow));
+            _regexExpressionsWindow = regexExpressionsWindow ?? throw new ArgumentNullException(nameof(regexExpressionsWindow));
+            _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
+            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
 
             InitializeComponent();
 
-            accentItems = new List<AccentItem>();
+            _accentItems = new List<AccentItem>();
             var mahAppsAccents = ThemeManager.Accents;
             foreach (var accent in mahAppsAccents)
             {
-                accentItems.Add(new AccentItem(accent.Name, accent.Resources["AccentBaseColor"].ToString(), accent));
+                _accentItems.Add(new AccentItem(accent.Name, accent.Resources["AccentBaseColor"].ToString(), accent));
             }
-            ChangeThemeCombo.ItemsSource = accentItems;
+            ChangeThemeCombo.ItemsSource = _accentItems;
 
             //create new event handler for extensions window
-            addExtensionsWindow.RaiseCustomEvent += new EventHandler<ExtensionEventArgs>(ExtensionWindowClosedEvent);
+            _addExtensionsWindow.RaiseCustomEvent += new EventHandler<ExtensionEventArgs>(ExtensionWindowClosedEvent);
 
             //grab settings and display
             SetupView();
@@ -59,26 +59,26 @@ namespace Sarjee.SimpleRenamer.Views
         private void SetupView()
         {
             //grab the current theme            
-            currentTheme = ThemeManager.DetectAppStyle(System.Windows.Application.Current).ToValueTuple<AppTheme, Accent>();
-            AccentItem currentAccentItem = accentItems.FirstOrDefault(x => x.AccentName.Equals(currentTheme.accent.Name));
+            _currentTheme = ThemeManager.DetectAppStyle(System.Windows.Application.Current).ToValueTuple<AppTheme, Accent>();
+            AccentItem currentAccentItem = _accentItems.FirstOrDefault(x => x.AccentName.Equals(_currentTheme.accent.Name));
             ChangeThemeCombo.SelectedItem = currentAccentItem;
             //grab the current settings from the factory and populate our UI
-            originalSettings = new Settings()
+            _originalSettings = new Settings()
             {
-                CopyFiles = configurationManager.Settings.CopyFiles,
-                DestinationFolderMovie = configurationManager.Settings.DestinationFolderMovie,
-                DestinationFolderTV = configurationManager.Settings.DestinationFolderTV,
-                NewFileNameFormat = configurationManager.Settings.NewFileNameFormat,
-                RenameFiles = configurationManager.Settings.RenameFiles,
-                SubDirectories = configurationManager.Settings.SubDirectories,
-                ValidExtensions = configurationManager.Settings.ValidExtensions,
-                WatchFolders = configurationManager.Settings.WatchFolders
+                CopyFiles = _configurationManager.Settings.CopyFiles,
+                DestinationFolderMovie = _configurationManager.Settings.DestinationFolderMovie,
+                DestinationFolderTV = _configurationManager.Settings.DestinationFolderTV,
+                NewFileNameFormat = _configurationManager.Settings.NewFileNameFormat,
+                RenameFiles = _configurationManager.Settings.RenameFiles,
+                SubDirectories = _configurationManager.Settings.SubDirectories,
+                ValidExtensions = _configurationManager.Settings.ValidExtensions,
+                WatchFolders = _configurationManager.Settings.WatchFolders
             };
-            this.DataContext = configurationManager.Settings;
-            watchFolders = new ObservableCollection<string>(configurationManager.Settings.WatchFolders);
-            WatchListBox.ItemsSource = watchFolders;
-            validExtensions = new ObservableCollection<string>(configurationManager.Settings.ValidExtensions);
-            ExtensionsListBox.ItemsSource = validExtensions;
+            this.DataContext = _configurationManager.Settings;
+            _watchFolders = new ObservableCollection<string>(_configurationManager.Settings.WatchFolders);
+            WatchListBox.ItemsSource = _watchFolders;
+            _validExtensions = new ObservableCollection<string>(_configurationManager.Settings.ValidExtensions);
+            ExtensionsListBox.ItemsSource = _validExtensions;
         }
 
         void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -89,15 +89,15 @@ namespace Sarjee.SimpleRenamer.Views
                 e.Cancel = true;
 
                 //check if settings have been changed without saving
-                var currentExtensions = new List<string>(validExtensions);
-                if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, currentExtensions) == false)
+                var currentExtensions = new List<string>(_validExtensions);
+                if (_helper.AreListsEqual(_configurationManager.Settings.ValidExtensions, currentExtensions) == false)
                 {
-                    configurationManager.Settings.ValidExtensions = currentExtensions;
+                    _configurationManager.Settings.ValidExtensions = currentExtensions;
                 }
-                var currentWatchFolders = new List<string>(watchFolders);
-                if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, currentWatchFolders) == false)
+                var currentWatchFolders = new List<string>(_watchFolders);
+                if (_helper.AreListsEqual(_configurationManager.Settings.WatchFolders, currentWatchFolders) == false)
                 {
-                    configurationManager.Settings.WatchFolders = currentWatchFolders;
+                    _configurationManager.Settings.WatchFolders = currentWatchFolders;
                 }
                 if (HaveSettingsChanged() == true)
                 {
@@ -114,35 +114,35 @@ namespace Sarjee.SimpleRenamer.Views
 
         private bool HaveSettingsChanged()
         {
-            if (configurationManager.Settings.CopyFiles != originalSettings.CopyFiles)
+            if (_configurationManager.Settings.CopyFiles != _originalSettings.CopyFiles)
             {
                 return true;
             }
-            if (configurationManager.Settings.DestinationFolderMovie != originalSettings.DestinationFolderMovie)
+            if (_configurationManager.Settings.DestinationFolderMovie != _originalSettings.DestinationFolderMovie)
             {
                 return true;
             }
-            if (configurationManager.Settings.DestinationFolderTV != originalSettings.DestinationFolderTV)
+            if (_configurationManager.Settings.DestinationFolderTV != _originalSettings.DestinationFolderTV)
             {
                 return true;
             }
-            if (configurationManager.Settings.NewFileNameFormat != originalSettings.NewFileNameFormat)
+            if (_configurationManager.Settings.NewFileNameFormat != _originalSettings.NewFileNameFormat)
             {
                 return true;
             }
-            if (configurationManager.Settings.RenameFiles != originalSettings.RenameFiles)
+            if (_configurationManager.Settings.RenameFiles != _originalSettings.RenameFiles)
             {
                 return true;
             }
-            if (configurationManager.Settings.SubDirectories != originalSettings.SubDirectories)
+            if (_configurationManager.Settings.SubDirectories != _originalSettings.SubDirectories)
             {
                 return true;
             }
-            if (!helper.AreListsEqual(configurationManager.Settings.ValidExtensions, originalSettings.ValidExtensions))
+            if (!_helper.AreListsEqual(_configurationManager.Settings.ValidExtensions, _originalSettings.ValidExtensions))
             {
                 return true;
             }
-            if (!helper.AreListsEqual(configurationManager.Settings.WatchFolders, originalSettings.WatchFolders))
+            if (!_helper.AreListsEqual(_configurationManager.Settings.WatchFolders, _originalSettings.WatchFolders))
             {
                 return true;
             }
@@ -152,37 +152,37 @@ namespace Sarjee.SimpleRenamer.Views
         private void OkFlyoutButton_Click(object sender, RoutedEventArgs e)
         {
             ConfirmationFlyout.IsOpen = false;
-            if (configurationManager.Settings.CopyFiles != originalSettings.CopyFiles)
+            if (_configurationManager.Settings.CopyFiles != _originalSettings.CopyFiles)
             {
-                configurationManager.Settings.CopyFiles = originalSettings.CopyFiles;
+                _configurationManager.Settings.CopyFiles = _originalSettings.CopyFiles;
             }
-            if (configurationManager.Settings.DestinationFolderMovie != originalSettings.DestinationFolderMovie)
+            if (_configurationManager.Settings.DestinationFolderMovie != _originalSettings.DestinationFolderMovie)
             {
-                configurationManager.Settings.DestinationFolderMovie = originalSettings.DestinationFolderMovie;
+                _configurationManager.Settings.DestinationFolderMovie = _originalSettings.DestinationFolderMovie;
             }
-            if (configurationManager.Settings.DestinationFolderTV != originalSettings.DestinationFolderTV)
+            if (_configurationManager.Settings.DestinationFolderTV != _originalSettings.DestinationFolderTV)
             {
-                configurationManager.Settings.DestinationFolderTV = originalSettings.DestinationFolderTV;
+                _configurationManager.Settings.DestinationFolderTV = _originalSettings.DestinationFolderTV;
             }
-            if (configurationManager.Settings.NewFileNameFormat != originalSettings.NewFileNameFormat)
+            if (_configurationManager.Settings.NewFileNameFormat != _originalSettings.NewFileNameFormat)
             {
-                configurationManager.Settings.NewFileNameFormat = originalSettings.NewFileNameFormat;
+                _configurationManager.Settings.NewFileNameFormat = _originalSettings.NewFileNameFormat;
             }
-            if (configurationManager.Settings.RenameFiles != originalSettings.RenameFiles)
+            if (_configurationManager.Settings.RenameFiles != _originalSettings.RenameFiles)
             {
-                configurationManager.Settings.RenameFiles = originalSettings.RenameFiles;
+                _configurationManager.Settings.RenameFiles = _originalSettings.RenameFiles;
             }
-            if (configurationManager.Settings.SubDirectories != originalSettings.SubDirectories)
+            if (_configurationManager.Settings.SubDirectories != _originalSettings.SubDirectories)
             {
-                configurationManager.Settings.SubDirectories = originalSettings.SubDirectories;
+                _configurationManager.Settings.SubDirectories = _originalSettings.SubDirectories;
             }
-            if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, originalSettings.ValidExtensions) == false)
+            if (_helper.AreListsEqual(_configurationManager.Settings.ValidExtensions, _originalSettings.ValidExtensions) == false)
             {
-                configurationManager.Settings.ValidExtensions = originalSettings.ValidExtensions;
+                _configurationManager.Settings.ValidExtensions = _originalSettings.ValidExtensions;
             }
-            if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, originalSettings.WatchFolders) == false)
+            if (_helper.AreListsEqual(_configurationManager.Settings.WatchFolders, _originalSettings.WatchFolders) == false)
             {
-                configurationManager.Settings.WatchFolders = originalSettings.WatchFolders;
+                _configurationManager.Settings.WatchFolders = _originalSettings.WatchFolders;
             }
             SetupView();
             this.Hide();
@@ -196,15 +196,15 @@ namespace Sarjee.SimpleRenamer.Views
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             //check if settings have been changed without saving
-            var currentExtensions = new List<string>(validExtensions);
-            if (helper.AreListsEqual(configurationManager.Settings.ValidExtensions, currentExtensions) == false)
+            var currentExtensions = new List<string>(_validExtensions);
+            if (_helper.AreListsEqual(_configurationManager.Settings.ValidExtensions, currentExtensions) == false)
             {
-                configurationManager.Settings.ValidExtensions = currentExtensions;
+                _configurationManager.Settings.ValidExtensions = currentExtensions;
             }
-            var currentWatchFolders = new List<string>(watchFolders);
-            if (helper.AreListsEqual(configurationManager.Settings.WatchFolders, currentWatchFolders) == false)
+            var currentWatchFolders = new List<string>(_watchFolders);
+            if (_helper.AreListsEqual(_configurationManager.Settings.WatchFolders, currentWatchFolders) == false)
             {
-                configurationManager.Settings.WatchFolders = currentWatchFolders;
+                _configurationManager.Settings.WatchFolders = currentWatchFolders;
             }
             SetupView();
             this.Hide();
@@ -217,25 +217,25 @@ namespace Sarjee.SimpleRenamer.Views
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 string path = Path.GetFullPath(dialog.SelectedPath);
-                if (!watchFolders.Contains(path))
+                if (!_watchFolders.Contains(path))
                 {
-                    watchFolders.Add(path);
+                    _watchFolders.Add(path);
                 }
             }
         }
 
         private void AddExtensionButton_Click(object sender, RoutedEventArgs e)
         {
-            addExtensionsWindow.ShowDialog();
+            _addExtensionsWindow.ShowDialog();
         }
 
         private void ExtensionWindowClosedEvent(object sender, ExtensionEventArgs e)
         {
-            if (helper.IsFileExtensionValid(e.Extension))
+            if (_helper.IsFileExtensionValid(e.Extension))
             {
-                if (!watchFolders.Contains(e.Extension))
+                if (!_watchFolders.Contains(e.Extension))
                 {
-                    validExtensions.Add(e.Extension);
+                    _validExtensions.Add(e.Extension);
                 }
             }
         }
@@ -246,7 +246,7 @@ namespace Sarjee.SimpleRenamer.Views
             DialogResult result = dialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                configurationManager.Settings.DestinationFolderTV = Path.GetFullPath(dialog.SelectedPath);
+                _configurationManager.Settings.DestinationFolderTV = Path.GetFullPath(dialog.SelectedPath);
             }
         }
 
@@ -256,23 +256,23 @@ namespace Sarjee.SimpleRenamer.Views
             DialogResult result = dialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                configurationManager.Settings.DestinationFolderMovie = Path.GetFullPath(dialog.SelectedPath);
+                _configurationManager.Settings.DestinationFolderMovie = Path.GetFullPath(dialog.SelectedPath);
             }
         }
 
         private void DeleteFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            watchFolders.Remove((string)WatchListBox.SelectedItem);
+            _watchFolders.Remove((string)WatchListBox.SelectedItem);
         }
 
         private void DeleteExtensionButton_Click(object sender, RoutedEventArgs e)
         {
-            validExtensions.Remove((string)WatchListBox.SelectedItem);
+            _validExtensions.Remove((string)WatchListBox.SelectedItem);
         }
 
         private void RegexExpressionButton_Click(object sender, RoutedEventArgs e)
         {
-            regexExpressionsWindow.ShowDialog();
+            _regexExpressionsWindow.ShowDialog();
         }
 
         private void ChangeThemeCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -280,7 +280,7 @@ namespace Sarjee.SimpleRenamer.Views
             try
             {
                 AccentItem selectedColor = (AccentItem)ChangeThemeCombo.SelectedItem;
-                ThemeManager.ChangeAppStyle(System.Windows.Application.Current, selectedColor.Accent, currentTheme.appTheme);
+                ThemeManager.ChangeAppStyle(System.Windows.Application.Current, selectedColor.Accent, _currentTheme.appTheme);
             }
             catch (Exception)
             {

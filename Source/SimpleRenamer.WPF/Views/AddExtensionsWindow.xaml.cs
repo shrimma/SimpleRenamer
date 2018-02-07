@@ -13,14 +13,14 @@ namespace Sarjee.SimpleRenamer.Views
     public partial class AddExtensionsWindow
     {
         public event EventHandler<ExtensionEventArgs> RaiseCustomEvent;
-        private IHelper helper;
-        private bool flyoutEnabled;
+        private IHelper _helper;
+        private bool _flyoutEnabled;
 
-        public AddExtensionsWindow(IHelper help)
+        public AddExtensionsWindow(IHelper helper)
         {
-            helper = help ?? throw new ArgumentNullException(nameof(help));
+            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
             InitializeComponent();
-            flyoutEnabled = true;
+            _flyoutEnabled = true;
             ExtensionTextBox.Focus();
             this.Closing += AddExtensionsWindow_Closing;
         }
@@ -44,7 +44,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void SaveInputExtension(string extension)
         {
-            if (helper.IsFileExtensionValid(ExtensionTextBox.Text))
+            if (_helper.IsFileExtensionValid(ExtensionTextBox.Text))
             {
                 RaiseCustomEvent(this, new ExtensionEventArgs(ExtensionTextBox.Text));
                 this.ExtensionTextBox.Text = string.Empty;
@@ -56,7 +56,7 @@ namespace Sarjee.SimpleRenamer.Views
                 ErrorFlyout.IsOpen = true;
                 this.OKButton.IsEnabled = false;
                 this.ExtensionTextBox.IsEnabled = false;
-                this.flyoutEnabled = false;
+                this._flyoutEnabled = false;
             }
         }
 
@@ -67,7 +67,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = flyoutEnabled;
+            e.CanExecute = _flyoutEnabled;
         }
 
         private void CloseBinding_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -75,7 +75,7 @@ namespace Sarjee.SimpleRenamer.Views
             ErrorFlyout.IsOpen = false;
             this.OKButton.IsEnabled = true;
             this.ExtensionTextBox.IsEnabled = true;
-            this.flyoutEnabled = true;
+            this._flyoutEnabled = true;
         }
 
         private void CloseBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)

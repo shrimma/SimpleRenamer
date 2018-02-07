@@ -12,14 +12,14 @@ namespace Sarjee.SimpleRenamer.Views
     /// </summary>
     public partial class RegexExpressionsWindow
     {
-        public ObservableCollection<RegexExpression> regExp;
-        private IConfigurationManager configurationManager;
-        private IHelper helper;
-        private RegexFile originalExpressions;
-        public RegexExpressionsWindow(IConfigurationManager configManager, IHelper help)
+        public ObservableCollection<RegexExpression> RegularExpressions;
+        private IConfigurationManager _configurationManager;
+        private IHelper _helper;
+        private RegexFile _originalExpressions;
+        public RegexExpressionsWindow(IConfigurationManager configurationManager, IHelper helper)
         {
-            configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-            helper = help ?? throw new ArgumentNullException(nameof(help));
+            _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
+            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
 
             InitializeComponent();
             //grab settings and display
@@ -29,11 +29,11 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void SetupView()
         {
-            regExp = new ObservableCollection<RegexExpression>(configurationManager.RegexExpressions.RegexExpressions);
-            ExpressionsListBox.ItemsSource = regExp;
-            originalExpressions = new RegexFile()
+            RegularExpressions = new ObservableCollection<RegexExpression>(_configurationManager.RegexExpressions.RegexExpressions);
+            ExpressionsListBox.ItemsSource = RegularExpressions;
+            _originalExpressions = new RegexFile()
             {
-                RegexExpressions = configurationManager.RegexExpressions.RegexExpressions
+                RegexExpressions = _configurationManager.RegexExpressions.RegexExpressions
             };
         }
 
@@ -44,10 +44,10 @@ namespace Sarjee.SimpleRenamer.Views
                 //stop the window actually closing
                 e.Cancel = true;
                 //check if settings have been changed without saving
-                var currentExpressions = new List<RegexExpression>(regExp);
-                if (helper.AreListsEqual(configurationManager.RegexExpressions.RegexExpressions, currentExpressions) == false)
+                var currentExpressions = new List<RegexExpression>(RegularExpressions);
+                if (_helper.AreListsEqual(_configurationManager.RegexExpressions.RegexExpressions, currentExpressions) == false)
                 {
-                    configurationManager.RegexExpressions.RegexExpressions = currentExpressions;
+                    _configurationManager.RegexExpressions.RegexExpressions = currentExpressions;
                 }
                 if (HaveSettingsChanged() == true)
                 {
@@ -64,7 +64,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         private bool HaveSettingsChanged()
         {
-            if (helper.AreListsEqual(configurationManager.RegexExpressions.RegexExpressions, originalExpressions.RegexExpressions) == false)
+            if (_helper.AreListsEqual(_configurationManager.RegexExpressions.RegexExpressions, _originalExpressions.RegexExpressions) == false)
             {
                 return true;
             }
@@ -74,9 +74,9 @@ namespace Sarjee.SimpleRenamer.Views
         private void OkFlyoutButton_Click(object sender, RoutedEventArgs e)
         {
             ConfirmationFlyout.IsOpen = false;
-            if (helper.AreListsEqual(configurationManager.RegexExpressions.RegexExpressions, originalExpressions.RegexExpressions) == false)
+            if (_helper.AreListsEqual(_configurationManager.RegexExpressions.RegexExpressions, _originalExpressions.RegexExpressions) == false)
             {
-                configurationManager.RegexExpressions.RegexExpressions = originalExpressions.RegexExpressions;
+                _configurationManager.RegexExpressions.RegexExpressions = _originalExpressions.RegexExpressions;
             }
             SetupView();
             this.Hide();
@@ -89,20 +89,20 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void AddExpressionButton_Click(object sender, RoutedEventArgs e)
         {
-            regExp.Add(new RegexExpression("", false, true));
+            RegularExpressions.Add(new RegexExpression("", false, true));
         }
 
         private void DeleteExpressionButton_Click(object sender, RoutedEventArgs e)
         {
-            regExp.Remove((RegexExpression)ExpressionsListBox.SelectedItem);
+            RegularExpressions.Remove((RegexExpression)ExpressionsListBox.SelectedItem);
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            var currentExpressions = new List<RegexExpression>(regExp);
-            if (helper.AreListsEqual(configurationManager.RegexExpressions.RegexExpressions, currentExpressions) == false)
+            var currentExpressions = new List<RegexExpression>(RegularExpressions);
+            if (_helper.AreListsEqual(_configurationManager.RegexExpressions.RegexExpressions, currentExpressions) == false)
             {
-                configurationManager.RegexExpressions.RegexExpressions = currentExpressions;
+                _configurationManager.RegexExpressions.RegexExpressions = currentExpressions;
             }
             SetupView();
             this.Hide();
