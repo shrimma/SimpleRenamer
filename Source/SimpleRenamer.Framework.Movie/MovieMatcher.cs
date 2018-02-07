@@ -97,7 +97,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         public async Task<MatchedFile> ScrapeDetailsAsync(MatchedFile movie, CancellationToken cancellationToken)
         {
             _logger.TraceMessage($"Scraping Movie Details for {movie.SourceFilePath}.", EventLevel.Verbose);
-            OnProgressTextChanged(new ProgressTextEventArgs($"Scraping details for file {movie.SourceFilePath}"));
+            OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Scraping details for file {0}", movie.SourceFilePath)));
 
             SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movie.ShowName, cancellationToken, movie.Year);
             //if only one result then we can safely match
@@ -171,7 +171,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             Common.Movie.Model.Movie matchedMovie = await _tmdbManager.GetMovieAsync(movieId, cancellationToken);
             Uri bannerUri = string.IsNullOrWhiteSpace(matchedMovie.PosterPath) ? null : new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath, cancellationToken));
 
-            _logger.TraceMessage("Got MovieInfo for MovieId: {movieId}", EventLevel.Verbose);
+            _logger.TraceMessage($"Got MovieInfo for MovieId: {movieId}.", EventLevel.Verbose);
             return (matchedMovie, bannerUri);
         }
 

@@ -109,7 +109,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 throw new ArgumentNullException(nameof(movieId));
             }
             //create the request
-            IRestRequest request = new RestRequest($"/3/movie/{movieId}", Method.GET);
+            IRestRequest request = new RestRequest(string.Format("/3/movie/{0}", movieId), Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
             request.AddParameter("append_to_response", "credits", ParameterType.QueryString);
 
@@ -130,7 +130,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 throw new ArgumentNullException(nameof(movieId));
             }
             //create request
-            IRestRequest request = new RestRequest($"/3/movie/{movieId}", Method.GET);
+            IRestRequest request = new RestRequest(string.Format("/3/movie/{0}", movieId), Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
             return await _helper.ExecuteRestRequestAsync<SearchMovie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
@@ -162,12 +162,12 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 }
             }
 
-            return $"{_posterBaseUri}w342{posterPath}";
+            return string.Format("{0}w342{1}", _posterBaseUri, posterPath);
         }
         private async Task<string> GetPosterBaseUriAsync(CancellationToken cancellationToken)
         {
             //create the request
-            IRestRequest request = new RestRequest($"/3/configuration", Method.GET);
+            IRestRequest request = new RestRequest("/3/configuration", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
             //execute the request

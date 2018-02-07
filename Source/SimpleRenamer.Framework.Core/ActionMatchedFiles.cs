@@ -72,7 +72,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         public async Task<bool> ActionAsync(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken cancellationToken)
         {
-            OnProgressTextChanged(new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
+            OnProgressTextChanged(new ProgressTextEventArgs("Creating directory structure and downloading any missing banners"));
             //perform pre actions on TVshows            
             Task<List<MatchedFile>> tvShowTask = PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.TvShow).ToList(), cancellationToken);
             //perform pre actions on movies
@@ -81,7 +81,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             await Task.WhenAll(tvShowTask, movieTask);
             List<MatchedFile> tvShowsToMove = tvShowTask.Result;
             List<MatchedFile> moviesToMove = movieTask.Result;
-            OnProgressTextChanged(new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
+            OnProgressTextChanged(new ProgressTextEventArgs("Finished creating directory structure and downloading banners."));
             cancellationToken.ThrowIfCancellationRequested();
 
             //concat final list of files to move
@@ -219,12 +219,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                OnProgressTextChanged(new ProgressTextEventArgs($"Moving file {file.SourceFilePath} to {file.DestinationFilePath}."));
+                OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Moving file {0} to {1}.", file.SourceFilePath, file.DestinationFilePath)));
                 bool result = await await _backgroundQueue.QueueTaskAsync(() => _fileMover.MoveFileAsync(file, cancellationToken));
                 if (result)
                 {
                     OnFileMoved(new FileMovedEventArgs(file));
-                    OnProgressTextChanged(new ProgressTextEventArgs($"Finished {file.DestinationFilePath}."));
+                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Finished moving file to {0}.", file.DestinationFilePath)));
                     _logger.TraceMessage(string.Format("Successfully {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, _settings.CopyFiles ? "copied" : "moved"));
                 }
                 else

@@ -56,8 +56,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         public async Task<List<MatchedFile>> SearchFilesAsync(List<string> files, CancellationToken cancellationToken)
         {
-            _logger.TraceMessage($"Parsing all found files against the regular expressions.", EventLevel.Verbose);
-            OnProgressTextChanged(new ProgressTextEventArgs($"Parsing file names for show or movie details"));
+            _logger.TraceMessage("Parsing all found files against the regular expressions.", EventLevel.Verbose);
+            OnProgressTextChanged(new ProgressTextEventArgs("Parsing file names for show or movie details"));
             ConcurrentBag<MatchedFile> matchedFiles = new ConcurrentBag<MatchedFile>();
 
             //grab the current active regularexpressions
@@ -91,7 +91,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             searchFilesAsyncBlock.Complete();
             await searchFilesAsyncBlock.Completion;
 
-            _logger.TraceMessage($"Parsed all found files against the regular expressions.", EventLevel.Verbose);
+            _logger.TraceMessage("Parsed all found files against the regular expressions.", EventLevel.Verbose);
             return matchedFiles.ToList();
         }
 

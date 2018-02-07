@@ -141,7 +141,7 @@ namespace Sarjee.SimpleRenamer.Logging
         [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
         [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
-            string innerEx = ex.InnerException == null ? "" : $", InnerException type: {ex.InnerException.GetType().ToString()}, message: {ex.InnerException.Message}";
+            string innerEx = ex.InnerException == null ? "" : string.Format(", InnerException type: {0}, message: {1}", ex.InnerException.GetType().ToString(), ex.InnerException.Message);
             string logthis = string.Format("Message: {0}, Caller Member: {1}, Source File Path: {2}, Source Line Number: {3}, Exception: {4}, Message: {5}{6}", message, memberName, sourceFilePath, sourceLineNumber.ToString(), ex.GetType().ToString(), ex.Message, innerEx);
             _logger.Fatal(logthis, ex);
         }

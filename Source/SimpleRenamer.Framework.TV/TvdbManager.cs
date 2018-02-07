@@ -99,7 +99,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 throw new ArgumentNullException(nameof(bannerPath));
             }
 
-            return $"http://thetvdb.com/banners/{bannerPath}";
+            return string.Format("http://thetvdb.com/banners/{0}", bannerPath);
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<SeriesData> GetSeries(string tmdbId, CancellationToken cancellationToken)
         {
             //create the request
-            IRestRequest request = new RestRequest($"series/{tmdbId}", Method.GET);
+            IRestRequest request = new RestRequest(string.Format("series/{0}", tmdbId), Method.GET);
 
             //execute the request
             return await _helper.ExecuteRestRequestAsync<SeriesData>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
@@ -186,7 +186,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<SeriesActors> GetActors(string tmdbId, CancellationToken cancellationToken)
         {
             //create the request
-            IRestRequest request = new RestRequest($"/series/{tmdbId}/actors", Method.GET);
+            IRestRequest request = new RestRequest(string.Format("/series/{0}/actors", tmdbId), Method.GET);
 
             //execute the request
             return await _helper.ExecuteRestRequestAsync<SeriesActors>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
@@ -202,7 +202,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<SeriesEpisodes> GetEpisodes(string tmdbId, CancellationToken cancellationToken)
         {
             //create the request
-            IRestRequest request = new RestRequest($"/series/{tmdbId}/episodes", Method.GET);
+            IRestRequest request = new RestRequest(string.Format("/series/{0}/episodes", tmdbId), Method.GET);
 
             //execute the request
             return await _helper.ExecuteRestRequestAsync<SeriesEpisodes>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
@@ -218,7 +218,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<SeriesImageQueryResults> GetSeriesPosters(string tmdbId, CancellationToken cancellationToken)
         {
             //create the request
-            IRestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
+            IRestRequest request = new RestRequest(string.Format("/series/{0}/images/query", tmdbId), Method.GET);
             request.AddParameter("keyType", "poster", ParameterType.QueryString);
 
             //execute the request
@@ -240,7 +240,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<SeriesImageQueryResults> GetSeasonPosters(string tmdbId, CancellationToken cancellationToken)
         {
             //create the request
-            IRestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
+            IRestRequest request = new RestRequest(string.Format("/series/{0}/images/query", tmdbId), Method.GET);
             request.AddParameter("keyType", "season", ParameterType.QueryString);
 
             //execute the request
@@ -262,7 +262,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task<SeriesImageQueryResults> GetSeriesBanners(string tmdbId, CancellationToken cancellationToken)
         {
             //create the request
-            IRestRequest request = new RestRequest($"/series/{tmdbId}/images/query", Method.GET);
+            IRestRequest request = new RestRequest(string.Format("/series/{0}/images/query", tmdbId), Method.GET);
             request.AddParameter("keyType", "series", ParameterType.QueryString);
 
             //execute the request

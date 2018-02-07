@@ -200,7 +200,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {
                 temp = temp.Replace(_fileNameEpisodeName, string.IsNullOrWhiteSpace(episodeName) ? "" : episodeName);
             }
-            _logger.TraceMessage("Generated FileName {temp}.", EventLevel.Verbose);
+            _logger.TraceMessage($"Generated FileName {temp}.", EventLevel.Verbose);
             return _helper.RemoveSpecialCharacters(temp);
         }
 

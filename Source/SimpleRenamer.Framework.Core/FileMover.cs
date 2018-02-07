@@ -161,16 +161,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         }
 
         /// <summary>
-        /// Creates a temporary file name.
-        /// </summary>
-        /// <param name="f">The f.</param>
-        /// <returns></returns>
-        private string TempFileName(FileInfo f)
-        {
-            return f.FullName + ".simplerenametemp";
-        }
-
-        /// <summary>
         /// Checks if file is the same
         /// </summary>
         /// <param name="a">File a.</param>
@@ -207,7 +197,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             if (FileIsSame(fromFile, toFile))
             {
                 // XP won't actually do a rename if its only a case difference
-                string tempName = TempFileName(toFile);
+                string tempName = string.Format("{0}.simplerenametemp", toFile.FullName);
                 fromFile.MoveTo(tempName);
                 File.Move(tempName, toFile.FullName);
             }
