@@ -99,7 +99,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             if (filesToMove?.Count > 0)
             {
                 //send the stats to the cloud
-                SendActionStatsToCloud(filesToMove);
+                SendActionStatsToCloud(filesToMove, cancellationToken);
                 //move these files
                 await MoveFiles(filesToMove, cancellationToken);
             }
@@ -107,20 +107,28 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return true;
         }
 
-        private void SendActionStatsToCloud(List<MatchedFile> files)
+        private void SendActionStatsToCloud(List<MatchedFile> files, CancellationToken cancellationToken)
         {
-            //do all the stuff for sending stats in background
-            Task.Run(async () =>
+            try
             {
-                List<StatsFile> scanFiles = new List<StatsFile>();
-                foreach (MatchedFile file in files)
+                //do all the stuff for sending stats in background
+                Task.Run(async () =>
                 {
-                    scanFiles.Add(StatsFile.StatsFileFromMatchedFile(file));
-                }
-                string jsonPayload = JsonConvert.SerializeObject(scanFiles);
-                //run the messaging sending in background
-                await _messageSender.SendAsync(jsonPayload);
-            });
+                    List<StatsFile> scanFiles = new List<StatsFile>();
+                    foreach (MatchedFile file in files)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        scanFiles.Add(StatsFile.StatsFileFromMatchedFile(file));
+                    }
+                    string jsonPayload = JsonConvert.SerializeObject(scanFiles);
+                    //run the messaging sending in background
+                    await _messageSender.SendAsync(jsonPayload);
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.TraceException(ex, "Exception occured during stats sending");
+            }
         }
 
         /// <summary>
@@ -150,7 +158,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
                 }
-            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded, CancellationToken = cancellationToken });
 
             //post all our files to our dataflow
             foreach (MatchedFile file in scannedEpisodes)
@@ -187,7 +195,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
                 }
-            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded, CancellationToken = cancellationToken });
 
             //post all our files to our dataflow
             foreach (MatchedFile file in scannedMovies)
@@ -223,7 +231,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     _logger.TraceMessage(string.Format("Failed to {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, _settings.CopyFiles ? "copy" : "move"));
                 }
-            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1, CancellationToken = cancellationToken });
             //actually move/copy the files one at a time
             foreach (MatchedFile file in filesToMove)
             {
