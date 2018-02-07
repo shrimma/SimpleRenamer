@@ -65,7 +65,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <param name="showName">Name of the show.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">showName</exception>
-        public async Task<CompleteSeries> SearchShowByNameAsync(string showName)
+        public async Task<CompleteSeries> SearchShowByNameAsync(string showName, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(showName))
             {
@@ -73,13 +73,13 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
 
             _logger.TraceMessage($"Searching for Show by Name: {showName}.", EventLevel.Verbose);
-            List<SeriesSearchData> searchResults = await _tvdbManager.SearchSeriesByNameAsync(showName);
+            List<SeriesSearchData> searchResults = await _tvdbManager.SearchSeriesByNameAsync(showName, cancellationToken);
             //if theres only one match then scape the specific show and return this
             if (searchResults?.Count == 1)
             {
                 _logger.TraceMessage($"Found only one show for Name: {showName}. So will grab all series data.", EventLevel.Verbose);
                 string seriesId = searchResults[0].Id.ToString();
-                return await _tvdbManager.GetSeriesByIdAsync(seriesId);
+                return await _tvdbManager.GetSeriesByIdAsync(seriesId, cancellationToken);
             }
 
             //else there were no matches or more than 1 possible match so return null
@@ -93,7 +93,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <param name="showId">The show identifier.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">showId</exception>
-        public async Task<CompleteSeries> SearchShowByIdAsync(string showId)
+        public async Task<CompleteSeries> SearchShowByIdAsync(string showId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(showId))
             {
@@ -101,7 +101,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
 
             _logger.TraceMessage($"Searching for Show details by ShowId: {showId}.", EventLevel.Verbose);
-            CompleteSeries series = await _tvdbManager.GetSeriesByIdAsync(showId);
+            CompleteSeries series = await _tvdbManager.GetSeriesByIdAsync(showId, cancellationToken);
             _logger.TraceMessage($"Found Show details by ShowId: {showId}.", EventLevel.Verbose);
             return series;
         }
@@ -249,7 +249,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns>
         /// A list of series
         /// </returns>
-        public async Task<List<DetailView>> GetPossibleShowsForEpisodeAsync(string showName)
+        public async Task<List<DetailView>> GetPossibleShowsForEpisodeAsync(string showName, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(showName))
             {
@@ -260,9 +260,10 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {
                 _logger.TraceMessage($"Get possible matches for show: {showName}.", EventLevel.Verbose);
                 ConcurrentBag<DetailView> shows = new ConcurrentBag<DetailView>();
-                List<SeriesSearchData> seriesSearchData = await _tvdbManager.SearchSeriesByNameAsync(showName);
+                List<SeriesSearchData> seriesSearchData = await _tvdbManager.SearchSeriesByNameAsync(showName, cancellationToken);
                 if (seriesSearchData?.Count > 0)
                 {
+                    _parallelOptions.CancellationToken = cancellationToken;
                     Parallel.ForEach(seriesSearchData, _parallelOptions, (series) =>
                     {
                         try
@@ -300,7 +301,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <returns>
         /// The updated TV episode
         /// </returns>
-        public async Task<MatchedFile> UpdateEpisodeWithMatchedSeriesAsync(string selectedSeriesId, MatchedFile episode)
+        public async Task<MatchedFile> UpdateEpisodeWithMatchedSeriesAsync(string selectedSeriesId, MatchedFile episode, CancellationToken cancellationToken)
         {
             if (episode == null)
             {
@@ -317,9 +318,10 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
             return await Task.Run(async () =>
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 _logger.TraceMessage($"Updating {episode.SourceFilePath} with Matched SeriesId {selectedSeriesId}.", EventLevel.Verbose);
                 string originalShowName = episode.ShowName;
-                CompleteSeries seriesInfo = await SearchShowByIdAsync(selectedSeriesId);
+                CompleteSeries seriesInfo = await SearchShowByIdAsync(selectedSeriesId, cancellationToken);
                 episode = UpdateFileWithSeriesDetails(episode, seriesInfo);
 
                 if (!string.IsNullOrWhiteSpace(episode.TVDBShowId))
@@ -336,7 +338,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
                 _logger.TraceMessage($"Updated {episode.SourceFilePath} with Matched SeriesId {selectedSeriesId}.", EventLevel.Verbose);
                 return episode;
-            });
+            }, cancellationToken);
         }
 
         /// <summary>
@@ -354,7 +356,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
 
             _logger.TraceMessage($"Getting show and banner for ShowId: {showId}.", EventLevel.Verbose);
-            CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(showId);
+            CompleteSeries matchedSeries = await _tvdbManager.GetSeriesByIdAsync(showId, cancellationToken);
             Uri bannerUri = null;
 
             if (matchedSeries?.SeriesBanners?.Count > 0)

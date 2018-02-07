@@ -81,6 +81,7 @@ namespace Sarjee.SimpleRenamer.Views
         public async Task SearchForMatches(string title, string searchString, FileType fileType)
         {
             //set the initial UI
+            _cancellationTokenSource = new CancellationTokenSource();
             DisableUi();
             this.SearchTextBox.Text = searchString;
             this.Title = title;
@@ -88,7 +89,7 @@ namespace Sarjee.SimpleRenamer.Views
             ShowListBox.ItemsSource = null;
 
             //grab possible matches
-            List<DetailView> possibleMatches = await GetMatches(searchString, fileType);
+            List<DetailView> possibleMatches = await GetMatches(searchString, fileType, _cancellationTokenSource.Token);
 
             //if we have matches then enable UI elements
             if (possibleMatches != null && possibleMatches.Count > 0)
@@ -157,16 +158,16 @@ namespace Sarjee.SimpleRenamer.Views
             }
         }
 
-        private async Task<List<DetailView>> GetMatches(string searchText, FileType fileType)
+        private async Task<List<DetailView>> GetMatches(string searchText, FileType fileType, CancellationToken cancellationToken)
         {
             List<DetailView> possibleMatches = null;
             if (currentFileType == FileType.TvShow)
             {
-                possibleMatches = await showMatcher.GetPossibleShowsForEpisodeAsync(searchText);
+                possibleMatches = await showMatcher.GetPossibleShowsForEpisodeAsync(searchText, cancellationToken);
             }
             else
             {
-                possibleMatches = await movieMatcher.GetPossibleMoviesForFileAsync(searchText);
+                possibleMatches = await movieMatcher.GetPossibleMoviesForFileAsync(searchText, cancellationToken);
             }
 
             return possibleMatches;

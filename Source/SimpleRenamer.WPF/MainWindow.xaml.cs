@@ -432,6 +432,7 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
+                cts = new CancellationTokenSource();
                 //if nothing was selected then just return
                 if (string.IsNullOrWhiteSpace(e.ID))
                 {
@@ -448,11 +449,11 @@ namespace Sarjee.SimpleRenamer
                 MatchedFile updatedFile;
                 if (e.Type == FileType.TvShow)
                 {
-                    updatedFile = await _tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync(e.ID, temp);
+                    updatedFile = await _tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync(e.ID, temp, cts.Token);
                 }
                 else
                 {
-                    updatedFile = await _movieMatcher.UpdateFileWithMatchedMovieAsync(e.ID, temp);
+                    updatedFile = await _movieMatcher.UpdateFileWithMatchedMovieAsync(e.ID, temp, cts.Token);
                 }
 
                 //add the file back to the view

@@ -7,6 +7,7 @@ using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
 using System.Globalization;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Framework.Movie
@@ -72,10 +73,11 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// Searches the movie by name.
         /// </summary>
         /// <param name="movieName">Name of the movie.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="movieYear">The movie release year.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">movieName</exception>
-        public async Task<SearchContainer<SearchMovie>> SearchMovieByNameAsync(string movieName, int? movieYear = null)
+        public async Task<SearchContainer<SearchMovie>> SearchMovieByNameAsync(string movieName, CancellationToken cancellationToken, int? movieYear = null)
         {
             if (string.IsNullOrWhiteSpace(movieName))
             {
@@ -91,7 +93,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 request.AddParameter("year", movieYear.ToString());
             }
 
-            return await _helper.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            return await _helper.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
         }
 
         /// <summary>
@@ -100,7 +102,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <param name="movieId">The movie identifier.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">movieId</exception>
-        public async Task<Common.Movie.Model.Movie> GetMovieAsync(string movieId)
+        public async Task<Common.Movie.Model.Movie> GetMovieAsync(string movieId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(movieId))
             {
@@ -112,7 +114,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             request.AddParameter("append_to_response", "credits", ParameterType.QueryString);
 
             //execute the request
-            return await _helper.ExecuteRestRequestAsync<Common.Movie.Model.Movie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            return await _helper.ExecuteRestRequestAsync<Common.Movie.Model.Movie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
         }
 
         /// <summary>
@@ -121,7 +123,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <param name="movieId">The movie identifier.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">movieId</exception>
-        public async Task<SearchMovie> SearchMovieByIdAsync(string movieId)
+        public async Task<SearchMovie> SearchMovieByIdAsync(string movieId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(movieId))
             {
@@ -131,7 +133,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             IRestRequest request = new RestRequest($"/3/movie/{movieId}", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
-            return await _helper.ExecuteRestRequestAsync<SearchMovie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            return await _helper.ExecuteRestRequestAsync<SearchMovie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
         }
 
         /// <summary>
@@ -140,7 +142,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// <param name="posterPath">The poster path.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">posterPath</exception>
-        public async Task<string> GetPosterUriAsync(string posterPath)
+        public async Task<string> GetPosterUriAsync(string posterPath, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(posterPath))
             {
@@ -149,7 +151,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             //if we havent grabbed the base uri yet this session
             if (string.IsNullOrWhiteSpace(_posterBaseUri))
             {
-                string posterUri = await GetPosterBaseUriAsync();
+                string posterUri = await GetPosterBaseUriAsync(cancellationToken);
                 if (!string.IsNullOrWhiteSpace(posterUri))
                 {
                     _posterBaseUri = posterUri;
@@ -162,14 +164,14 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 
             return $"{_posterBaseUri}w342{posterPath}";
         }
-        private async Task<string> GetPosterBaseUriAsync()
+        private async Task<string> GetPosterBaseUriAsync(CancellationToken cancellationToken)
         {
             //create the request
             IRestRequest request = new RestRequest($"/3/configuration", Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
             //execute the request
-            TMDbConfig tmdbConfig = await _helper.ExecuteRestRequestAsync<TMDbConfig>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds);
+            TMDbConfig tmdbConfig = await _helper.ExecuteRestRequestAsync<TMDbConfig>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
             if (!string.IsNullOrWhiteSpace(tmdbConfig?.Images?.SecureBaseUrl))
             {
                 return tmdbConfig.Images.SecureBaseUrl;

@@ -160,25 +160,25 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             var searchShowIdsAsyncBlock = new ActionBlock<string>(async (showId) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                CompleteSeries series = await _tvShowMatcher.SearchShowByIdAsync(showId);
+                CompleteSeries series = await _tvShowMatcher.SearchShowByIdAsync(showId, cancellationToken);
                 if (series != null)
                 {
                     OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Found data for {0}", series.Series.SeriesName)));
                     matchedSeries.Add(series);
                 }
-            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2 });
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2, CancellationToken = cancellationToken });
 
             //block for searching unique shownames
             var searchShowNamesAsyncBlock = new ActionBlock<string>(async (showName) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                CompleteSeries series = await _tvShowMatcher.SearchShowByNameAsync(showName);
+                CompleteSeries series = await _tvShowMatcher.SearchShowByNameAsync(showName, cancellationToken);
                 if (series != null)
                 {
                     OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Found data for {0}", series.Series.SeriesName)));
                     matchedSeries.Add(series);
                 }
-            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2 });
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2, CancellationToken = cancellationToken });
 
             //execute for each unique showId
             foreach (string showId in uniqueShowIds)
@@ -280,7 +280,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             var searchFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                file = await _movieMatcher.ScrapeDetailsAsync(file);
+                file = await _movieMatcher.ScrapeDetailsAsync(file, cancellationToken);
 
                 //only add the file if it needs renaming/moving
                 string movieDirectory = Path.Combine(_settings.DestinationFolderMovie, $"{file.ShowName} ({file.Season})");
@@ -296,7 +296,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
                     OnProgressTextChanged(new ProgressTextEventArgs(string.Format("File {0} will be ignored as already in correct location.", file.SourceFilePath)));
                 }
-            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded, CancellationToken = cancellationToken });
 
             //post all our files to our dataflow
             foreach (MatchedFile file in matchedFiles)
