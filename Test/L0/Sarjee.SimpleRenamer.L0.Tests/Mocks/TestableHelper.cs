@@ -2,6 +2,7 @@
 using Sarjee.SimpleRenamer.Common;
 using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
@@ -14,7 +15,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
         {
         }
 
-        protected override Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request)
+        protected override Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request, CancellationToken cancellationToken)
         {
             IRestResponse response = new RestResponse
             {
@@ -40,7 +41,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
         /// <remarks>
         /// override for unit tests
         /// </remarks>
-        protected override Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request)
+        protected override Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request, CancellationToken cancellationToken)
         {
             IRestResponse response = new RestResponse
             {
@@ -64,7 +65,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
         /// <remarks>
         /// override for unit tests
         /// </remarks>
-        protected override Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request)
+        protected override Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request, CancellationToken cancellationToken)
         {
             throw new WebException();
         }
@@ -84,7 +85,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
         /// <remarks>
         /// override for unit tests
         /// </remarks>
-        protected override Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request)
+        protected override Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request, CancellationToken cancellationToken)
         {
             IRestResponse response = new RestResponse
             {
@@ -108,7 +109,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Mocks
         /// <remarks>
         /// override for unit tests
         /// </remarks>
-        protected override Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request)
+        protected override Task<IRestResponse> ExecuteRequestAsync(IRestClient restClient, IRestRequest request, CancellationToken cancellationToken)
         {
             IRestResponse response = new RestResponse
             {

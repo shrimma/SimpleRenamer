@@ -8,6 +8,7 @@ using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using Sarjee.SimpleRenamer.Framework.Movie;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
@@ -64,7 +65,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         {
             ITmdbManager tmdbManager = GetTmdbManager();
             SearchContainer<SearchMovie> result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByNameAsync(string.Empty, 2016);
+            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByNameAsync(string.Empty, CancellationToken.None, 2016);
 
             action1.ShouldThrow<ArgumentNullException>();
             result.Should().BeNull();
@@ -74,13 +75,13 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_SearchMovieByNameAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new SearchContainer<SearchMovie>() { Page = 1, TotalPages = 1, TotalResults = 2 });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new SearchContainer<SearchMovie>() { Page = 1, TotalPages = 1, TotalResults = 2 });
             ITmdbManager tmdbManager = GetTmdbManager();
 
             SearchContainer<SearchMovie> result = null;
             SearchContainer<SearchMovie> result2 = null;
-            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByNameAsync("searchByMovieName");
-            Func<Task> action2 = async () => result2 = await tmdbManager.SearchMovieByNameAsync("searchByMovieName", 2016);
+            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByNameAsync("searchByMovieName", CancellationToken.None);
+            Func<Task> action2 = async () => result2 = await tmdbManager.SearchMovieByNameAsync("searchByMovieName", CancellationToken.None, 2016);
 
             action1.ShouldNotThrow();
             action2.ShouldNotThrow();
@@ -99,7 +100,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             ITmdbManager tmdbManager = GetTmdbManager();
 
             SearchMovie result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByIdAsync(string.Empty);
+            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByIdAsync(string.Empty, CancellationToken.None);
 
             action1.ShouldThrow<ArgumentNullException>();
             result.Should().BeNull();
@@ -109,11 +110,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_SearchMovieByIdAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SearchMovie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new SearchMovie() { Title = "Fight Club" });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SearchMovie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new SearchMovie() { Title = "Fight Club" });
             ITmdbManager tmdbManager = GetTmdbManager();
 
             SearchMovie result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByIdAsync("id");
+            Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByIdAsync("id", CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -129,7 +130,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             ITmdbManager tmdbManager = GetTmdbManager();
 
             SimpleRenamer.Common.Movie.Model.Movie result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync(string.Empty);
+            Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync(string.Empty, CancellationToken.None);
 
             action1.ShouldThrow<ArgumentNullException>();
             result.Should().BeNull();
@@ -139,11 +140,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetMovieAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SimpleRenamer.Common.Movie.Model.Movie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = "Fight Club", Credits = new Credits() });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SimpleRenamer.Common.Movie.Model.Movie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = "Fight Club", Credits = new Credits() });
             ITmdbManager tmdbManager = GetTmdbManager();
 
             SimpleRenamer.Common.Movie.Model.Movie result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync("getMovie");
+            Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync("getMovie", CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -160,7 +161,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             ITmdbManager tmdbManager = GetTmdbManager();
 
             string result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync(string.Empty);
+            Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync(string.Empty, CancellationToken.None);
 
             action1.ShouldThrow<ArgumentNullException>();
             result.Should().BeNull();
@@ -170,11 +171,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetPosterUriAsync_Null_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new TMDbConfig());
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new TMDbConfig());
             ITmdbManager tmdbManager = GetTmdbManager();
 
             string result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync("getPoster");
+            Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync("getPoster", CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().BeNullOrEmpty();
@@ -184,11 +185,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetPosterUriAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(new TMDbConfig() { Images = new ConfigImageTypes() { SecureBaseUrl = "https://www.uri.com" } });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new TMDbConfig() { Images = new ConfigImageTypes() { SecureBaseUrl = "https://www.uri.com" } });
             ITmdbManager tmdbManager = GetTmdbManager();
 
             string result = null;
-            Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync("getPoster");
+            Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync("getPoster", CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();

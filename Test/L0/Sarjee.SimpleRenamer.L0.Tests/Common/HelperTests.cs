@@ -8,6 +8,7 @@ using Sarjee.SimpleRenamer.Common.TV.Model;
 using Sarjee.SimpleRenamer.L0.Tests.Mocks;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Common
@@ -250,7 +251,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
         {
             IHelper helper = GetHelper();
 
-            Func<Task> action1 = async () => await helper.ExponentialDelayAsync(1, 1, 1);
+            Func<Task> action1 = async () => await helper.ExponentialDelayAsync(1, 1, 1, CancellationToken.None);
             action1.ShouldNotThrow();
         }
 
@@ -260,7 +261,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
         {
             IHelper helper = GetHelper();
 
-            Func<Task> action1 = async () => await helper.ExponentialDelayAsync(500, 5, 1);
+            Func<Task> action1 = async () => await helper.ExponentialDelayAsync(500, 5, 1, CancellationToken.None);
             action1.ShouldNotThrow();
         }
         #endregion ExponentialDelayAsync
@@ -273,7 +274,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IHelper helper = new TestableHelper();
 
             Token result = null;
-            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, null);
+            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, CancellationToken.None, null);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -286,7 +287,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IHelper helper = new ErrorCodeTestableHelper();
 
             Token result = null;
-            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, null);
+            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, CancellationToken.None, null);
 
             action1.ShouldNotThrow();
             result.Should().BeNull();
@@ -299,7 +300,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IHelper helper = new WebExceptionTestableHelper();
 
             Token result = null;
-            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, null);
+            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, CancellationToken.None, null);
 
             action1.ShouldNotThrow();
             result.Should().BeNull();
@@ -312,7 +313,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IHelper helper = new ErrorExceptionTestableHelper();
 
             Token result = null;
-            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, null);
+            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, CancellationToken.None, null);
 
             action1.ShouldThrow<ArgumentNullException>();
             result.Should().BeNull();
@@ -325,7 +326,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IHelper helper = new UnauthorizedTestableHelper();
 
             Token result = null;
-            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, null);
+            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, CancellationToken.None, null);
 
             action1.ShouldThrow<UnauthorizedAccessException>();
             result.Should().BeNull();
@@ -339,7 +340,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IHelper helper = new UnauthorizedTestableHelper();
 
             Token result = null;
-            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, async () => { await Task.Delay(TimeSpan.FromMilliseconds(1)); loginFailures++; });
+            Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, CancellationToken.None, async () => { await Task.Delay(TimeSpan.FromMilliseconds(1)); loginFailures++; });
 
             action1.ShouldNotThrow();
             result.Should().BeNull();

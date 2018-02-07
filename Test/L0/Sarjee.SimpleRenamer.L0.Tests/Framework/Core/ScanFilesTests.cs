@@ -115,19 +115,19 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             //file that doesnt need moving
             MatchedFile pomPoko = new MatchedFile(@"C:\Movies\Pom Poko (1994)\Pom Poko.mkv", "Pom Poko", 1994) { NewFileName = "Pom Poko" };
             mockFileMatcher.Setup(x => x.SearchFilesAsync(It.IsAny<List<string>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<MatchedFile> { spectre, pomPoko });
-            mockMovieMatcher.Setup(x => x.ScrapeDetailsAsync(It.Is<MatchedFile>(i => i == spectre))).ReturnsAsync(spectre);
-            mockMovieMatcher.Setup(x => x.ScrapeDetailsAsync(It.Is<MatchedFile>(i => i == pomPoko))).ReturnsAsync(pomPoko);
+            mockMovieMatcher.Setup(x => x.ScrapeDetailsAsync(It.Is<MatchedFile>(i => i == spectre), It.IsAny<CancellationToken>())).ReturnsAsync(spectre);
+            mockMovieMatcher.Setup(x => x.ScrapeDetailsAsync(It.Is<MatchedFile>(i => i == pomPoko), It.IsAny<CancellationToken>())).ReturnsAsync(pomPoko);
 
             IScanFiles scanFiles = GetScanFiles();
 
             List<MatchedFile> scannedFiles = null;
-            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(new CancellationToken());
+            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(CancellationToken.None);
 
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
             scannedFiles.Count.Should().Be(1);
 
-            mockMovieMatcher.Verify(x => x.ScrapeDetailsAsync(It.IsAny<MatchedFile>()), Times.Exactly(2));
+            mockMovieMatcher.Verify(x => x.ScrapeDetailsAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
         }
 
         [TestMethod]
@@ -146,23 +146,23 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             mockFileMatcher.Setup(x => x.SearchFilesAsync(It.IsAny<List<string>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<MatchedFile> { castle1, castle2 });
             mockShowMatcher.Setup(x => x.FixShowsFromMappings(It.Is<MatchedFile>(i => i == castle1))).Returns(castle1);
             mockShowMatcher.Setup(x => x.FixShowsFromMappings(It.Is<MatchedFile>(i => i == castle2))).Returns(castle2);
-            mockShowMatcher.Setup(x => x.SearchShowByIdAsync(It.IsAny<string>())).ReturnsAsync(new CompleteSeries(new Series(1, "Castle"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>()));
-            mockShowMatcher.Setup(x => x.SearchShowByNameAsync(It.IsAny<string>())).ReturnsAsync(new CompleteSeries(new Series(1, "Castle"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>()));
+            mockShowMatcher.Setup(x => x.SearchShowByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(new CompleteSeries(new Series(1, "Castle"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>()));
+            mockShowMatcher.Setup(x => x.SearchShowByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(new CompleteSeries(new Series(1, "Castle"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>()));
             mockShowMatcher.Setup(x => x.UpdateFileWithSeriesDetails(It.Is<MatchedFile>(i => i == castle1), It.IsAny<CompleteSeries>())).Returns(castle1);
             mockShowMatcher.Setup(x => x.UpdateFileWithSeriesDetails(It.Is<MatchedFile>(i => i == castle2), It.IsAny<CompleteSeries>())).Returns(castle2);
 
             IScanFiles scanFiles = GetScanFiles();
 
             List<MatchedFile> scannedFiles = null;
-            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(new CancellationToken());
+            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(CancellationToken.None);
 
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
             scannedFiles.Count.Should().Be(1);
 
             mockShowMatcher.Verify(x => x.FixShowsFromMappings(It.IsAny<MatchedFile>()), Times.Exactly(2));
-            mockShowMatcher.Verify(x => x.SearchShowByIdAsync(It.IsAny<string>()), Times.Exactly(1));
-            mockShowMatcher.Verify(x => x.SearchShowByNameAsync(It.IsAny<string>()), Times.Exactly(1));
+            mockShowMatcher.Verify(x => x.SearchShowByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+            mockShowMatcher.Verify(x => x.SearchShowByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
             mockShowMatcher.Verify(x => x.UpdateFileWithSeriesDetails(It.IsAny<MatchedFile>(), It.IsAny<CompleteSeries>()), Times.Exactly(2));
         }
 
@@ -184,17 +184,17 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IScanFiles scanFiles = GetScanFiles();
 
             List<MatchedFile> scannedFiles = null;
-            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(new CancellationToken());
+            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(CancellationToken.None);
 
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
             scannedFiles.Count.Should().Be(2);
 
             mockShowMatcher.Verify(x => x.FixShowsFromMappings(It.IsAny<MatchedFile>()), Times.Never);
-            mockShowMatcher.Verify(x => x.SearchShowByIdAsync(It.IsAny<string>()), Times.Never);
-            mockShowMatcher.Verify(x => x.SearchShowByNameAsync(It.IsAny<string>()), Times.Never);
+            mockShowMatcher.Verify(x => x.SearchShowByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+            mockShowMatcher.Verify(x => x.SearchShowByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
             mockShowMatcher.Verify(x => x.UpdateFileWithSeriesDetails(It.IsAny<MatchedFile>(), It.IsAny<CompleteSeries>()), Times.Never);
-            mockMovieMatcher.Verify(x => x.ScrapeDetailsAsync(It.IsAny<MatchedFile>()), Times.Never);
+            mockMovieMatcher.Verify(x => x.ScrapeDetailsAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [TestMethod]
@@ -222,28 +222,28 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             //mock show matcher
             mockShowMatcher.Setup(x => x.FixShowsFromMappings(It.Is<MatchedFile>(i => i == castle1))).Returns(castle1);
             mockShowMatcher.Setup(x => x.FixShowsFromMappings(It.Is<MatchedFile>(i => i == castle2))).Returns(castle2);
-            mockShowMatcher.Setup(x => x.SearchShowByIdAsync(It.IsAny<string>())).ReturnsAsync(new CompleteSeries(new Series(1, "Castle"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>()));
-            mockShowMatcher.Setup(x => x.SearchShowByNameAsync(It.IsAny<string>())).ReturnsAsync(new CompleteSeries(new Series(1, "Castle"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>()));
+            mockShowMatcher.Setup(x => x.SearchShowByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(new CompleteSeries(new Series(1, "Castle"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>()));
+            mockShowMatcher.Setup(x => x.SearchShowByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(new CompleteSeries(new Series(1, "Castle"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>()));
             mockShowMatcher.Setup(x => x.UpdateFileWithSeriesDetails(It.Is<MatchedFile>(i => i == castle1), It.IsAny<CompleteSeries>())).Returns(castle1);
             mockShowMatcher.Setup(x => x.UpdateFileWithSeriesDetails(It.Is<MatchedFile>(i => i == castle2), It.IsAny<CompleteSeries>())).Returns(castle2);
             //mock movie matcher
-            mockMovieMatcher.Setup(x => x.ScrapeDetailsAsync(It.Is<MatchedFile>(i => i == spectre))).ReturnsAsync(spectre);
-            mockMovieMatcher.Setup(x => x.ScrapeDetailsAsync(It.Is<MatchedFile>(i => i == pomPoko))).ReturnsAsync(pomPoko);
+            mockMovieMatcher.Setup(x => x.ScrapeDetailsAsync(It.Is<MatchedFile>(i => i == spectre), It.IsAny<CancellationToken>())).ReturnsAsync(spectre);
+            mockMovieMatcher.Setup(x => x.ScrapeDetailsAsync(It.Is<MatchedFile>(i => i == pomPoko), It.IsAny<CancellationToken>())).ReturnsAsync(pomPoko);
 
             IScanFiles scanFiles = GetScanFiles();
 
             List<MatchedFile> scannedFiles = null;
-            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(new CancellationToken());
+            Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(CancellationToken.None);
 
             action1.ShouldNotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
             scannedFiles.Count.Should().Be(4);
 
             mockShowMatcher.Verify(x => x.FixShowsFromMappings(It.IsAny<MatchedFile>()), Times.Exactly(2));
-            mockShowMatcher.Verify(x => x.SearchShowByIdAsync(It.IsAny<string>()), Times.Exactly(1));
-            mockShowMatcher.Verify(x => x.SearchShowByNameAsync(It.IsAny<string>()), Times.Exactly(1));
+            mockShowMatcher.Verify(x => x.SearchShowByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+            mockShowMatcher.Verify(x => x.SearchShowByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
             mockShowMatcher.Verify(x => x.UpdateFileWithSeriesDetails(It.IsAny<MatchedFile>(), It.IsAny<CompleteSeries>()), Times.Exactly(2));
-            mockMovieMatcher.Verify(x => x.ScrapeDetailsAsync(It.IsAny<MatchedFile>()), Times.Exactly(2));
+            mockMovieMatcher.Verify(x => x.ScrapeDetailsAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
         }
         #endregion Scan
     }

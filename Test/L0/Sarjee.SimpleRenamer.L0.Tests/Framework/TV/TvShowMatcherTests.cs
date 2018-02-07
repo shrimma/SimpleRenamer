@@ -89,7 +89,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         {
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
             CompleteSeries result = null;
-            Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByNameAsync(string.Empty);
+            Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByNameAsync(string.Empty, CancellationToken.None);
 
             action1.ShouldThrow<ArgumentNullException>();
             result.Should().BeNull();
@@ -103,11 +103,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             SeriesSearchData searchSeries1 = new SeriesSearchData() { SeriesName = "Series1", Id = 1 };
             List<SeriesSearchData> outputList = new List<SeriesSearchData>() { searchSeries1 };
             CompleteSeries outputSeries = new CompleteSeries(new Series(1, "Series1"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>());
-            mockTvdbManager.Setup(x => x.SearchSeriesByNameAsync(It.IsAny<string>())).ReturnsAsync(outputList);
-            mockTvdbManager.Setup(x => x.GetSeriesByIdAsync(searchSeries1.Id.ToString())).ReturnsAsync(outputSeries);
+            mockTvdbManager.Setup(x => x.SearchSeriesByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(outputList);
+            mockTvdbManager.Setup(x => x.GetSeriesByIdAsync(searchSeries1.Id.ToString(), It.IsAny<CancellationToken>())).ReturnsAsync(outputSeries);
 
             CompleteSeries result = null;
-            Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByNameAsync("showName");
+            Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByNameAsync("showName", CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -123,10 +123,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             SeriesSearchData searchSeries1 = new SeriesSearchData() { SeriesName = "Series1", Id = 1 };
             SeriesSearchData searchSeries2 = new SeriesSearchData() { SeriesName = "Series2", Id = 2 };
             List<SeriesSearchData> outputList = new List<SeriesSearchData>() { searchSeries1, searchSeries2 };
-            mockTvdbManager.Setup(x => x.SearchSeriesByNameAsync(It.IsAny<string>())).ReturnsAsync(outputList);
+            mockTvdbManager.Setup(x => x.SearchSeriesByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(outputList);
 
             CompleteSeries result = null;
-            Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByNameAsync("showName");
+            Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByNameAsync("showName", CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().BeNull();
@@ -137,10 +137,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         public void TVShowMatcher_SearchShowByNameAsync_NoResults_ReturnsNull()
         {
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
-            mockTvdbManager.Setup(x => x.SearchSeriesByNameAsync(It.IsAny<string>())).ReturnsAsync((List<SeriesSearchData>)null);
+            mockTvdbManager.Setup(x => x.SearchSeriesByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync((List<SeriesSearchData>)null);
 
             CompleteSeries result = null;
-            Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByNameAsync("showName");
+            Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByNameAsync("showName", CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().BeNull();
@@ -154,7 +154,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         {
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
             CompleteSeries result = null;
-            Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByIdAsync(string.Empty);
+            Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByIdAsync(string.Empty, CancellationToken.None);
 
             action1.ShouldThrow<ArgumentNullException>();
             result.Should().BeNull();
@@ -166,11 +166,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         {
             //setup tvdbmanager
             CompleteSeries outputSeries = new CompleteSeries(new Series(1, "Series1"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>());
-            mockTvdbManager.Setup(x => x.GetSeriesByIdAsync(It.IsAny<string>())).ReturnsAsync(outputSeries);
+            mockTvdbManager.Setup(x => x.GetSeriesByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(outputSeries);
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
 
             CompleteSeries result = null;
-            Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByIdAsync("showId");
+            Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByIdAsync("showId", CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -264,7 +264,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
 
             List<DetailView> result = null;
-            Func<Task> action1 = async () => result = await tvShowMatcher.GetPossibleShowsForEpisodeAsync(string.Empty);
+            Func<Task> action1 = async () => result = await tvShowMatcher.GetPossibleShowsForEpisodeAsync(string.Empty, CancellationToken.None);
 
             action1.ShouldThrow<ArgumentNullException>();
             result.Should().BeNull();
@@ -276,11 +276,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         {
             SeriesSearchData seriesShortSearchData = new SeriesSearchData(null, null, "2017-01-01", 1, null, "shortoverview", "showName", null);
             SeriesSearchData seriesLongSearchData = new SeriesSearchData(null, null, "2017-01-01", 1, null, "longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglongestlongestlongestlongestlongestlongestlongestoverview", "showName", null);
-            mockTvdbManager.Setup(x => x.SearchSeriesByNameAsync(It.IsAny<string>())).ReturnsAsync(new List<SeriesSearchData>() { seriesShortSearchData, seriesLongSearchData });
+            mockTvdbManager.Setup(x => x.SearchSeriesByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<SeriesSearchData>() { seriesShortSearchData, seriesLongSearchData });
 
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
             List<DetailView> result = null;
-            Func<Task> action1 = async () => result = await tvShowMatcher.GetPossibleShowsForEpisodeAsync("showName");
+            Func<Task> action1 = async () => result = await tvShowMatcher.GetPossibleShowsForEpisodeAsync("showName", CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -296,7 +296,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
 
             MatchedFile result1 = null;
-            Func<Task> action1 = async () => result1 = await tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync("id", null);
+            Func<Task> action1 = async () => result1 = await tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync("id", null, CancellationToken.None);
 
             action1.ShouldThrow<ArgumentNullException>();
             result1.Should().BeNull();
@@ -310,7 +310,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             MatchedFile fileInput = new MatchedFile(@"c:\filePath", "Showname", "1", "1");
 
             MatchedFile result = null;
-            Func<Task> action1 = async () => result = await tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync(string.Empty, fileInput);
+            Func<Task> action1 = async () => result = await tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync(string.Empty, fileInput, CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -324,7 +324,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         {
             //mock tvdbmanager
             CompleteSeries outputSeries = new CompleteSeries(new Series(1, "Series1"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>(), new List<SeriesImageQueryResult>());
-            mockTvdbManager.Setup(x => x.GetSeriesByIdAsync(It.IsAny<string>())).ReturnsAsync(outputSeries);
+            mockTvdbManager.Setup(x => x.GetSeriesByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(outputSeries);
             //mock settings
             Settings settings = new Settings() { NewFileNameFormat = "newFileName" };
             ShowNameMapping mapping = new ShowNameMapping();
@@ -335,7 +335,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             MatchedFile fileInput = new MatchedFile(@"c:\filePath", "Showname", "1", "1");
 
             MatchedFile result = null;
-            Func<Task> action1 = async () => result = await tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync("tvdbId", fileInput);
+            Func<Task> action1 = async () => result = await tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync("tvdbId", fileInput, CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -366,7 +366,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         {
             //mock tvdbmanager
             CompleteSeries outputSeries = new CompleteSeries(new Series(1, "Series1"), new List<SeriesActorsData>(), new List<BasicEpisode>(), new List<SeriesImageQueryResult>() { new SeriesImageQueryResult(1, "Season", "1", "fileName", 1, "resolution", new RatingsInfo(10, 1)) }, new List<SeriesImageQueryResult>() { new SeriesImageQueryResult(1, "Season", "1", "fileName", 1, "resolution", new RatingsInfo(10, 1)) }, new List<SeriesImageQueryResult>() { new SeriesImageQueryResult(1, "Season", "1", "fileName", 1, "resolution", new RatingsInfo(10, 1)) });
-            mockTvdbManager.Setup(x => x.GetSeriesByIdAsync(It.IsAny<string>())).ReturnsAsync(outputSeries);
+            mockTvdbManager.Setup(x => x.GetSeriesByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(outputSeries);
             mockTvdbManager.Setup(x => x.GetBannerUri(It.IsAny<string>())).Returns("http://www.uri.com");
 
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher(true);
