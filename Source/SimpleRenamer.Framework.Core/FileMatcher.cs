@@ -179,7 +179,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private string SanitizeFileName(string input)
         {
-            _logger.TraceMessage($"Sanitizing FileName {input}.", EventLevel.Verbose);
             string output = null;
             string[] words = input.Split('.');
             int i = 1;
@@ -196,7 +195,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 i++;
             }
 
-            _logger.TraceMessage($"Sanitized FileName {input} to {output.Trim()}.", EventLevel.Verbose);
             return output.Trim();
         }
 
