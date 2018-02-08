@@ -1,4 +1,5 @@
 ﻿using Jot;
+using MahApps.Metro;
 using MahApps.Metro.Controls;
 using Sarjee.SimpleRenamer.Common.EventArguments;
 using Sarjee.SimpleRenamer.Common.Interface;
@@ -8,6 +9,7 @@ using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.EventArguments;
 using Sarjee.SimpleRenamer.Views;
 using Sarjee.SimpleRenamer.WPF;
+using Sarjee.SimpleRenamer.WPF.ThemeManagerHelper;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -49,6 +51,7 @@ namespace Sarjee.SimpleRenamer
         private string _mediaTypePath;
         private string _mediaTypeShowName;
         private StateTracker _stateTracker = new StateTracker();
+        private MyAppTheme _currentAppTheme = new MyAppTheme();
 
         public MainWindow(ILogger logger, ITVShowMatcher tvShowMatcher, IMovieMatcher movieMatcher, IDependencyInjectionContext injectionContext, IActionMatchedFiles actionMatchedFiles, IScanFiles scanFiles, IConfigurationManager configManager)
         {
@@ -59,23 +62,41 @@ namespace Sarjee.SimpleRenamer
             _scanFiles = scanFiles ?? throw new ArgumentNullException(nameof(scanFiles));
             _actionMatchedFiles = actionMatchedFiles ?? throw new ArgumentNullException(nameof(actionMatchedFiles));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-
             try
             {
                 InitializeComponent();
                 _logger.TraceMessage("Starting Application", EventLevel.LogAlways);
                 this.SourceInitialized += (s, e) =>
                 {
+                    //setup statetracker
                     _stateTracker.Configure(this).Apply();
                     _stateTracker.Configure(_configurationManager)
                                     .IdentifyAs("Configuration")
                                     .Apply();
+                    _stateTracker.Configure(_currentAppTheme)
+                                    .AddProperties<MyAppTheme>(x => x.AccentName, x => x.AppThemeName)
+                                    .IdentifyAs("Theme")
+                                    .Apply();
+
+                    //get current accent from accent name                    
+                    Accent currentAccent = ThemeManager.Accents.FirstOrDefault(x => x.Name.Equals(_currentAppTheme.AccentName));
+                    AppTheme currentAppTheme = ThemeManager.AppThemes.FirstOrDefault(x => x.Name.Equals(_currentAppTheme.AppThemeName));
+                    //set the app style as saved
+                    ThemeManager.ChangeAppStyle(System.Windows.Application.Current, currentAccent, currentAppTheme);
+
+                    //grab windows
                     _showDetailsWindow = _injectionContext.GetService<ShowDetailsWindow>();
                     _movieDetailsWindow = _injectionContext.GetService<MovieDetailsWindow>();
                     _settingsWindow = _injectionContext.GetService<SettingsWindow>();
                     _selectShowWindow = _injectionContext.GetService<SelectShowWindow>();
                     _selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
                     scannedEpisodes = new ObservableCollection<MatchedFile>();
+
+                    //set theme in settings window
+                    _settingsWindow.CurrentAccent = new AccentItem(currentAccent.Name, currentAccent.Resources["AccentBaseColor"].ToString(), currentAccent);
+                    _settingsWindow.CurrentAppTheme = currentAppTheme;
+                    _settingsWindow.SetupView();
+
                     ShowsListBox.ItemsSource = scannedEpisodes;
                     ShowsListBox.SizeChanged += ListView_SizeChanged;
                     ShowsListBox.Loaded += ListView_Loaded;
@@ -87,6 +108,7 @@ namespace Sarjee.SimpleRenamer
                     _scanFiles.RaiseProgressEvent += ProgressTextEvent;
                     ScanButton.IsEnabled = IsScanEnabled();
                     this.Closing += MainWindow_Closing;
+
                 };
             }
             catch (Exception ex)
@@ -329,6 +351,7 @@ namespace Sarjee.SimpleRenamer
                 //show the settings window
                 _settingsWindow.ShowDialog();
                 ScanButton.IsEnabled = IsScanEnabled();
+                _currentAppTheme.AccentName = _settingsWindow.CurrentAccent.AccentName;
             }
             catch (Exception ex)
             {

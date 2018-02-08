@@ -2,7 +2,7 @@
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.EventArguments;
-using Sarjee.SimpleRenamer.ThemeManagerHelper;
+using Sarjee.SimpleRenamer.WPF.ThemeManagerHelper;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -25,8 +25,10 @@ namespace Sarjee.SimpleRenamer.Views
         private IHelper _helper;
         private AddExtensionsWindow _addExtensionsWindow;
         private RegexExpressionsWindow _regexExpressionsWindow;
-        private (AppTheme appTheme, Accent accent) _currentTheme;
         private List<AccentItem> _accentItems;
+
+        public AppTheme CurrentAppTheme { get; set; }
+        public AccentItem CurrentAccent { get; set; }
 
         public SettingsWindow(IConfigurationManager configurationManager, IHelper helper, AddExtensionsWindow addExtensionsWindow, RegexExpressionsWindow regexExpressionsWindow)
         {
@@ -37,9 +39,9 @@ namespace Sarjee.SimpleRenamer.Views
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
 
             InitializeComponent();
-
+            //setup theme combo box            
             _accentItems = new List<AccentItem>();
-            var mahAppsAccents = ThemeManager.Accents;
+            IEnumerable<Accent> mahAppsAccents = ThemeManager.Accents;
             foreach (var accent in mahAppsAccents)
             {
                 _accentItems.Add(new AccentItem(accent.Name, accent.Resources["AccentBaseColor"].ToString(), accent));
@@ -49,18 +51,14 @@ namespace Sarjee.SimpleRenamer.Views
             //create new event handler for extensions window
             _addExtensionsWindow.RaiseCustomEvent += new EventHandler<ExtensionEventArgs>(ExtensionWindowClosedEvent);
 
-            //grab settings and display
-            SetupView();
-
             this.Closing += Window_Closing;
         }
 
 
-        private void SetupView()
+        public void SetupView()
         {
-            //grab the current theme            
-            _currentTheme = ThemeManager.DetectAppStyle(System.Windows.Application.Current).ToValueTuple<AppTheme, Accent>();
-            AccentItem currentAccentItem = _accentItems.FirstOrDefault(x => x.AccentName.Equals(_currentTheme.accent.Name));
+            //set combo box to current theme
+            AccentItem currentAccentItem = _accentItems.FirstOrDefault(x => x.AccentName.Equals(CurrentAccent.AccentName));
             ChangeThemeCombo.SelectedItem = currentAccentItem;
             //grab the current settings from the factory and populate our UI
             _originalSettings = new Settings()
@@ -280,7 +278,9 @@ namespace Sarjee.SimpleRenamer.Views
             try
             {
                 AccentItem selectedColor = (AccentItem)ChangeThemeCombo.SelectedItem;
-                ThemeManager.ChangeAppStyle(System.Windows.Application.Current, selectedColor.Accent, _currentTheme.appTheme);
+                ThemeManager.ChangeAppStyle(System.Windows.Application.Current, selectedColor.Accent, CurrentAppTheme);
+                //set the current theme to what was selected
+                CurrentAccent = selectedColor;
             }
             catch (Exception)
             {

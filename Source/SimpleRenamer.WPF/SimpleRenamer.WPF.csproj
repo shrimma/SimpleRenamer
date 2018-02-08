@@ -90,6 +90,7 @@
     <Compile Include="JotConfigurationManager.cs" />
     <Compile Include="EventArguments\SelectShowEventArgs.cs" />
     <Compile Include="ThemeManagerHelper\AccentItem.cs" />
+    <Compile Include="ThemeManagerHelper\MyAppTheme.cs" />
     <Compile Include="ValueConverters\IconFileTypeConverter.cs" />
     <Compile Include="Views\AddExtensionsWindow.xaml.cs">
       <DependentUpon>AddExtensionsWindow.xaml</DependentUpon>
