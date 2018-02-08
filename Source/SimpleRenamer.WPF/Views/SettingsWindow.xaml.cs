@@ -42,7 +42,7 @@ namespace Sarjee.SimpleRenamer.Views
             //setup theme combo box            
             _accentItems = new List<AccentItem>();
             IEnumerable<Accent> mahAppsAccents = ThemeManager.Accents;
-            foreach (var accent in mahAppsAccents)
+            foreach (Accent accent in mahAppsAccents)
             {
                 _accentItems.Add(new AccentItem(accent.Name, accent.Resources["AccentBaseColor"].ToString(), accent));
             }
