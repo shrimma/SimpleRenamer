@@ -89,13 +89,10 @@
     <Compile Include="Common\EventArguments\ProgressTextEventArgsTests.cs" />
     <Compile Include="Common\Helpers\ThreadLocalRandomTests.cs" />
     <Compile Include="Common\HelperTests.cs" />
-    <Compile Include="Common\Model\ShowNameMappingTests.cs" />
     <Compile Include="Common\Model\SettingsTests.cs" />
-    <Compile Include="Common\Model\RegexFileTests.cs" />
     <Compile Include="Common\Model\RegexExpressionTests.cs" />
     <Compile Include="Common\Model\MatchedFileTests.cs" />
     <Compile Include="Common\Model\MappingTests.cs" />
-    <Compile Include="Common\Model\IgnoreListTests.cs" />
     <Compile Include="Common\Model\DetailViewTests.cs" />
     <Compile Include="Framework\Core\ActionMatchedFilesTests.cs" />
     <Compile Include="Framework\Core\FileMatcherTests.cs" />

@@ -217,10 +217,9 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
 
             _logger.TraceMessage($"FixShowName based on Mappings for {episode.SourceFilePath}.", EventLevel.Verbose);
-            ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
-            if (showNameMapping?.Mappings?.Count > 0)
+            if (_configurationManager.ShowNameMappings?.Count > 0)
             {
-                foreach (Mapping mapping in showNameMapping.Mappings)
+                foreach (Mapping mapping in _configurationManager.ShowNameMappings)
                 {
                     if (mapping.FileShowName.Equals(episode.ShowName))
                     {
@@ -326,13 +325,11 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
                 if (!string.IsNullOrWhiteSpace(episode.TVDBShowId))
                 {
-                    ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
                     Mapping map = new Mapping(originalShowName, episode.ShowName, episode.TVDBShowId);
-                    if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
+                    if (!_configurationManager.ShowNameMappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                     {
-                        showNameMapping.Mappings.Add(map);
+                        _configurationManager.ShowNameMappings.Add(map);
                     }
-                    _configurationManager.ShowNameMappings = showNameMapping;
                 }
                 episode.FileType = FileType.TvShow;
 

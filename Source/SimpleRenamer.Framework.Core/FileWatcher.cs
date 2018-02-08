@@ -20,8 +20,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     {
         private ILogger _logger;
         private IConfigurationManager _configurationManager;
-        private ISettings _settings;
-        private IgnoreList ignoreList;
         private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
         /// <summary>
@@ -43,7 +41,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-            _settings = _configurationManager.Settings;
         }
 
         /// <summary>
@@ -57,17 +54,15 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         {
             _logger.TraceMessage("SearchTheseFoldersAsync - Start", EventLevel.Verbose);
             List<string> foundFiles = new List<string>();
-            //grab the list of ignored files
 
-            ignoreList = _configurationManager.IgnoredFiles;
             //FOR EACH WATCH FOLDER
-            foreach (string folder in _settings.WatchFolders)
+            foreach (string folder in _configurationManager.Settings.WatchFolders)
             {
                 //throw exception if cancel requested
                 cancellationToken.ThrowIfCancellationRequested();
                 OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Searching watch folder for video files: {0}", folder)));
                 //if the directory exists and contains at least 1 file (search sub directories if settings allow) -- limitation of searchPattern means we can't filter video extensions here
-                if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", _settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
+                if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", _configurationManager.Settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
                 {
                     //search the folder for files with video extensions
                     List<string> temp = await SearchThisFolder(folder, cancellationToken);
@@ -98,11 +93,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             _logger.TraceMessage($"Searching Folder {dir} for valid video files.", EventLevel.Verbose);
             ConcurrentBag<string> foundFiles = new ConcurrentBag<string>();
             _parallelOptions.CancellationToken = cancellationToken;
-            Task result = Task.Run(() => Parallel.ForEach(Directory.GetFiles(dir, "*", _settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly), _parallelOptions, (file) =>
+            Task result = Task.Run(() => Parallel.ForEach(Directory.GetFiles(dir, "*", _configurationManager.Settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly), _parallelOptions, (file) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 //is a valid extension, is not ignored and isn't a sample
-                if (IsValidExtension(Path.GetExtension(file)) && !ignoreList.IgnoreFiles.Contains(file) && !Path.GetFileName(file).Contains("*.sample.*") && !Path.GetFileName(file).Contains("*.Sample.*"))
+                if (IsValidExtension(Path.GetExtension(file)) && !_configurationManager.IgnoredFiles.Contains(file) && !Path.GetFileName(file).Contains("*.sample.*") && !Path.GetFileName(file).Contains("*.Sample.*"))
                 {
                     foundFiles.Add(file);
                 }
@@ -123,7 +118,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// </returns>
         private bool IsValidExtension(string input)
         {
-            foreach (string extension in _settings.ValidExtensions)
+            foreach (string extension in _configurationManager.Settings.ValidExtensions)
             {
                 if (input.ToLowerInvariant().Equals(extension.ToLowerInvariant()))
                 {

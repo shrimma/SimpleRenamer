@@ -15,7 +15,7 @@ namespace Sarjee.SimpleRenamer.Views
         public ObservableCollection<RegexExpression> RegularExpressions;
         private IConfigurationManager _configurationManager;
         private IHelper _helper;
-        private RegexFile _originalExpressions;
+        private List<RegexExpression> _originalExpressions;
         public RegexExpressionsWindow(IConfigurationManager configurationManager, IHelper helper)
         {
             _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
@@ -29,12 +29,9 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void SetupView()
         {
-            RegularExpressions = new ObservableCollection<RegexExpression>(_configurationManager.RegexExpressions.RegexExpressions);
+            RegularExpressions = new ObservableCollection<RegexExpression>(_configurationManager.RegexExpressions);
             ExpressionsListBox.ItemsSource = RegularExpressions;
-            _originalExpressions = new RegexFile()
-            {
-                RegexExpressions = _configurationManager.RegexExpressions.RegexExpressions
-            };
+            _originalExpressions = _configurationManager.RegexExpressions;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -45,9 +42,9 @@ namespace Sarjee.SimpleRenamer.Views
                 e.Cancel = true;
                 //check if settings have been changed without saving
                 var currentExpressions = new List<RegexExpression>(RegularExpressions);
-                if (_helper.AreListsEqual(_configurationManager.RegexExpressions.RegexExpressions, currentExpressions) == false)
+                if (_helper.AreListsEqual(_configurationManager.RegexExpressions, currentExpressions) == false)
                 {
-                    _configurationManager.RegexExpressions.RegexExpressions = currentExpressions;
+                    _configurationManager.RegexExpressions = currentExpressions;
                 }
                 if (HaveSettingsChanged() == true)
                 {
@@ -64,7 +61,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         private bool HaveSettingsChanged()
         {
-            if (_helper.AreListsEqual(_configurationManager.RegexExpressions.RegexExpressions, _originalExpressions.RegexExpressions) == false)
+            if (_helper.AreListsEqual(_configurationManager.RegexExpressions, _originalExpressions) == false)
             {
                 return true;
             }
@@ -74,9 +71,9 @@ namespace Sarjee.SimpleRenamer.Views
         private void OkFlyoutButton_Click(object sender, RoutedEventArgs e)
         {
             ConfirmationFlyout.IsOpen = false;
-            if (_helper.AreListsEqual(_configurationManager.RegexExpressions.RegexExpressions, _originalExpressions.RegexExpressions) == false)
+            if (_helper.AreListsEqual(_configurationManager.RegexExpressions, _originalExpressions) == false)
             {
-                _configurationManager.RegexExpressions.RegexExpressions = _originalExpressions.RegexExpressions;
+                _configurationManager.RegexExpressions = _originalExpressions;
             }
             SetupView();
             this.Hide();
@@ -89,7 +86,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void AddExpressionButton_Click(object sender, RoutedEventArgs e)
         {
-            RegularExpressions.Add(new RegexExpression("", false, true));
+            RegularExpressions.Add(new RegexExpression("Enter Expression Here", false, true));
         }
 
         private void DeleteExpressionButton_Click(object sender, RoutedEventArgs e)
@@ -100,9 +97,9 @@ namespace Sarjee.SimpleRenamer.Views
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             var currentExpressions = new List<RegexExpression>(RegularExpressions);
-            if (_helper.AreListsEqual(_configurationManager.RegexExpressions.RegexExpressions, currentExpressions) == false)
+            if (_helper.AreListsEqual(_configurationManager.RegexExpressions, currentExpressions) == false)
             {
-                _configurationManager.RegexExpressions.RegexExpressions = currentExpressions;
+                _configurationManager.RegexExpressions = currentExpressions;
             }
             SetupView();
             this.Hide();

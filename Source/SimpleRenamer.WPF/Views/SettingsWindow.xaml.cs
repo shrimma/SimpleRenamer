@@ -267,7 +267,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         private void DeleteExtensionButton_Click(object sender, RoutedEventArgs e)
         {
-            _validExtensions.Remove((string)WatchListBox.SelectedItem);
+            _validExtensions.Remove((string)ExtensionsListBox.SelectedItem);
         }
 
         private void RegexExpressionButton_Click(object sender, RoutedEventArgs e)

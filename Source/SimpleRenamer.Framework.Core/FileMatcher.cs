@@ -20,7 +20,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IFileMatcher" />
     public class FileMatcher : IFileMatcher
     {
-        private RegexFile _regexExpressions;
+        private List<RegexExpression> _regexExpressions;
         private List<(Regex regex, bool isForTv)> _activeRegex;
         private ILogger _logger;
         /// <summary>
@@ -99,7 +99,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         {
             //add only the active regexp
             _activeRegex = new List<(Regex regex, bool isForTv)>();
-            foreach (RegexExpression exp in _regexExpressions.RegexExpressions)
+            foreach (RegexExpression exp in _regexExpressions)
             {
                 if (exp.IsEnabled)
                 {

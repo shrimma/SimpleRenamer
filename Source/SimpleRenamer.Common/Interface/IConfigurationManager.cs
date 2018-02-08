@@ -1,4 +1,5 @@
 ﻿using Sarjee.SimpleRenamer.Common.Model;
+using System.Collections.Generic;
 
 namespace Sarjee.SimpleRenamer.Common.Interface
 {
@@ -61,7 +62,7 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <value>
         /// The regex expressions.
         /// </value>
-        RegexFile RegexExpressions { get; set; }
+        List<RegexExpression> RegexExpressions { get; set; }
 
         /// <summary>
         /// Gets or sets the ignored files.
@@ -69,7 +70,7 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <value>
         /// The ignored files.
         /// </value>
-        IgnoreList IgnoredFiles { get; set; }
+        List<string> IgnoredFiles { get; set; }
 
         /// <summary>
         /// Gets or sets the show name mappings.
@@ -77,11 +78,6 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <value>
         /// The show name mappings.
         /// </value>
-        ShowNameMapping ShowNameMappings { get; set; }
-
-        /// <summary>
-        /// Saves the configuration.
-        /// </summary>
-        void SaveConfiguration();
+        List<Mapping> ShowNameMappings { get; set; }
     }
 }

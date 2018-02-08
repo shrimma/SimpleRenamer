@@ -88,7 +88,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         public void ScanFiles_Scan_NoFiles_Success()
         {
             //setup the mocks
-            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new List<Mapping>());
             mockFileWatcher.Setup(x => x.SearchFoldersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<string>());
             mockFileMatcher.Setup(x => x.SearchFilesAsync(It.IsAny<List<string>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<MatchedFile>());
             IScanFiles scanFiles = GetScanFiles();
@@ -108,7 +108,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             //setup the mocks
             Settings settings = new Settings { DestinationFolderMovie = @"C:\Movies" };
             mockConfigurationManager.Setup(x => x.Settings).Returns(settings);
-            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new List<Mapping>());
             mockFileWatcher.Setup(x => x.SearchFoldersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<string>());
             //file that needs moving
             MatchedFile spectre = new MatchedFile(@"C:\Spectre.mkv", "Spectre", 2015) { NewFileName = "Spectre" };
@@ -137,7 +137,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             //setup the mocks
             Settings settings = new Settings { DestinationFolderTV = @"C:\TV" };
             mockConfigurationManager.Setup(x => x.Settings).Returns(settings);
-            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new List<Mapping>());
             mockFileWatcher.Setup(x => x.SearchFoldersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<string>());
             //file that needs moving
             MatchedFile castle1 = new MatchedFile(@"C:\Castle.S01E01.mkv", "Castle", "1", "1") { NewFileName = "Castle.S01E01", TVDBShowId = "1" };
@@ -173,7 +173,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             //setup the mocks
             Settings settings = new Settings { DestinationFolderTV = @"C:\TV" };
             mockConfigurationManager.Setup(x => x.Settings).Returns(settings);
-            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new List<Mapping>());
             mockFileWatcher.Setup(x => x.SearchFoldersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<string>());
             //file that needs moving
             MatchedFile unknown1 = new MatchedFile(@"C:\Castle.S01E01.mkv", "Castle");
@@ -204,7 +204,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             //setup the mocks
             Settings settings = new Settings { DestinationFolderTV = @"C:\TV", DestinationFolderMovie = @"C:\Movies" };
             mockConfigurationManager.Setup(x => x.Settings).Returns(settings);
-            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new List<Mapping>());
             mockFileWatcher.Setup(x => x.SearchFoldersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<string>()).Raises(x => x.RaiseProgressEvent += null, new ProgressTextEventArgs("progressing"));
             //file that needs moving
             MatchedFile unknown1 = new MatchedFile(@"C:\Castle.S01E01.mkv", "Castle");

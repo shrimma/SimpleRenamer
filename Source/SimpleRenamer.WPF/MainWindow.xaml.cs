@@ -43,14 +43,12 @@ namespace Sarjee.SimpleRenamer
         private ShowDetailsWindow _showDetailsWindow;
         private MovieDetailsWindow _movieDetailsWindow;
         private SettingsWindow _settingsWindow;
-        private ISettings _settings;
         private string _editShowCurrentFolder;
         private string _editShowTvdbShowName;
         private string _editShowTvdbId;
         private string _mediaTypePath;
         private string _mediaTypeShowName;
-
-        private static StateTracker _stateTracker = new StateTracker();
+        private StateTracker _stateTracker = new StateTracker();
 
         public MainWindow(ILogger logger, ITVShowMatcher tvShowMatcher, IMovieMatcher movieMatcher, IDependencyInjectionContext injectionContext, IActionMatchedFiles actionMatchedFiles, IScanFiles scanFiles, IConfigurationManager configManager)
         {
@@ -69,10 +67,8 @@ namespace Sarjee.SimpleRenamer
                 this.SourceInitialized += (s, e) =>
                 {
                     _stateTracker.Configure(this).Apply();
-                    _settings = _configurationManager.Settings;
-                    _stateTracker.Configure(_settings)
-                                    .IdentifyAs("Settings")
-                                    .AddProperties(nameof(_settings.CopyFiles), nameof(_settings.DestinationFolderMovie), nameof(_settings.DestinationFolderTV), nameof(_settings.NewFileNameFormat), nameof(_settings.RenameFiles), nameof(_settings.SubDirectories), nameof(_settings.ValidExtensions), nameof(_settings.WatchFolders))
+                    _stateTracker.Configure(_configurationManager)
+                                    .IdentifyAs("Configuration")
                                     .Apply();
                     _showDetailsWindow = _injectionContext.GetService<ShowDetailsWindow>();
                     _movieDetailsWindow = _injectionContext.GetService<MovieDetailsWindow>();
@@ -101,12 +97,12 @@ namespace Sarjee.SimpleRenamer
 
         private bool IsScanEnabled()
         {
-            if (string.IsNullOrWhiteSpace(_settings?.DestinationFolderMovie) && string.IsNullOrWhiteSpace(_settings?.DestinationFolderTV))
+            if (string.IsNullOrWhiteSpace(_configurationManager.Settings?.DestinationFolderMovie) && string.IsNullOrWhiteSpace(_configurationManager.Settings?.DestinationFolderTV))
             {
                 ScanButton.ToolTip = "Destination TV and Movie folders must be configured in settings.";
                 return false;
             }
-            else if (_settings?.WatchFolders?.Count < 1)
+            else if (_configurationManager.Settings?.WatchFolders?.Count < 1)
             {
                 ScanButton.ToolTip = "At least one Watch Folder must be configured in settings.";
                 return false;
@@ -217,7 +213,6 @@ namespace Sarjee.SimpleRenamer
                     {
                         e.Cancel = true;
                     }
-                    _configurationManager.SaveConfiguration();
                 }
                 catch (Exception ex)
                 {
@@ -333,7 +328,6 @@ namespace Sarjee.SimpleRenamer
                 _logger.TraceMessage("Settings button clicked.", EventLevel.Verbose);
                 //show the settings window
                 _settingsWindow.ShowDialog();
-                _settings = _configurationManager.Settings;
                 ScanButton.IsEnabled = IsScanEnabled();
             }
             catch (Exception ex)
@@ -489,12 +483,10 @@ namespace Sarjee.SimpleRenamer
                 IgnoreFlyout.IsOpen = false;
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 _logger.TraceMessage($"User opted to ignore {tempEp.SourceFilePath}.", EventLevel.Informational);
-                IgnoreList ignoreList = _configurationManager.IgnoredFiles;
-                if (!ignoreList.IgnoreFiles.Contains(tempEp.SourceFilePath))
+                if (!_configurationManager.IgnoredFiles.Contains(tempEp.SourceFilePath))
                 {
-                    ignoreList.IgnoreFiles.Add(tempEp.SourceFilePath);
+                    _configurationManager.IgnoredFiles.Add(tempEp.SourceFilePath);
                     RemoveFileFromView(tempEp);
-                    _configurationManager.IgnoredFiles = ignoreList;
                 }
             }
             catch (Exception ex)
@@ -524,7 +516,7 @@ namespace Sarjee.SimpleRenamer
                 MatchShowButton.IsEnabled = false;
                 DetailButton.IsEnabled = true;
             }
-            if (temp != null && !temp.SkippedExactSelection && _settings.RenameFiles)
+            if (temp != null && !temp.SkippedExactSelection && _configurationManager.Settings.RenameFiles)
             {
                 //we can only edit show folders
                 if (temp.FileType == FileType.TvShow)
@@ -573,10 +565,10 @@ namespace Sarjee.SimpleRenamer
                 if (tempEp?.FileType == FileType.TvShow)
                 {
                     _logger.TraceMessage(string.Format("Editing - show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.EpisodeNumber, tempEp.TVDBShowId), EventLevel.Verbose);
-                    ShowNameMapping snm = _configurationManager.ShowNameMappings;
-                    if (snm?.Mappings?.Count > 0)
+                    List<Mapping> showNameMappings = _configurationManager.ShowNameMappings;
+                    if (showNameMappings?.Count > 0)
                     {
-                        Mapping mapping = snm.Mappings.FirstOrDefault(x => x.TVDBShowID.Equals(tempEp.TVDBShowId));
+                        Mapping mapping = showNameMappings.FirstOrDefault(x => x.TVDBShowID.Equals(tempEp.TVDBShowId));
                         if (mapping != null)
                         {
                             _logger.TraceMessage(string.Format("Edit - Mapping found {0}", mapping.FileShowName), EventLevel.Verbose);
@@ -599,7 +591,7 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
-                string folderPath = Path.Combine(_settings.DestinationFolderTV, string.IsNullOrWhiteSpace(mapping.CustomFolderName) ? mapping.TVDBShowName : mapping.CustomFolderName);
+                string folderPath = Path.Combine(_configurationManager.Settings.DestinationFolderTV, string.IsNullOrWhiteSpace(mapping.CustomFolderName) ? mapping.TVDBShowName : mapping.CustomFolderName);
                 _editShowCurrentFolder = mapping.CustomFolderName;
                 _editShowTvdbShowName = tempEp.ShowName;
                 _editShowTvdbId = tempEp.TVDBShowId;
@@ -642,14 +634,12 @@ namespace Sarjee.SimpleRenamer
 
                 if (updateMapping)
                 {
-                    ShowNameMapping snm = _configurationManager.ShowNameMappings;
-                    if (snm?.Mappings?.Count > 0)
+                    if (_configurationManager.ShowNameMappings?.Count > 0)
                     {
-                        Mapping mapping = snm.Mappings.FirstOrDefault(x => x.TVDBShowID.Equals(_editShowTvdbId));
+                        Mapping mapping = _configurationManager.ShowNameMappings.FirstOrDefault(x => x.TVDBShowID.Equals(_editShowTvdbId));
                         if (mapping != null)
                         {
                             mapping.CustomFolderName = currentText;
-                            _configurationManager.ShowNameMappings = snm;
                         }
                     }
                 }
@@ -668,13 +658,13 @@ namespace Sarjee.SimpleRenamer
         private void EditShowFolderTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             string currentText = EditShowFolderTextBox.Text;
-            EditShowFolderTextBox.Text = currentText.Replace(_settings.DestinationFolderTV + @"\", "");
+            EditShowFolderTextBox.Text = currentText.Replace(_configurationManager.Settings.DestinationFolderTV + @"\", "");
         }
 
         private void EditShowFolderTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             string currentText = EditShowFolderTextBox.Text;
-            EditShowFolderTextBox.Text = Path.Combine(_settings.DestinationFolderTV, currentText);
+            EditShowFolderTextBox.Text = Path.Combine(_configurationManager.Settings.DestinationFolderTV, currentText);
         }
     }
 }

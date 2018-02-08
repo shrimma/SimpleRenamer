@@ -140,12 +140,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private async Task<List<MatchedFile>> PreProcessTVShows(List<MatchedFile> scannedEpisodes, CancellationToken cancellationToken)
         {
             ConcurrentBag<MatchedFile> processFiles = new ConcurrentBag<MatchedFile>();
-            ShowNameMapping snm = _configurationManager.ShowNameMappings;
 
             var actionFilesAsyncBlock = new ActionBlock<MatchedFile>((file) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                Mapping mapping = snm.Mappings.FirstOrDefault(x => x.TVDBShowID.Equals(file.TVDBShowId));
+                Mapping mapping = _configurationManager.ShowNameMappings.FirstOrDefault(x => x.TVDBShowID.Equals(file.TVDBShowId));
                 MatchedFile result = _fileMover.CreateDirectoriesAndQueueDownloadBanners(file, mapping, true);
                 //fire event here
                 OnFilePreProcessed(new FilePreProcessedEventArgs());

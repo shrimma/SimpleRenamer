@@ -138,8 +138,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             object lockList = new object();
             ConcurrentBag<CompleteSeries> matchedSeries = new ConcurrentBag<CompleteSeries>();
             ConcurrentBag<MatchedFile> outputEpisodes = new ConcurrentBag<MatchedFile>();
-            ShowNameMapping showNameMapping = _configurationManager.ShowNameMappings;
-            ShowNameMapping originalMapping = _configurationManager.ShowNameMappings;
 
             //fixup mismatch titles
             _parallelOptions.CancellationToken = cancellationToken;
@@ -217,11 +215,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     {
                         //update the mapping as found something
                         Mapping map = new Mapping(file.ShowName, series.Series.SeriesName, series.Series.Id.ToString());
-                        if (!showNameMapping.Mappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
+                        if (!_configurationManager.ShowNameMappings.Any(x => x.TVDBShowID.Equals(map.TVDBShowID)))
                         {
                             lock (lockList)
                             {
-                                showNameMapping.Mappings.Add(map);
+                                _configurationManager.ShowNameMappings.Add(map);
                             }
                         }
                         _tvShowMatcher.UpdateFileWithSeriesDetails(file, series);
@@ -255,13 +253,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             }
             ensureFileNeedsMovingBlock.Complete();
             await ensureFileNeedsMovingBlock.Completion;
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (showNameMapping.Mappings != originalMapping.Mappings || showNameMapping.Mappings.Count != originalMapping.Mappings.Count)
-            {
-                _configurationManager.ShowNameMappings = showNameMapping;
-            }
 
             return outputEpisodes.ToList();
         }

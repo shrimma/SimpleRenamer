@@ -241,7 +241,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         {
             //setup settings
             Mapping mapping = new Mapping("Showname", "tvdbShowName", "tvdbShowId");
-            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping() { Mappings = new List<Mapping>() { mapping } });
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new List<Mapping> { mapping });
 
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
             MatchedFile fileInput = new MatchedFile(@"c:\filePath", "Showname", "1", "1");
@@ -327,9 +327,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             mockTvdbManager.Setup(x => x.GetSeriesByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(outputSeries);
             //mock settings
             Settings settings = new Settings() { NewFileNameFormat = "newFileName" };
-            ShowNameMapping mapping = new ShowNameMapping();
             mockConfigurationManager.Setup(x => x.Settings).Returns(settings);
-            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(mapping);
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new List<Mapping>());
 
             ITVShowMatcher tvShowMatcher = GetTVShowMatcher();
             MatchedFile fileInput = new MatchedFile(@"c:\filePath", "Showname", "1", "1");
