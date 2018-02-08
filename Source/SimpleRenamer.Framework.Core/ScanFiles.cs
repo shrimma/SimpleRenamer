@@ -89,10 +89,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         public async Task<List<MatchedFile>> ScanAsync(CancellationToken cancellationToken)
         {
-            //search folders for a list of video file paths
+            //search folders for a list of video file paths     
+            OnProgressTextChanged(new ProgressTextEventArgs("Searching WatchFolders for relevant files."));
             List<string> videoFiles = await _fileWatcher.SearchFoldersAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             //use regex to attempt to figure out some details about the files ie showname, episode number, etc
+            OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Attempting to parse names of '{0}' video files", videoFiles.Count)));
             List<MatchedFile> matchedFiles = await _fileMatcher.SearchFilesAsync(videoFiles, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             //try and match the tv shows with any TV scrapers we have available
@@ -102,6 +104,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             //check there aren't any completely unmatched files (due to undecypherable filenames)
             List<MatchedFile> otherVideoFiles = matchedFiles.Where(x => x.FileType == FileType.Unknown).ToList();
 
+            OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Matching '{0}' parsed files against metadata", matchedFiles.Count)));
             //wait for tv and movie scanning to complete
             await Task.WhenAll(scanTvShowsTask, scanMovieTask);
             List<MatchedFile> scannedEpisodes = scanTvShowsTask.Result;
@@ -122,6 +125,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             {
                 scannedFiles.AddRange(otherVideoFiles);
             }
+
+            OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Scanned and matched '{0}' files found - '{1}' TV, '{2}' Movie, '{3}' Unknown", matchedFiles.Count, scannedEpisodes.Count, scannedMovies.Count, otherVideoFiles.Count)));
 
             //return the full list of tv, movies, and unknown files
             return scannedFiles;
@@ -161,7 +166,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 CompleteSeries series = await _tvShowMatcher.SearchShowByIdAsync(showId, cancellationToken);
                 if (series != null)
                 {
-                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Found data for {0}", series.Series.SeriesName)));
                     matchedSeries.Add(series);
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2, CancellationToken = cancellationToken });
@@ -173,7 +177,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 CompleteSeries series = await _tvShowMatcher.SearchShowByNameAsync(showName, cancellationToken);
                 if (series != null)
                 {
-                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Found data for {0}", series.Series.SeriesName)));
                     matchedSeries.Add(series);
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2, CancellationToken = cancellationToken });
@@ -236,14 +239,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 string destinationFilePath = Path.Combine(destinationDirectory, file.NewFileName + Path.GetExtension(file.SourceFilePath));
                 if (!file.SourceFilePath.Equals(destinationFilePath))
                 {
-                    _logger.TraceMessage(string.Format("Will move file {0} to {1}", file.SourceFilePath, file.NewFileName), EventLevel.Verbose);
-                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Will move file {0} to {1}.", file.SourceFilePath, file.NewFileName)));
                     outputEpisodes.Add(file);
-                }
-                else
-                {
-                    _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
-                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("File {0} will be ignored as already in correct location.", file.SourceFilePath)));
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
 
@@ -278,14 +274,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 string destinationFilePath = Path.Combine(movieDirectory, file.ShowName + Path.GetExtension(file.SourceFilePath));
                 if (!file.SourceFilePath.Equals(destinationFilePath))
                 {
-                    _logger.TraceMessage(string.Format("Will move file {0} to {1}", file.SourceFilePath, destinationFilePath), EventLevel.Verbose);
-                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Will move file {0} to {1}.", file.SourceFilePath, destinationFilePath)));
                     scannedMovies.Add(file);
-                }
-                else
-                {
-                    _logger.TraceMessage(string.Format("File is already in good location {0}", file.SourceFilePath), EventLevel.Verbose);
-                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("File {0} will be ignored as already in correct location.", file.SourceFilePath)));
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded, CancellationToken = cancellationToken });
 
@@ -302,6 +291,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
         protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)
         {
+            _logger.TraceMessage(e.Text, EventLevel.Informational);
             RaiseProgressEvent?.Invoke(this, e);
         }
     }

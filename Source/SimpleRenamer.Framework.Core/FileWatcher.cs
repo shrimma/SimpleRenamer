@@ -55,7 +55,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             object lockList = new object();
             _logger.TraceMessage("SearchTheseFoldersAsync - Start", EventLevel.Verbose);
             List<string> foundFiles = new List<string>();
-            OnProgressTextChanged(new ProgressTextEventArgs("Searching watch folders for video files"));
 
             _parallelOptions.CancellationToken = cancellationToken;
             //FOR EACH WATCH FOLDER
@@ -78,8 +77,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     }
                 }
             });
-
-            OnProgressTextChanged(new ProgressTextEventArgs("Searched all watch folders for video files"));
             _logger.TraceMessage($"Found {foundFiles.Count} across all watch folders.", EventLevel.Verbose);
 
             return foundFiles;
