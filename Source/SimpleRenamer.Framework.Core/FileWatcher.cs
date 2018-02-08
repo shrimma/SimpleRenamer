@@ -67,13 +67,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", _configurationManager.Settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
                 {
                     //search the folder for files with video extensions
-                    List<string> temp = SearchThisFolder(folder, cancellationToken).GetAwaiter().GetResult();
+                    List<string> tempList = SearchThisFolder(folder, cancellationToken).GetAwaiter().GetResult();
                     //if we find any files here add to the global list
-                    if (temp.Count > 0)
+                    if (tempList.Count > 0)
                     {
                         lock (lockList)
                         {
-                            foundFiles.AddRange(temp);
+                            foundFiles.AddRange(tempList);
                         }
                     }
                 }
