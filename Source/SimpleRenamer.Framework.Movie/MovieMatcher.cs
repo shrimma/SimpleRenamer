@@ -32,21 +32,27 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MovieMatcher"/> class.
+        /// Initializes a new instance of the <see cref="MovieMatcher" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="tmdbManager">The TMDB manager.</param>
-        /// <exception cref="System.ArgumentNullException">
+        /// <param name="helper">The helper.</param>
+        /// <param name="cache">The cache.</param>
+        /// <exception cref="ArgumentNullException">
         /// logger
         /// or
         /// tmdbManager
-        /// </exception>
-        public MovieMatcher(ILogger logger, ITmdbManager tmdbManager, IHelper helper)
+        /// or
+        /// helper
+        /// or
+        /// cache
+        /// </exception>        
+        public MovieMatcher(ILogger logger, ITmdbManager tmdbManager, IHelper helper, IAppCache cache)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _tmdbManager = tmdbManager ?? throw new ArgumentNullException(nameof(tmdbManager));
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
-            _cache = new CachingService();
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
         /// <summary>

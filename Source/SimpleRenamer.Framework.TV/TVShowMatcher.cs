@@ -40,26 +40,32 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         public event EventHandler<ProgressTextEventArgs> RaiseProgressEvent;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TVShowMatcher"/> class.
+        /// Initializes a new instance of the <see cref="TVShowMatcher" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="configManager">The configuration manager.</param>
         /// <param name="tvdbManager">The TVDB manager.</param>
-        /// <exception cref="System.ArgumentNullException">
+        /// <param name="helper">The helper.</param>
+        /// <param name="cache">The cache.</param>
+        /// <exception cref="ArgumentNullException">
         /// logger
         /// or
         /// configManager
         /// or
         /// tvdbManager
-        /// </exception>
-        public TVShowMatcher(ILogger logger, IConfigurationManager configManager, ITvdbManager tvdbManager, IHelper helper)
+        /// or
+        /// helper
+        /// or
+        /// cache
+        /// </exception>        
+        public TVShowMatcher(ILogger logger, IConfigurationManager configManager, ITvdbManager tvdbManager, IHelper helper, IAppCache cache)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
             _tvdbManager = tvdbManager ?? throw new ArgumentNullException(nameof(tvdbManager));
             _settings = _configurationManager.Settings;
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
-            _cache = new CachingService();
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
         /// <summary>
