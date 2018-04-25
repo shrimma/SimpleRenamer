@@ -1,4 +1,5 @@
-﻿using Ninject.Modules;
+﻿using LazyCache;
+using Ninject.Modules;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
@@ -19,6 +20,7 @@ namespace Sarjee.SimpleRenamer.DependencyInjection.Modules
         /// </summary>
         public override void Load()
         {
+            Bind<IAppCache>().To<CachingService>().InSingletonScope();
             Bind<IFileMatcher>().To<FileMatcher>().InSingletonScope();
             Bind<IFileWatcher>().To<FileWatcher>().InSingletonScope();
             Bind<ITVShowMatcher>().To<TVShowMatcher>().InSingletonScope();
