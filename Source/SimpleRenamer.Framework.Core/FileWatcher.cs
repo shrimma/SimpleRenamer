@@ -20,8 +20,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     {
         private ILogger _logger;
         private IConfigurationManager _configurationManager;
-        private ISettings _settings;
-        private IgnoreList ignoreList;
         private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
         /// <summary>
@@ -43,7 +41,6 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-            _settings = _configurationManager.Settings;
         }
 
         /// <summary>
@@ -55,33 +52,31 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// </returns>
         public async Task<List<string>> SearchFoldersAsync(CancellationToken cancellationToken)
         {
+            object lockList = new object();
             _logger.TraceMessage("SearchTheseFoldersAsync - Start", EventLevel.Verbose);
             List<string> foundFiles = new List<string>();
-            //grab the list of ignored files
 
-            ignoreList = _configurationManager.IgnoredFiles;
+            _parallelOptions.CancellationToken = cancellationToken;
             //FOR EACH WATCH FOLDER
-            foreach (string folder in _settings.WatchFolders)
+            Parallel.ForEach(_configurationManager.Settings.WatchFolders, _parallelOptions, (folder) =>
             {
                 //throw exception if cancel requested
                 cancellationToken.ThrowIfCancellationRequested();
-                OnProgressTextChanged(new ProgressTextEventArgs($"Searching watch folder for video files: {folder}"));
                 //if the directory exists and contains at least 1 file (search sub directories if settings allow) -- limitation of searchPattern means we can't filter video extensions here
-                if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", _settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
+                if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", _configurationManager.Settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
                 {
                     //search the folder for files with video extensions
-                    List<string> temp = await SearchThisFolder(folder, cancellationToken);
+                    List<string> tempList = SearchThisFolder(folder, cancellationToken).GetAwaiter().GetResult();
                     //if we find any files here add to the global list
-                    if (temp.Count > 0)
+                    if (tempList.Count > 0)
                     {
-                        foundFiles.AddRange(temp);
+                        lock (lockList)
+                        {
+                            foundFiles.AddRange(tempList);
+                        }
                     }
                 }
-                //throw exception if cancel requested
-                cancellationToken.ThrowIfCancellationRequested();
-            }
-
-            OnProgressTextChanged(new ProgressTextEventArgs($"Searched all watch folders for video files"));
+            });
             _logger.TraceMessage($"Found {foundFiles.Count} across all watch folders.", EventLevel.Verbose);
 
             return foundFiles;
@@ -90,27 +85,25 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <summary>
         /// Searches a given folder for all video files
         /// </summary>
-        /// <param name="dir">The folder to search</param>
-        /// <param name="cancellationToken">The ct.</param>
+        /// <param name="directoryPath">The folder to search</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        private async Task<List<string>> SearchThisFolder(string dir, CancellationToken cancellationToken)
+        private async Task<List<string>> SearchThisFolder(string directoryPath, CancellationToken cancellationToken)
         {
-            _logger.TraceMessage($"Searching Folder {dir} for valid video files.", EventLevel.Verbose);
             ConcurrentBag<string> foundFiles = new ConcurrentBag<string>();
-            _parallelOptions.CancellationToken = cancellationToken;
-            Task result = Task.Run(() => Parallel.ForEach(Directory.GetFiles(dir, "*", _settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly), _parallelOptions, (file) =>
+            Task result = Task.Run(() => Parallel.ForEach(Directory.GetFiles(directoryPath, "*", _configurationManager.Settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly), _parallelOptions, (file) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 //is a valid extension, is not ignored and isn't a sample
-                if (IsValidExtension(Path.GetExtension(file)) && !ignoreList.IgnoreFiles.Contains(file) && !Path.GetFileName(file).Contains("*.sample.*") && !Path.GetFileName(file).Contains("*.Sample.*"))
+                if (IsValidExtension(Path.GetExtension(file)) && !_configurationManager.IgnoredFiles.Contains(file) && !Path.GetFileName(file).Contains("*.sample.*") && !Path.GetFileName(file).Contains("*.Sample.*"))
                 {
                     foundFiles.Add(file);
                 }
-            }));
+            }), cancellationToken);
 
             await result;
 
-            _logger.TraceMessage($"Found {foundFiles.Count} video files in {dir}.", EventLevel.Verbose);
+            _logger.TraceMessage($"Found {foundFiles.Count} video files in {directoryPath}.", EventLevel.Verbose);
             return foundFiles.ToList();
         }
 
@@ -123,16 +116,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// </returns>
         private bool IsValidExtension(string input)
         {
-            foreach (string extension in _settings.ValidExtensions)
+            foreach (string extension in _configurationManager.Settings.ValidExtensions)
             {
                 if (input.ToLowerInvariant().Equals(extension.ToLowerInvariant()))
                 {
-                    _logger.TraceMessage($"{input} IsValidExtension == True", EventLevel.Verbose);
                     return true;
                 }
             }
-
-            _logger.TraceMessage($"{input} IsValidExtension == False", EventLevel.Verbose);
             return false;
         }
 

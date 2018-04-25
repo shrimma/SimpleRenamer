@@ -9,6 +9,7 @@ using Sarjee.SimpleRenamer.Common.TV.Model;
 using Sarjee.SimpleRenamer.Framework.TV;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
@@ -65,7 +66,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         {
             ITvdbManager tvdbManager = GetTvdbManager();
             List<SeriesSearchData> result = null;
-            Func<Task> action1 = async () => result = await tvdbManager.SearchSeriesByNameAsync(string.Empty);
+            Func<Task> action1 = async () => result = await tvdbManager.SearchSeriesByNameAsync(string.Empty, CancellationToken.None);
 
             action1.ShouldThrow<ArgumentNullException>();
             result.Should().BeNull();
@@ -75,12 +76,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         [TestCategory(TestCategories.TV)]
         public void TvdbManager_SearchSeriesByNameAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<Token>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new Token("jwtToken"));
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SeriesSearchDataList>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesSearchDataList() { SearchResults = new List<SeriesSearchData>() { new SeriesSearchData(null, null, null, 1, null, null, "Castle", null), new SeriesSearchData(null, null, null, 2, null, null, "KillJoys", null) } });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<Token>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), It.IsAny<Func<Task>>())).ReturnsAsync(new Token("jwtToken"));
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SeriesSearchDataList>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesSearchDataList() { SearchResults = new List<SeriesSearchData>() { new SeriesSearchData(null, null, null, 1, null, null, "Castle", null), new SeriesSearchData(null, null, null, 2, null, null, "KillJoys", null) } });
             ITvdbManager tvdbManager = GetTvdbManager();
 
             List<SeriesSearchData> result = null;
-            Func<Task> action1 = async () => result = await tvdbManager.SearchSeriesByNameAsync("seriesName");
+            Func<Task> action1 = async () => result = await tvdbManager.SearchSeriesByNameAsync("seriesName", CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -97,7 +98,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         {
             ITvdbManager tvdbManager = GetTvdbManager();
             CompleteSeries result = null;
-            Func<Task> action1 = async () => result = await tvdbManager.GetSeriesByIdAsync(string.Empty);
+            Func<Task> action1 = async () => result = await tvdbManager.GetSeriesByIdAsync(string.Empty, CancellationToken.None);
 
             action1.ShouldThrow<ArgumentNullException>();
             result.Should().BeNull();
@@ -107,15 +108,15 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         [TestCategory(TestCategories.TV)]
         public void TvdbManager_GetSeriesByIdAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<Token>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new Token("jwtToken"));
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SeriesData>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesData() { Data = new Series(1, "Game of Thrones") });
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SeriesActors>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesActors() { Data = new List<SeriesActorsData>() { new SeriesActorsData(1, 1, "Bob") } });
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SeriesEpisodes>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesEpisodes() { Data = new List<BasicEpisode>() { new BasicEpisode(1, 1, 1, 1, 1, "EpisodeName", 1, "overview") } });
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SeriesImageQueryResults>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesImageQueryResults() { Data = new List<SeriesImageQueryResult>() { new SeriesImageQueryResult(1, "keytype", "subkey") } });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<Token>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), It.IsAny<Func<Task>>())).ReturnsAsync(new Token("jwtToken"));
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SeriesData>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesData() { Data = new Series(1, "Game of Thrones") });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SeriesActors>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesActors() { Data = new List<SeriesActorsData>() { new SeriesActorsData(1, 1, "Bob") } });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SeriesEpisodes>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesEpisodes() { Data = new List<BasicEpisode>() { new BasicEpisode(1, 1, 1, 1, 1, "EpisodeName", 1, "overview") } });
+            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SeriesImageQueryResults>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), It.IsAny<Func<Task>>())).ReturnsAsync(new SeriesImageQueryResults() { Data = new List<SeriesImageQueryResult>() { new SeriesImageQueryResult(1, "keytype", "subkey") } });
             ITvdbManager tvdbManager = GetTvdbManager();
 
             CompleteSeries result = null;
-            Func<Task> action1 = async () => result = await tvdbManager.GetSeriesByIdAsync("tmdbId");
+            Func<Task> action1 = async () => result = await tvdbManager.GetSeriesByIdAsync("tmdbId", CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();

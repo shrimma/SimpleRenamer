@@ -2,6 +2,7 @@
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sarjee.SimpleRenamer.Common.Interface
@@ -41,7 +42,7 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <param name="retryCount">The retry count.</param>
         /// <param name="maxBackoffSeconds">The maximum backoff seconds.</param>
         /// <returns></returns>
-        Task ExponentialDelayAsync(int offsetMilliseconds, int retryCount, int maxBackoffSeconds);
+        Task ExponentialDelayAsync(int offsetMilliseconds, int retryCount, int maxBackoffSeconds, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the rest request.
@@ -54,6 +55,6 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// <param name="maxBackoffSeconds">The maximum backoff seconds.</param>
         /// <param name="loginCallback">The login callback.</param>
         /// <returns></returns>
-        Task<T> ExecuteRestRequestAsync<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, Func<Task> loginCallback = null) where T : class;
+        Task<T> ExecuteRestRequestAsync<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, CancellationToken cancellationToken, Func<Task> loginCallback = null) where T : class;
     }
 }

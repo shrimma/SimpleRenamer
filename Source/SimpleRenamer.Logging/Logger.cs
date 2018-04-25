@@ -12,6 +12,8 @@ namespace Sarjee.SimpleRenamer.Logging
     public class Logger : Common.Interface.ILogger
     {
         private Serilog.ILogger _logger { get; set; }
+        private const string _defaultTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}";
+        private const string _messageTemplate = "{Message} - MemberName: {MemberName}, SourceFile: {SourceFilePath}, Source Line: {SourceLineNumber}.";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Logger"/> class.
@@ -48,7 +50,7 @@ namespace Sarjee.SimpleRenamer.Logging
             //serilog configuration
             LoggerConfiguration loggerConfiguration = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
-                .WriteTo.RollingFile(@"logs\log-{Date}.txt")
+                .WriteTo.RollingFile(@"logs\log-{Date}.txt", outputTemplate: _defaultTemplate)
                 .WriteTo.Trace();
 
             _logger = loggerConfiguration.CreateLogger();
@@ -110,20 +112,20 @@ namespace Sarjee.SimpleRenamer.Logging
             switch (logType)
             {
                 case EventLevel.Verbose:
-                    _logger.Verbose(message);
+                    _logger.Verbose(_messageTemplate, message, memberName, sourceFilePath, sourceLineNumber);
                     break;
                 case EventLevel.LogAlways:
                 case EventLevel.Informational:
-                    _logger.Information(message);
+                    _logger.Information(_messageTemplate, message, memberName, sourceFilePath, sourceLineNumber);
                     break;
                 case EventLevel.Warning:
-                    _logger.Warning(string.Format("Warning: {0}, Member Name {1}, Source File {2}, Source Line {3}", message, memberName, sourceFilePath, sourceLineNumber));
+                    _logger.Warning(_messageTemplate, message, memberName, sourceFilePath, sourceLineNumber);
                     break;
                 case EventLevel.Error:
-                    _logger.Error(string.Format("Error: {0}, Member Name {1}, Source File {2}, Source Line {3}", message, memberName, sourceFilePath, sourceLineNumber));
+                    _logger.Error(_messageTemplate, message, memberName, sourceFilePath, sourceLineNumber);
                     break;
                 case EventLevel.Critical:
-                    _logger.Fatal(string.Format("Fatal: {0}, Member Name {1}, Source File {2}, Source Line {3}", message, memberName, sourceFilePath, sourceLineNumber));
+                    _logger.Fatal(_messageTemplate, message, memberName, sourceFilePath, sourceLineNumber);
                     break;
             }
         }
@@ -141,9 +143,11 @@ namespace Sarjee.SimpleRenamer.Logging
         [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
         [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
-            string innerEx = ex.InnerException == null ? "" : $", InnerException type: {ex.InnerException.GetType().ToString()}, message: {ex.InnerException.Message}";
-            string logthis = string.Format("Message: {0}, Caller Member: {1}, Source File Path: {2}, Source Line Number: {3}, Exception: {4}, Message: {5}{6}", message, memberName, sourceFilePath, sourceLineNumber.ToString(), ex.GetType().ToString(), ex.Message, innerEx);
-            _logger.Fatal(logthis, ex);
+            _logger.Fatal(ex, _messageTemplate, message, memberName, sourceFilePath, sourceLineNumber);
+            if (ex.InnerException != null)
+            {
+                TraceException(ex.InnerException, "InnerException", memberName, sourceFilePath, sourceLineNumber);
+            }
         }
     }
 }

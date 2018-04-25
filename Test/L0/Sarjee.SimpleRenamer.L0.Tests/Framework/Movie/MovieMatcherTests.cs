@@ -89,12 +89,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             output.Results.Add(new SearchMovie() { Id = 2, Title = "dummyMovie2", Overview = "so very very very very very very very very very very very very very long and boring and dull and why am I still writing this" });
             output.Results.Add(new SearchMovie() { Id = 3 });
 
-            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(output);
-            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), null)).ReturnsAsync(output);
+            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<int>())).ReturnsAsync(output);
+            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(output);
 
             IMovieMatcher movieMatcher = GetMovieMatcher();
             List<DetailView> result = null;
-            Func<Task> action1 = async () => result = await movieMatcher.GetPossibleMoviesForFileAsync("showName");
+            Func<Task> action1 = async () => result = await movieMatcher.GetPossibleMoviesForFileAsync("showName", CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -108,12 +108,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         public void MovieMatcher_ScrapeDetailsAsync_NullResponse_Success()
         {
             //null response                        
-            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync((SearchContainer<SearchMovie>)null);
+            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<int>())).ReturnsAsync((SearchContainer<SearchMovie>)null);
 
             IMovieMatcher movieMatcher = GetMovieMatcher();
             MatchedFile result = null;
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
-            Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input);
+            Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input, CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -127,12 +127,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             //dummy movies
             SearchContainer<SearchMovie> output = new SearchContainer<SearchMovie>();
 
-            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(output);
+            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<int>())).ReturnsAsync(output);
 
             IMovieMatcher movieMatcher = GetMovieMatcher();
             MatchedFile result = null;
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
-            Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input);
+            Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input, CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -148,12 +148,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             SearchContainer<SearchMovie> output = new SearchContainer<SearchMovie>();
             output.Results.Add(new SearchMovie() { Id = 1, Title = "dummyMovie1", Overview = "short and sweet" });
 
-            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(output);
+            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<int>())).ReturnsAsync(output);
 
             IMovieMatcher movieMatcher = GetMovieMatcher();
             MatchedFile result = null;
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
-            Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input);
+            Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input, CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -170,12 +170,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             output.Results.Add(new SearchMovie() { Id = 2, Title = "dummyMovie2", Overview = "so very very very very very very very very very very very very very long and boring and dull and why am I still writing this" });
             output.Results.Add(new SearchMovie() { Id = 3 });
 
-            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(output);
+            mockTmdbManager.Setup(x => x.SearchMovieByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<int>())).ReturnsAsync(output);
 
             IMovieMatcher movieMatcher = GetMovieMatcher();
             MatchedFile result = null;
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
-            Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input);
+            Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input, CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -191,7 +191,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         {
             IMovieMatcher movieMatcher = GetMovieMatcher();
             MatchedFile result = null;
-            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovieAsync("movieId1", null);
+            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovieAsync("movieId1", null, CancellationToken.None);
 
             action1.ShouldThrow<ArgumentNullException>();
             result.Should().BeNull();
@@ -204,7 +204,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             IMovieMatcher movieMatcher = GetMovieMatcher();
             MatchedFile result = null;
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
-            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovieAsync(string.Empty, input);
+            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovieAsync(string.Empty, input, CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -220,12 +220,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             mockHelper.Setup(x => x.RemoveSpecialCharacters(It.IsAny<string>())).Returns<string>(x => x);
             //dummy movie                        
             SearchMovie output = new SearchMovie() { Id = 1, Title = "dummyMovie1", Overview = "short and sweet" };
-            mockTmdbManager.Setup(x => x.SearchMovieByIdAsync(It.IsAny<string>())).ReturnsAsync(output);
+            mockTmdbManager.Setup(x => x.SearchMovieByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(output);
 
             IMovieMatcher movieMatcher = GetMovieMatcher();
             MatchedFile result = null;
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
-            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovieAsync("movieId1", input);
+            Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovieAsync("movieId1", input, CancellationToken.None);
 
             action1.ShouldNotThrow();
             result.Should().NotBeNull();
@@ -241,8 +241,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         public void MovieMatcher_GetMovieWithBanner_WithBanner_Success()
         {
             string movieName = "DummyMovie";
-            mockTmdbManager.Setup(x => x.GetMovieAsync(It.IsAny<string>())).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = movieName, PosterPath = "notnull" });
-            mockTmdbManager.Setup(x => x.GetPosterUriAsync(It.IsAny<string>())).ReturnsAsync("https://i.ytimg.com/vi/yaqe1qesQ8c/maxresdefault.jpg");
+            mockTmdbManager.Setup(x => x.GetMovieAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = movieName, PosterPath = "notnull" });
+            mockTmdbManager.Setup(x => x.GetPosterUriAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync("https://i.ytimg.com/vi/yaqe1qesQ8c/maxresdefault.jpg");
 
             IMovieMatcher movieMatcher = GetMovieMatcher(true);
             (SimpleRenamer.Common.Movie.Model.Movie movie, Uri image) result = (null, null);
@@ -259,7 +259,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         public void MovieMatcher_GetMovieWithBanner_NoBanner_Success()
         {
             string movieName = "DummyMovie";
-            mockTmdbManager.Setup(x => x.GetMovieAsync(It.IsAny<string>())).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = movieName });
+            mockTmdbManager.Setup(x => x.GetMovieAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = movieName });
 
             IMovieMatcher movieMatcher = GetMovieMatcher(true);
             (SimpleRenamer.Common.Movie.Model.Movie movie, Uri image) result = (null, null);

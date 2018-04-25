@@ -25,7 +25,7 @@ namespace Sarjee.SimpleRenamer
         {
             injection = new DependencyInjectionContext();
             injection.Initialize();
-            injection.BindConstant<IConfigurationManager>(new AppConfigurationManager());
+            injection.BindConstant<IConfigurationManager>(new JotConfigurationManager());
         }
 
         private void ComposeObjects()

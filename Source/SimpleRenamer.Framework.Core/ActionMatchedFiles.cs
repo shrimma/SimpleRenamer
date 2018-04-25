@@ -72,7 +72,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         public async Task<bool> ActionAsync(ObservableCollection<MatchedFile> scannedEpisodes, CancellationToken cancellationToken)
         {
-            OnProgressTextChanged(new ProgressTextEventArgs($"Creating directory structure and downloading any missing banners"));
+            OnProgressTextChanged(new ProgressTextEventArgs("Creating directory structure and downloading any missing banners"));
             //perform pre actions on TVshows            
             Task<List<MatchedFile>> tvShowTask = PreProcessTVShows(scannedEpisodes.Where(x => x.ActionThis == true && x.FileType == FileType.TvShow).ToList(), cancellationToken);
             //perform pre actions on movies
@@ -81,7 +81,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             await Task.WhenAll(tvShowTask, movieTask);
             List<MatchedFile> tvShowsToMove = tvShowTask.Result;
             List<MatchedFile> moviesToMove = movieTask.Result;
-            OnProgressTextChanged(new ProgressTextEventArgs($"Finished creating directory structure and downloading banners."));
+            OnProgressTextChanged(new ProgressTextEventArgs("Finished creating directory structure and downloading banners."));
             cancellationToken.ThrowIfCancellationRequested();
 
             //concat final list of files to move
@@ -99,7 +99,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             if (filesToMove?.Count > 0)
             {
                 //send the stats to the cloud
-                SendActionStatsToCloud(filesToMove);
+                SendActionStatsToCloud(filesToMove, cancellationToken);
                 //move these files
                 await MoveFiles(filesToMove, cancellationToken);
             }
@@ -107,20 +107,28 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             return true;
         }
 
-        private void SendActionStatsToCloud(List<MatchedFile> files)
+        private void SendActionStatsToCloud(List<MatchedFile> files, CancellationToken cancellationToken)
         {
-            //do all the stuff for sending stats in background
-            Task.Run(async () =>
+            try
             {
-                List<StatsFile> scanFiles = new List<StatsFile>();
-                foreach (MatchedFile file in files)
+                //do all the stuff for sending stats in background
+                Task.Run(async () =>
                 {
-                    scanFiles.Add(StatsFile.StatsFileFromMatchedFile(file));
-                }
-                string jsonPayload = JsonConvert.SerializeObject(scanFiles);
-                //run the messaging sending in background
-                await _messageSender.SendAsync(jsonPayload);
-            });
+                    List<StatsFile> scanFiles = new List<StatsFile>();
+                    foreach (MatchedFile file in files)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        scanFiles.Add(StatsFile.StatsFileFromMatchedFile(file));
+                    }
+                    string jsonPayload = JsonConvert.SerializeObject(scanFiles);
+                    //run the messaging sending in background
+                    await _messageSender.SendAsync(jsonPayload);
+                }, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.TraceException(ex, "Exception occured during stats sending");
+            }
         }
 
         /// <summary>
@@ -132,12 +140,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private async Task<List<MatchedFile>> PreProcessTVShows(List<MatchedFile> scannedEpisodes, CancellationToken cancellationToken)
         {
             ConcurrentBag<MatchedFile> processFiles = new ConcurrentBag<MatchedFile>();
-            ShowNameMapping snm = _configurationManager.ShowNameMappings;
 
             var actionFilesAsyncBlock = new ActionBlock<MatchedFile>((file) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                Mapping mapping = snm.Mappings.FirstOrDefault(x => x.TVDBShowID.Equals(file.TVDBShowId));
+                Mapping mapping = _configurationManager.ShowNameMappings.FirstOrDefault(x => x.TVDBShowID.Equals(file.TVDBShowId));
                 MatchedFile result = _fileMover.CreateDirectoriesAndQueueDownloadBanners(file, mapping, true);
                 //fire event here
                 OnFilePreProcessed(new FilePreProcessedEventArgs());
@@ -150,7 +157,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
                 }
-            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded, CancellationToken = cancellationToken });
 
             //post all our files to our dataflow
             foreach (MatchedFile file in scannedEpisodes)
@@ -187,7 +194,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     _logger.TraceMessage(string.Format("Failed to process {0}", result.SourceFilePath));
                 }
-            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded });
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded, CancellationToken = cancellationToken });
 
             //post all our files to our dataflow
             foreach (MatchedFile file in scannedMovies)
@@ -211,19 +218,19 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             var actionFilesAsyncBlock = new ActionBlock<MatchedFile>(async (file) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                OnProgressTextChanged(new ProgressTextEventArgs($"Moving file {file.SourceFilePath} to {file.DestinationFilePath}."));
+                OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Moving file {0} to {1}.", file.SourceFilePath, file.DestinationFilePath)));
                 bool result = await await _backgroundQueue.QueueTaskAsync(() => _fileMover.MoveFileAsync(file, cancellationToken));
                 if (result)
                 {
                     OnFileMoved(new FileMovedEventArgs(file));
-                    OnProgressTextChanged(new ProgressTextEventArgs($"Finished {file.DestinationFilePath}."));
+                    OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Finished moving file to {0}.", file.DestinationFilePath)));
                     _logger.TraceMessage(string.Format("Successfully {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, _settings.CopyFiles ? "copied" : "moved"));
                 }
                 else
                 {
                     _logger.TraceMessage(string.Format("Failed to {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, _settings.CopyFiles ? "copy" : "move"));
                 }
-            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
+            }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1, CancellationToken = cancellationToken });
             //actually move/copy the files one at a time
             foreach (MatchedFile file in filesToMove)
             {

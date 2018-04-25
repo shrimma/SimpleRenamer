@@ -90,7 +90,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
             }
         }
 
-        private string newFileNameFormat = "{ShowName} - S{Season}E{Episode} - {EpisodeName}";
+        private string newFileNameFormat = string.Empty;
         /// <summary>
         /// Gets or sets the new file name format.
         /// </summary>                
@@ -124,7 +124,7 @@ namespace Sarjee.SimpleRenamer.Common.Model
             }
         }
 
-        private List<string> validExtensions = new List<string>() { ".264", ".3g2", ".3gp", ".arf", ".asf", ".asx", ".avi", ".bik", ".dash", ".dvr", ".flv", ".h264", ".m2t", ".m2ts", ".m4v", ".mkv", ".mod", ".mov", ".mp4", ".mpeg", ".mpg", ".mts", ".ogv", ".rmvb", ".swf", ".tod", ".tp", ".ts", ".vob", ".webm", ".wmv" };
+        private List<string> validExtensions = new List<string>();
         /// <summary>
         /// Gets or sets the valid extensions.
         /// </summary>                

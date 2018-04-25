@@ -16,23 +16,26 @@ namespace Sarjee.SimpleRenamer.Common.Movie.Interface
         /// Scrapes the details asynchronous.
         /// </summary>
         /// <param name="episode">The episode.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        Task<MatchedFile> ScrapeDetailsAsync(MatchedFile episode);
+        Task<MatchedFile> ScrapeDetailsAsync(MatchedFile episode, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the possible movies for file.
         /// </summary>
         /// <param name="showName">Name of the show.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        Task<List<DetailView>> GetPossibleMoviesForFileAsync(string showName);
+        Task<List<DetailView>> GetPossibleMoviesForFileAsync(string showName, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the file with matched movie.
         /// </summary>
         /// <param name="movieId">The movie identifier.</param>
         /// <param name="matchedFile">The matched file.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        Task<MatchedFile> UpdateFileWithMatchedMovieAsync(string movieId, MatchedFile matchedFile);
+        Task<MatchedFile> UpdateFileWithMatchedMovieAsync(string movieId, MatchedFile matchedFile, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets a movie and it's banner

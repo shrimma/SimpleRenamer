@@ -1,6 +1,6 @@
 ﻿using MahApps.Metro;
 
-namespace Sarjee.SimpleRenamer.ThemeManagerHelper
+namespace Sarjee.SimpleRenamer.WPF.ThemeManagerHelper
 {
     public class AccentItem
     {

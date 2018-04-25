@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net471</TargetFrameworks>
     <Product>Sarjee.SimpleRenamer.Common</Product>
     <Company>Sarjee</Company>
     <Authors>Sarjee</Authors>
@@ -13,8 +13,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="RestSharp" Version="106.2.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="RestSharp" Version="106.2.2" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

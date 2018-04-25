@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net471</TargetFrameworks>
     <AssemblyName>Sarjee.SimpleRenamer.Common.TV</AssemblyName>
     <RootNamespace>Sarjee.SimpleRenamer.Common.TV</RootNamespace>
     <Company>Sarjee</Company>
     <Authors>Sarjee</Authors>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

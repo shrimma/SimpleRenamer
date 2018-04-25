@@ -7,6 +7,7 @@ using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Framework.Core;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -148,7 +149,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             //setup mocks
             mockConfigurationManager.Setup(x => x.Settings).Returns(new Settings());
-            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new List<Mapping>());
             mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == castle1), null, It.IsAny<bool>())).Returns(castle1);
             mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == castle2), null, It.IsAny<bool>())).Returns(castle2);
             mockFileMover.Setup(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
@@ -176,7 +177,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             //setup mocks
             mockConfigurationManager.Setup(x => x.Settings).Returns(new Settings());
-            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new ShowNameMapping());
+            mockConfigurationManager.SetupGet(x => x.ShowNameMappings).Returns(new List<Mapping>());
             mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == castle1), null, It.IsAny<bool>())).Returns(castle1);
             mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == castle2), null, It.IsAny<bool>())).Returns(castle2);
             mockFileMover.Setup(x => x.CreateDirectoriesAndQueueDownloadBanners(It.Is<MatchedFile>(i => i == spectre), null, It.IsAny<bool>())).Returns(spectre);

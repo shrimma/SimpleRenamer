@@ -1,4 +1,5 @@
 ﻿using Jot;
+using MahApps.Metro;
 using MahApps.Metro.Controls;
 using Sarjee.SimpleRenamer.Common.EventArguments;
 using Sarjee.SimpleRenamer.Common.Interface;
@@ -8,6 +9,7 @@ using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.EventArguments;
 using Sarjee.SimpleRenamer.Views;
 using Sarjee.SimpleRenamer.WPF;
+using Sarjee.SimpleRenamer.WPF.ThemeManagerHelper;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -39,18 +41,17 @@ namespace Sarjee.SimpleRenamer
         private IScanFiles _scanFiles;
         private IActionMatchedFiles _actionMatchedFiles;
         private IConfigurationManager _configurationManager;
-        private SelectShowWindow selectShowWindow;
-        private ShowDetailsWindow showDetailsWindow;
-        private MovieDetailsWindow movieDetailsWindow;
-        private SettingsWindow settingsWindow;
-        private ISettings settings;
-        private string EditShowCurrentFolder;
-        private string EditShowTvdbShowName;
-        private string EditShowTvdbId;
-        private string MediaTypePath;
-        private string MediaTypeShowName;
-
-        private static StateTracker _stateTracker = new StateTracker();
+        private SelectShowWindow _selectShowWindow;
+        private ShowDetailsWindow _showDetailsWindow;
+        private MovieDetailsWindow _movieDetailsWindow;
+        private SettingsWindow _settingsWindow;
+        private string _editShowCurrentFolder;
+        private string _editShowTvdbShowName;
+        private string _editShowTvdbId;
+        private string _mediaTypePath;
+        private string _mediaTypeShowName;
+        private StateTracker _stateTracker = new StateTracker();
+        private MyAppTheme _currentAppTheme = new MyAppTheme();
 
         public MainWindow(ILogger logger, ITVShowMatcher tvShowMatcher, IMovieMatcher movieMatcher, IDependencyInjectionContext injectionContext, IActionMatchedFiles actionMatchedFiles, IScanFiles scanFiles, IConfigurationManager configManager)
         {
@@ -61,25 +62,41 @@ namespace Sarjee.SimpleRenamer
             _scanFiles = scanFiles ?? throw new ArgumentNullException(nameof(scanFiles));
             _actionMatchedFiles = actionMatchedFiles ?? throw new ArgumentNullException(nameof(actionMatchedFiles));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-
             try
             {
                 InitializeComponent();
                 _logger.TraceMessage("Starting Application", EventLevel.LogAlways);
                 this.SourceInitialized += (s, e) =>
                 {
+                    //setup statetracker
                     _stateTracker.Configure(this).Apply();
-                    settings = _configurationManager.Settings;
-                    _stateTracker.Configure(settings)
-                                    .IdentifyAs("Settings")
-                                    .AddProperties(nameof(settings.CopyFiles), nameof(settings.DestinationFolderMovie), nameof(settings.DestinationFolderTV), nameof(settings.NewFileNameFormat), nameof(settings.RenameFiles), nameof(settings.SubDirectories), nameof(settings.ValidExtensions), nameof(settings.WatchFolders))
+                    _stateTracker.Configure(_configurationManager)
+                                    .IdentifyAs("Configuration")
                                     .Apply();
-                    showDetailsWindow = _injectionContext.GetService<ShowDetailsWindow>();
-                    movieDetailsWindow = _injectionContext.GetService<MovieDetailsWindow>();
-                    settingsWindow = _injectionContext.GetService<SettingsWindow>();
-                    selectShowWindow = _injectionContext.GetService<SelectShowWindow>();
-                    selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
+                    _stateTracker.Configure(_currentAppTheme)
+                                    .AddProperties<MyAppTheme>(x => x.AccentName, x => x.AppThemeName)
+                                    .IdentifyAs("Theme")
+                                    .Apply();
+
+                    //get current accent from accent name                    
+                    Accent currentAccent = ThemeManager.Accents.FirstOrDefault(x => x.Name.Equals(_currentAppTheme.AccentName));
+                    AppTheme currentAppTheme = ThemeManager.AppThemes.FirstOrDefault(x => x.Name.Equals(_currentAppTheme.AppThemeName));
+                    //set the app style as saved
+                    ThemeManager.ChangeAppStyle(System.Windows.Application.Current, currentAccent, currentAppTheme);
+
+                    //grab windows
+                    _showDetailsWindow = _injectionContext.GetService<ShowDetailsWindow>();
+                    _movieDetailsWindow = _injectionContext.GetService<MovieDetailsWindow>();
+                    _settingsWindow = _injectionContext.GetService<SettingsWindow>();
+                    _selectShowWindow = _injectionContext.GetService<SelectShowWindow>();
+                    _selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
                     scannedEpisodes = new ObservableCollection<MatchedFile>();
+
+                    //set theme in settings window
+                    _settingsWindow.CurrentAccent = new AccentItem(currentAccent.Name, currentAccent.Resources["AccentBaseColor"].ToString(), currentAccent);
+                    _settingsWindow.CurrentAppTheme = currentAppTheme;
+                    _settingsWindow.SetupView();
+
                     ShowsListBox.ItemsSource = scannedEpisodes;
                     ShowsListBox.SizeChanged += ListView_SizeChanged;
                     ShowsListBox.Loaded += ListView_Loaded;
@@ -91,6 +108,7 @@ namespace Sarjee.SimpleRenamer
                     _scanFiles.RaiseProgressEvent += ProgressTextEvent;
                     ScanButton.IsEnabled = IsScanEnabled();
                     this.Closing += MainWindow_Closing;
+
                 };
             }
             catch (Exception ex)
@@ -101,12 +119,12 @@ namespace Sarjee.SimpleRenamer
 
         private bool IsScanEnabled()
         {
-            if (string.IsNullOrWhiteSpace(settings?.DestinationFolderMovie) && string.IsNullOrWhiteSpace(settings?.DestinationFolderTV))
+            if (string.IsNullOrWhiteSpace(_configurationManager.Settings?.DestinationFolderMovie) && string.IsNullOrWhiteSpace(_configurationManager.Settings?.DestinationFolderTV))
             {
                 ScanButton.ToolTip = "Destination TV and Movie folders must be configured in settings.";
                 return false;
             }
-            else if (settings?.WatchFolders?.Count < 1)
+            else if (_configurationManager.Settings?.WatchFolders?.Count < 1)
             {
                 ScanButton.ToolTip = "At least one Watch Folder must be configured in settings.";
                 return false;
@@ -217,7 +235,6 @@ namespace Sarjee.SimpleRenamer
                     {
                         e.Cancel = true;
                     }
-                    _configurationManager.SaveConfiguration();
                 }
                 catch (Exception ex)
                 {
@@ -286,7 +303,7 @@ namespace Sarjee.SimpleRenamer
                 List<MatchedFile> episodes = await Task.Run(async () =>
                 {
                     return await _scanFiles.ScanAsync(cts.Token);
-                });
+                }, cts.Token);
                 scannedEpisodes = new ObservableCollection<MatchedFile>(episodes);
                 _logger.TraceMessage($"Scan - Grabbed {scannedEpisodes.Count} episodes.", EventLevel.Informational);
                 ShowsListBox.ItemsSource = scannedEpisodes;
@@ -332,9 +349,9 @@ namespace Sarjee.SimpleRenamer
             {
                 _logger.TraceMessage("Settings button clicked.", EventLevel.Verbose);
                 //show the settings window
-                settingsWindow.ShowDialog();
-                settings = _configurationManager.Settings;
+                _settingsWindow.ShowDialog();
                 ScanButton.IsEnabled = IsScanEnabled();
+                _currentAppTheme.AccentName = _settingsWindow.CurrentAccent.AccentName;
             }
             catch (Exception ex)
             {
@@ -358,7 +375,7 @@ namespace Sarjee.SimpleRenamer
                 await Task.Run(async () =>
                 {
                     await _actionMatchedFiles.ActionAsync(scannedEpisodes, cts.Token);
-                });
+                }, cts.Token);
                 //add a bit of delay before the progress bar disappears
                 await Task.Delay(TimeSpan.FromMilliseconds(300));
             }
@@ -384,8 +401,8 @@ namespace Sarjee.SimpleRenamer
                 _logger.TraceMessage("MatchShow button clicked.", EventLevel.Verbose);
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
                 FileType fileType = temp.FileType;
-                MediaTypePath = temp.SourceFilePath;
-                MediaTypeShowName = temp.ShowName;
+                _mediaTypePath = temp.SourceFilePath;
+                _mediaTypeShowName = temp.ShowName;
                 _logger.TraceMessage($"User selected to match show for {temp.ShowName}.", EventLevel.Informational);
                 if (fileType == FileType.Unknown)
                 {
@@ -409,22 +426,22 @@ namespace Sarjee.SimpleRenamer
             string title = fileType == FileType.TvShow ? "TV" : "Movie";
             DisableUi();
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            selectShowWindow.SearchForMatches($"Simple Renamer - {title} - Select Show For File {Path.GetFileName(MediaTypePath)}", MediaTypeShowName, fileType);
+            _selectShowWindow.SearchForMatches($"Simple Renamer - {title} - Select Show For File {Path.GetFileName(_mediaTypePath)}", _mediaTypeShowName, fileType);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            selectShowWindow.ShowDialog();
+            _selectShowWindow.ShowDialog();
         }
 
         private void MediaTypeTv_Click(object sender, RoutedEventArgs e)
         {
             MediaTypeFlyout.IsOpen = false;
-            _logger.TraceMessage($"User selected that {MediaTypeShowName} is a TV Show.", EventLevel.Informational);
+            _logger.TraceMessage($"User selected that {_mediaTypeShowName} is a TV Show.", EventLevel.Informational);
             OpenSelectShowWindow(FileType.TvShow);
         }
 
         private void MediaTypeMovie_Click(object sender, RoutedEventArgs e)
         {
             MediaTypeFlyout.IsOpen = false;
-            _logger.TraceMessage($"User selected that {MediaTypeShowName} is a Movie.", EventLevel.Informational);
+            _logger.TraceMessage($"User selected that {_mediaTypeShowName} is a Movie.", EventLevel.Informational);
             OpenSelectShowWindow(FileType.Movie);
         }
 
@@ -432,14 +449,15 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
+                cts = new CancellationTokenSource();
                 //if nothing was selected then just return
                 if (string.IsNullOrWhiteSpace(e.ID))
                 {
-                    _logger.TraceMessage($"User did not match {MediaTypeShowName}.", EventLevel.Informational);
+                    _logger.TraceMessage($"User did not match {_mediaTypeShowName}.", EventLevel.Informational);
                     return;
                 }
 
-                _logger.TraceMessage($"User selected a match for {MediaTypeShowName}.", EventLevel.Informational);
+                _logger.TraceMessage($"User selected a match for {_mediaTypeShowName}.", EventLevel.Informational);
                 //remove the selected item from listbox (we are modifying it so listbox gets confused)
                 MatchedFile temp = (MatchedFile)ShowsListBox.SelectedItem;
                 RemoveFileFromView(temp);
@@ -448,11 +466,11 @@ namespace Sarjee.SimpleRenamer
                 MatchedFile updatedFile;
                 if (e.Type == FileType.TvShow)
                 {
-                    updatedFile = await _tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync(e.ID, temp);
+                    updatedFile = await _tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync(e.ID, temp, cts.Token);
                 }
                 else
                 {
-                    updatedFile = await _movieMatcher.UpdateFileWithMatchedMovieAsync(e.ID, temp);
+                    updatedFile = await _movieMatcher.UpdateFileWithMatchedMovieAsync(e.ID, temp, cts.Token);
                 }
 
                 //add the file back to the view
@@ -488,12 +506,10 @@ namespace Sarjee.SimpleRenamer
                 IgnoreFlyout.IsOpen = false;
                 MatchedFile tempEp = (MatchedFile)ShowsListBox.SelectedItem;
                 _logger.TraceMessage($"User opted to ignore {tempEp.SourceFilePath}.", EventLevel.Informational);
-                IgnoreList ignoreList = _configurationManager.IgnoredFiles;
-                if (!ignoreList.IgnoreFiles.Contains(tempEp.SourceFilePath))
+                if (!_configurationManager.IgnoredFiles.Contains(tempEp.SourceFilePath))
                 {
-                    ignoreList.IgnoreFiles.Add(tempEp.SourceFilePath);
+                    _configurationManager.IgnoredFiles.Add(tempEp.SourceFilePath);
                     RemoveFileFromView(tempEp);
-                    _configurationManager.IgnoredFiles = ignoreList;
                 }
             }
             catch (Exception ex)
@@ -523,7 +539,7 @@ namespace Sarjee.SimpleRenamer
                 MatchShowButton.IsEnabled = false;
                 DetailButton.IsEnabled = true;
             }
-            if (temp != null && !temp.SkippedExactSelection && settings.RenameFiles)
+            if (temp != null && !temp.SkippedExactSelection && _configurationManager.Settings.RenameFiles)
             {
                 //we can only edit show folders
                 if (temp.FileType == FileType.TvShow)
@@ -547,14 +563,14 @@ namespace Sarjee.SimpleRenamer
                 if (tempEp?.FileType == FileType.TvShow)
                 {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                    showDetailsWindow.GetSeriesInfo(tempEp.TVDBShowId, cts.Token);
-                    showDetailsWindow.ShowDialog();
+                    _showDetailsWindow.GetSeriesInfo(tempEp.TVDBShowId, cts.Token);
+                    _showDetailsWindow.ShowDialog();
                 }
                 else if (tempEp?.FileType == FileType.Movie)
                 {
-                    movieDetailsWindow.GetMovieInfo(tempEp.TMDBShowId.ToString(), cts.Token);
+                    _movieDetailsWindow.GetMovieInfo(tempEp.TMDBShowId.ToString(), cts.Token);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                    movieDetailsWindow.ShowDialog();
+                    _movieDetailsWindow.ShowDialog();
                 }
             }
             catch (Exception ex)
@@ -572,10 +588,10 @@ namespace Sarjee.SimpleRenamer
                 if (tempEp?.FileType == FileType.TvShow)
                 {
                     _logger.TraceMessage(string.Format("Editing - show {0}, season {1}, episode {2}, TVDBShowId {3}", tempEp.ShowName, tempEp.Season, tempEp.EpisodeNumber, tempEp.TVDBShowId), EventLevel.Verbose);
-                    ShowNameMapping snm = _configurationManager.ShowNameMappings;
-                    if (snm?.Mappings?.Count > 0)
+                    List<Mapping> showNameMappings = _configurationManager.ShowNameMappings;
+                    if (showNameMappings?.Count > 0)
                     {
-                        Mapping mapping = snm.Mappings.FirstOrDefault(x => x.TVDBShowID.Equals(tempEp.TVDBShowId));
+                        Mapping mapping = showNameMappings.FirstOrDefault(x => x.TVDBShowID.Equals(tempEp.TVDBShowId));
                         if (mapping != null)
                         {
                             _logger.TraceMessage(string.Format("Edit - Mapping found {0}", mapping.FileShowName), EventLevel.Verbose);
@@ -598,10 +614,10 @@ namespace Sarjee.SimpleRenamer
         {
             try
             {
-                string folderPath = Path.Combine(settings.DestinationFolderTV, string.IsNullOrWhiteSpace(mapping.CustomFolderName) ? mapping.TVDBShowName : mapping.CustomFolderName);
-                EditShowCurrentFolder = mapping.CustomFolderName;
-                EditShowTvdbShowName = tempEp.ShowName;
-                EditShowTvdbId = tempEp.TVDBShowId;
+                string folderPath = Path.Combine(_configurationManager.Settings.DestinationFolderTV, string.IsNullOrWhiteSpace(mapping.CustomFolderName) ? mapping.TVDBShowName : mapping.CustomFolderName);
+                _editShowCurrentFolder = mapping.CustomFolderName;
+                _editShowTvdbShowName = tempEp.ShowName;
+                _editShowTvdbId = tempEp.TVDBShowId;
                 EditShowFolderTextBox.Text = folderPath;
                 EditFlyout.IsOpen = true;
             }
@@ -619,15 +635,15 @@ namespace Sarjee.SimpleRenamer
                 bool updateMapping = false;
                 string currentText = EditShowFolderTextBox.Text;
 
-                if (EditShowCurrentFolder.Equals(currentText))
+                if (_editShowCurrentFolder.Equals(currentText))
                 {
                     //if the custom folder name hasn't changed then don't do anything
                 }
-                else if (EditShowTvdbShowName.Equals(currentText) && string.IsNullOrWhiteSpace(EditShowCurrentFolder))
+                else if (_editShowTvdbShowName.Equals(currentText) && string.IsNullOrWhiteSpace(_editShowCurrentFolder))
                 {
                     //if the new folder name equals the tvshowname and no customfolder name then dont do anything
                 }
-                else if (EditShowTvdbShowName.Equals(currentText) && !string.IsNullOrWhiteSpace(EditShowCurrentFolder))
+                else if (_editShowTvdbShowName.Equals(currentText) && !string.IsNullOrWhiteSpace(_editShowCurrentFolder))
                 {
                     //if the new folder name equals the tvshowname and there is a customfoldername already then reset customfoldername to blank
                     currentText = string.Empty;
@@ -641,14 +657,12 @@ namespace Sarjee.SimpleRenamer
 
                 if (updateMapping)
                 {
-                    ShowNameMapping snm = _configurationManager.ShowNameMappings;
-                    if (snm?.Mappings?.Count > 0)
+                    if (_configurationManager.ShowNameMappings?.Count > 0)
                     {
-                        Mapping mapping = snm.Mappings.FirstOrDefault(x => x.TVDBShowID.Equals(EditShowTvdbId));
+                        Mapping mapping = _configurationManager.ShowNameMappings.FirstOrDefault(x => x.TVDBShowID.Equals(_editShowTvdbId));
                         if (mapping != null)
                         {
                             mapping.CustomFolderName = currentText;
-                            _configurationManager.ShowNameMappings = snm;
                         }
                     }
                 }
@@ -667,13 +681,13 @@ namespace Sarjee.SimpleRenamer
         private void EditShowFolderTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             string currentText = EditShowFolderTextBox.Text;
-            EditShowFolderTextBox.Text = currentText.Replace(settings.DestinationFolderTV + @"\", "");
+            EditShowFolderTextBox.Text = currentText.Replace(_configurationManager.Settings.DestinationFolderTV + @"\", "");
         }
 
         private void EditShowFolderTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             string currentText = EditShowFolderTextBox.Text;
-            EditShowFolderTextBox.Text = Path.Combine(settings.DestinationFolderTV, currentText);
+            EditShowFolderTextBox.Text = Path.Combine(_configurationManager.Settings.DestinationFolderTV, currentText);
         }
     }
 }

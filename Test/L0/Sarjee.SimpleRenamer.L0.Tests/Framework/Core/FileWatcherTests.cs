@@ -162,7 +162,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         public void FileWatcher_SearchFoldersAsync_Success()
         {
             mockConfigurationManager.SetupGet(x => x.Settings).Returns(new Settings() { WatchFolders = new List<string> { _path }, ValidExtensions = new List<string> { ".mkv" } });
-            mockConfigurationManager.SetupGet(x => x.IgnoredFiles).Returns(new IgnoreList());
+            mockConfigurationManager.SetupGet(x => x.IgnoredFiles).Returns(new List<string>());
             IFileWatcher fileWatcher = GetFileWatcher();
 
             List<string> filesFound = null;

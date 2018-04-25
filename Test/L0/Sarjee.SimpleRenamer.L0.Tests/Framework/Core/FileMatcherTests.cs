@@ -19,23 +19,19 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
         private Mock<ILogger> mockLogger;
         private Mock<IConfigurationManager> mockConfigurationManager;
-        private static RegexFile regexFile;
-
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext testContext)
-        {
-            JsonSerializer jsonSerializer = new JsonSerializer();
-            using (StreamReader file = File.OpenText(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "RegexExpressions.json")))
-            {
-                regexFile = (RegexFile)jsonSerializer.Deserialize(file, typeof(RegexFile));
-            }
-        }
 
         [TestInitialize]
         public void TestInitialize()
         {
             mockLogger = mockRepository.Create<ILogger>();
             mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
+            mockConfigurationManager.Setup(x => x.RegexExpressions).Returns(new List<RegexExpression>
+                    {
+                        new RegexExpression("^((?<series_name>.+?)[. _-]+)?s(?<season_num>\\d+)[. _-]*e(?<ep_num>\\d+)(([. _-]*e|-)(?<extra_ep_num>(?!(1080|720)[pi])\\d+))*[. _-]*((?<extra_info>.+?)((?<![. _-])-(?<release_group>[^-]+))?)?$", true, true),
+                        new RegexExpression("^((?<series_name>.+?)[\\[. _-]+)?(?<season_num>\\d+)x(?<ep_num>\\d+)(([. _-]*x|-)(?<extra_ep_num>(?!(1080|720)[pi])(?!(?<=x)264)\\d+))*[\\]. _-]*((?<extra_info>.+?)((?<![. _-])-(?<release_group>[^-]+))?)?$", true, true),
+                        new RegexExpression("^((?<series_name>.*[^ (_.])[ (_.]+((?<ShowYearA>\\d{4})([ (_.]+S(?<season_num>\\d{1,2})E(?<ep_num>\\d{1,2}))?|(?<!\\d{4}[ (_.])S(?<SeasonB>\\d{1,2})E(?<EpisodeB>\\d{1,2})|(?<EpisodeC>\\d{3}))|(?<ShowNameB>.+))", true, true),
+                        new RegexExpression("^((?<movie_title>.*[^ (_.])[ (_.]+(?!(1080|720)[pi])(?<movie_year>\\d{4})(.*))", true, false)
+                    });
         }
 
         private IFileMatcher GetFileMatcher()
@@ -80,7 +76,6 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         [TestCategory(TestCategories.Core)]
         public void FileMatcher_SearchFilesAsync_NullFile_ThrowsArgumentNullException()
         {
-            mockConfigurationManager.Setup(x => x.RegexExpressions).Returns(regexFile);
             IFileMatcher fileMatcher = GetFileMatcher();
             List<string> input = new List<string>() { null };
 
@@ -93,7 +88,6 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
         [TestCategory(TestCategories.Core)]
         public void FileMatcher_SearchFilesAsync_Success()
         {
-            mockConfigurationManager.Setup(x => x.RegexExpressions).Returns(regexFile);
             IFileMatcher fileMatcher = GetFileMatcher();
             List<string> input = new List<string>() { @"C:\Castle.S01E01.mkv", @"C:\Person.Of.Interest.S01E01.mkv", @"Skyfall.mkv", @"Spectre.2016.mkv" };
 

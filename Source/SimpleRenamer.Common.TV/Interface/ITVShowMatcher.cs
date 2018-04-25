@@ -17,15 +17,17 @@ namespace Sarjee.SimpleRenamer.Common.TV.Interface
         /// Searches the show by name asynchronous.
         /// </summary>
         /// <param name="showName">Name of the show.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        Task<CompleteSeries> SearchShowByNameAsync(string showName);
+        Task<CompleteSeries> SearchShowByNameAsync(string showName, CancellationToken cancellationToken);
 
         /// <summary>
         /// Searches the show by identifier asynchronous.
         /// </summary>
         /// <param name="showId">The show identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        Task<CompleteSeries> SearchShowByIdAsync(string showId);
+        Task<CompleteSeries> SearchShowByIdAsync(string showId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the file with series details.
@@ -46,16 +48,22 @@ namespace Sarjee.SimpleRenamer.Common.TV.Interface
         /// Gets a list of possible series that a TVEpisode name could relate to
         /// </summary>
         /// <param name="showName">The showname to be searched</param>
-        /// <returns>A list of series</returns>
-        Task<List<DetailView>> GetPossibleShowsForEpisodeAsync(string showName);
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// A list of series
+        /// </returns>
+        Task<List<DetailView>> GetPossibleShowsForEpisodeAsync(string showName, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates a TV episode with the details of a selected series
         /// </summary>
         /// <param name="selectedSeriesId">The TVDB show id selected</param>
         /// <param name="episode">Episode to be updated</param>
-        /// <returns>The updated TV episode</returns>
-        Task<MatchedFile> UpdateEpisodeWithMatchedSeriesAsync(string selectedSeriesId, MatchedFile episode);
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The updated TV episode
+        /// </returns>
+        Task<MatchedFile> UpdateEpisodeWithMatchedSeriesAsync(string selectedSeriesId, MatchedFile episode, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets a show and its banner
