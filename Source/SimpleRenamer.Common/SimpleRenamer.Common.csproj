@@ -13,8 +13,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="RestSharp" Version="106.2.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="RestSharp" Version="106.2.2" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
