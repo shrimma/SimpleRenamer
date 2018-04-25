@@ -1,4 +1,5 @@
-﻿using Sarjee.SimpleRenamer.Common.EventArguments;
+﻿using LazyCache;
+using Sarjee.SimpleRenamer.Common.EventArguments;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Model;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
@@ -22,6 +23,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         private ILogger _logger;
         private ITmdbManager _tmdbManager;
         private IHelper _helper;
+        private IAppCache _cache;
         private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
         /// <summary>
@@ -44,6 +46,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _tmdbManager = tmdbManager ?? throw new ArgumentNullException(nameof(tmdbManager));
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
+            _cache = new CachingService();
         }
 
         /// <summary>
@@ -55,7 +58,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         {
             _logger.TraceMessage($"Get possible matches for movie: {movieName}.", EventLevel.Verbose);
             ConcurrentBag<DetailView> movies = new ConcurrentBag<DetailView>();
-            SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movieName, cancellationToken);
+            SearchContainer<SearchMovie> results = await _cache.GetOrAddAsync(movieName, async () => await _tmdbManager.SearchMovieByNameAsync(movieName, cancellationToken));
             if (results != null)
             {
                 _parallelOptions.CancellationToken = cancellationToken;
@@ -99,7 +102,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             _logger.TraceMessage($"Scraping Movie Details for {movie.SourceFilePath}.", EventLevel.Verbose);
             OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Scraping details for file {0}", movie.SourceFilePath)));
 
-            SearchContainer<SearchMovie> results = await _tmdbManager.SearchMovieByNameAsync(movie.ShowName, cancellationToken, movie.Year);
+            SearchContainer<SearchMovie> results = await _cache.GetOrAddAsync(movie.ShowName, async () => await _tmdbManager.SearchMovieByNameAsync(movie.ShowName, cancellationToken, movie.Year));
             //if only one result then we can safely match
             if (results?.Results?.Count == 1)
             {
@@ -137,7 +140,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 if (!string.IsNullOrWhiteSpace(movieId))
                 {
                     _logger.TraceMessage($"Updating File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
-                    SearchMovie searchedMovie = await _tmdbManager.SearchMovieByIdAsync(movieId, cancellationToken);
+                    SearchMovie searchedMovie = await _cache.GetOrAddAsync(movieId, async () => await _tmdbManager.SearchMovieByIdAsync(movieId, cancellationToken));
                     matchedFile.ActionThis = true;
                     matchedFile.SkippedExactSelection = false;
                     matchedFile.ShowName = searchedMovie.Title;
@@ -168,8 +171,8 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         public async Task<(Common.Movie.Model.Movie movie, Uri bannerUri)> GetMovieWithBannerAsync(string movieId, CancellationToken cancellationToken)
         {
             _logger.TraceMessage($"Getting MovieInfo for MovieId: {movieId}.", EventLevel.Verbose);
-            Common.Movie.Model.Movie matchedMovie = await _tmdbManager.GetMovieAsync(movieId, cancellationToken);
-            Uri bannerUri = string.IsNullOrWhiteSpace(matchedMovie.PosterPath) ? null : new Uri(await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath, cancellationToken));
+            Common.Movie.Model.Movie matchedMovie = await _cache.GetOrAddAsync(movieId, async () => await _tmdbManager.GetMovieAsync(movieId, cancellationToken));
+            Uri bannerUri = string.IsNullOrWhiteSpace(matchedMovie.PosterPath) ? null : new Uri(await _cache.GetOrAddAsync(matchedMovie.PosterPath, async () => await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath, cancellationToken)));
 
             _logger.TraceMessage($"Got MovieInfo for MovieId: {movieId}.", EventLevel.Verbose);
             return (matchedMovie, bannerUri);
