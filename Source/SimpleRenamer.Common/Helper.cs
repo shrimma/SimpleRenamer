@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using Polly;
+using Polly.Retry;
 using RestSharp;
 using Sarjee.SimpleRenamer.Common.Helpers;
 using Sarjee.SimpleRenamer.Common.Interface;
@@ -19,6 +21,12 @@ namespace Sarjee.SimpleRenamer.Common
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IHelper" />
     public class Helper : IHelper
     {
+        private static readonly int[] httpStatusCodesWorthRetrying = { 401, 408, 500, 502, 503, 504, 598, 599 };
+        private const int maxRetryCount = 10;
+        private readonly PolicyBuilder<IRestResponse> _retryPolicyBase = Policy
+                .Handle<WebException>()
+                .OrResult<IRestResponse>(r => httpStatusCodesWorthRetrying.Contains((int)r.StatusCode));
+
         /// <summary>
         /// Checks whether the input is a valid file extension
         /// </summary>
@@ -119,7 +127,6 @@ namespace Sarjee.SimpleRenamer.Common
             return await restClient.ExecuteTaskAsync(request, cancellationToken);
         }
 
-        private int[] httpStatusCodesWorthRetrying = { 408, 500, 502, 503, 504, 598, 599 };
         /// <summary>
         /// Executes a rest request.
         /// </summary>
@@ -137,68 +144,34 @@ namespace Sarjee.SimpleRenamer.Common
         /// <exception cref="InvalidOperationException"></exception>
         public async Task<T> ExecuteRestRequestAsync<T>(IRestClient restClient, IRestRequest restRequest, JsonSerializerSettings jsonSerializerSettings, int maxRetryCount, int maxBackoffSeconds, CancellationToken cancellationToken, Func<Task> loginCallback = null) where T : class
         {
-            int currentRetry = 0;
-            int offset = ThreadLocalRandom.Instance.Next(100, 500);
-            while (currentRetry < maxRetryCount)
+            //configure retry policy based on the max retry count and if there is a login
+            RetryPolicy<IRestResponse> retryPolicy = _retryPolicyBase.WaitAndRetryAsync(maxRetryCount, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), async (response, timespan, retryCount, context) =>
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                try
+                //log the retry attempt etc verbose
+                if (response?.Result?.StatusCode == HttpStatusCode.Unauthorized && loginCallback != null)
                 {
-                    //execute the request
-                    IRestResponse response = await ExecuteRequestAsync(restClient, restRequest, cancellationToken);
-                    //if no errors and statuscode ok then deserialize the response
-                    if (response.ErrorException == null && response?.StatusCode == HttpStatusCode.OK)
-                    {
-                        T result = JsonConvert.DeserializeObject<T>(response.Content, jsonSerializerSettings);
-                        return result;
-                    }
-                    //if status code indicates transient error then throw timeoutexception
-                    else if (httpStatusCodesWorthRetrying.Contains((int)response?.StatusCode))
-                    {
-                        throw new TimeoutException();
-                    }
-                    //if status code indicates unauthorized then throw unauthorized exception
-                    else if (response?.StatusCode == HttpStatusCode.Unauthorized)
-                    {
-                        throw new UnauthorizedAccessException();
-                    }
-                    //else throw the responses exception
-                    else
-                    {
-                        if (response?.ErrorException != null)
-                        {
-                            throw response?.ErrorException;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    }
+                    await loginCallback();
                 }
-                catch (TimeoutException)
+            });
+
+            var actualResponse = await retryPolicy.ExecuteAsync((ct) => ExecuteRequestAsync(restClient, restRequest, ct), cancellationToken);
+
+            if (actualResponse.ErrorException == null && actualResponse?.StatusCode == HttpStatusCode.OK)
+            {
+                T result = JsonConvert.DeserializeObject<T>(actualResponse.Content, jsonSerializerSettings);
+                return result;
+            }
+            else
+            {
+                if (actualResponse?.ErrorException != null)
                 {
-                    currentRetry++;
-                    await ExponentialDelayAsync(offset, currentRetry, maxBackoffSeconds, cancellationToken);
+                    throw actualResponse?.ErrorException;
                 }
-                catch (WebException)
+                else
                 {
-                    currentRetry++;
-                    await ExponentialDelayAsync(offset, currentRetry, maxBackoffSeconds, cancellationToken);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    currentRetry++;
-                    if (loginCallback != null)
-                    {
-                        await loginCallback();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    throw new InvalidOperationException();
                 }
             }
-            return null;
         }
     }
 }
