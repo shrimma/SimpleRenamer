@@ -129,7 +129,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             _logger.TraceMessage($"Moving File {episode.SourceFilePath} to {episode.DestinationFilePath}.", EventLevel.Verbose);
             FileInfo fromFile = new FileInfo(episode.SourceFilePath);
             FileInfo toFile = new FileInfo(episode.DestinationFilePath);
-            if (QuickOperation(fromFile, toFile))
+            bool quickOperation = QuickOperation(fromFile, toFile);
+            if (quickOperation)
             {
                 OSMoveRename(fromFile, toFile);
             }
@@ -150,13 +151,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private bool QuickOperation(FileInfo fromFile, FileInfo toFile)
         {
-            _logger.TraceMessage("QuickOperation - Start", EventLevel.Verbose);
             if ((fromFile == null) || (toFile == null) || (fromFile.Directory == null) || (toFile.Directory == null))
             {
                 return false;
             }
 
-            _logger.TraceMessage("QuickOperation - End", EventLevel.Verbose);
             return (_settings.RenameFiles && !_settings.CopyFiles && (fromFile.Directory.Root.FullName.ToLower() == toFile.Directory.Root.FullName.ToLower())); // same device ... TODO: UNC paths?
         }
 
@@ -222,12 +221,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
             try
             {
-                var fileOptions = FileOptions.Asynchronous | FileOptions.SequentialScan;
-                var bufferSize = 4096;
+                FileOptions fileOptions = FileOptions.Asynchronous | FileOptions.SequentialScan;
+                int bufferSize = (int)Math.Pow(2, 19);
 
-                using (var sourceStream = new FileStream(fromFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, fileOptions))
+                using (FileStream sourceStream = new FileStream(fromFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, fileOptions))
                 {
-                    using (var destinationStream = new FileStream(toFile.FullName, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize, fileOptions))
+                    using (FileStream destinationStream = new FileStream(toFile.FullName, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize, fileOptions))
                     {
                         await sourceStream.CopyToAsync(destinationStream, bufferSize, cancellationToken);
                     }
