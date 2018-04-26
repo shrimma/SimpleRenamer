@@ -25,14 +25,13 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private const string _fileNameSeason = "{Season}";
         private const string _fileNameEpisodeNumber = "{Episode}";
         private const string _fileNameEpisodeName = "{EpisodeName}";
-
-        private ILogger _logger;
-        private IConfigurationManager _configurationManager;
-        private ISettings _settings;
-        private ITvdbManager _tvdbManager;
-        private IHelper _helper;
-        private IAppCache _cache;
-        private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = (Environment.ProcessorCount + 2) };
+        private readonly ILogger _logger;
+        private readonly IConfigurationManager _configurationManager;
+        private readonly ISettings _settings;
+        private readonly ITvdbManager _tvdbManager;
+        private readonly IHelper _helper;
+        private readonly IAppCache _cache;
+        private readonly ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = (Environment.ProcessorCount + 2) };
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

@@ -22,14 +22,14 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IScanFiles" />
     public class ScanFiles : IScanFiles
     {
-        private ILogger _logger;
-        private IConfigurationManager _configurationManager;
-        private IFileWatcher _fileWatcher;
-        private ITVShowMatcher _tvShowMatcher;
-        private IMovieMatcher _movieMatcher;
-        private IFileMatcher _fileMatcher;
-        private ISettings _settings;
-        private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
+        private readonly ILogger _logger;
+        private readonly IConfigurationManager _configurationManager;
+        private readonly IFileWatcher _fileWatcher;
+        private readonly ITVShowMatcher _tvShowMatcher;
+        private readonly IMovieMatcher _movieMatcher;
+        private readonly IFileMatcher _fileMatcher;
+        private readonly ISettings _settings;
+        private readonly ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
         /// <summary>
         /// Fired whenever some noticeable progress is made
         /// </summary>
@@ -126,7 +126,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 scannedFiles.AddRange(otherVideoFiles);
             }
 
-            OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Scanned and matched '{0}' files found - '{1}' TV, '{2}' Movie, '{3}' Unknown", matchedFiles.Count, scannedEpisodes.Count, scannedMovies.Count, otherVideoFiles.Count)));
+            OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Scanned and matched '{0}' files found - '{1}' TV, '{2}' Movie, '{3}' Unknown", matchedFiles.Count, scannedEpisodes?.Count, scannedMovies?.Count, otherVideoFiles?.Count)));
 
             //return the full list of tv, movies, and unknown files
             return scannedFiles;

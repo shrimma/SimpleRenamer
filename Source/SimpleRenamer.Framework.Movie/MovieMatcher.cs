@@ -20,11 +20,11 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Movie.Interface.IMovieMatcher" />
     public class MovieMatcher : IMovieMatcher
     {
-        private ILogger _logger;
-        private ITmdbManager _tmdbManager;
-        private IHelper _helper;
-        private IAppCache _cache;
-        private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
+        private readonly ILogger _logger;
+        private readonly ITmdbManager _tmdbManager;
+        private readonly IHelper _helper;
+        private readonly IAppCache _cache;
+        private readonly ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

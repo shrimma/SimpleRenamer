@@ -19,13 +19,13 @@ namespace Sarjee.SimpleRenamer.Framework.TV
     /// <seealso cref="Sarjee.SimpleRenamer.Common.TV.Interface.ITvdbManager" />
     public class TvdbManager : ITvdbManager
     {
-        private string _apiKey;
         private const int _maxRetryCount = 10;
         private const int _maxBackoffSeconds = 2;
-        private IHelper _helper;
-        private IRestClient _restClient;
         private const string _baseUrl = "https://api.thetvdb.com";
-        private JsonSerializerSettings _jsonSerializerSettings;
+        private readonly string _apiKey;
+        private readonly IHelper _helper;
+        private readonly IRestClient _restClient;
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TvdbManager" /> class.

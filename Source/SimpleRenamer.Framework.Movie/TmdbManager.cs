@@ -21,9 +21,9 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         private string _posterBaseUri;
         private const int _maxRetryCount = 10;
         private const int _maxBackoffSeconds = 2;
-        private IRestClient _restClient;
-        private IHelper _helper;
-        private JsonSerializerSettings _jsonSerializerSettings;
+        private readonly IRestClient _restClient;
+        private readonly IHelper _helper;
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
         private const string _baseUrl = "https://api.themoviedb.org";
 
         /// <summary>

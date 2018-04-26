@@ -15,9 +15,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IFileMover" />
     public class FileMover : IFileMover
     {
-        private IBannerDownloader _bannerDownloader;
-        private ILogger _logger;
-        private ISettings _settings;
+        private readonly IBannerDownloader _bannerDownloader;
+        private readonly ILogger _logger;
+        private readonly ISettings _settings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileMover"/> class.
