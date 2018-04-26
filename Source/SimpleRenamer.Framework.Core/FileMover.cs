@@ -82,16 +82,15 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     if (downloadBanner)
                     {
                         _logger.TraceMessage($"Downloading images for {episode.SourceFilePath}", EventLevel.Verbose);
-                        bool bannerResult;
                         if (!string.IsNullOrWhiteSpace(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
                         {
                             //Grab Show banner if required
-                            bannerResult = _bannerDownloader.QueueBannerDownload(episode.ShowImage, showDirectory);
+                            _bannerDownloader.QueueBannerDownload(episode.ShowImage, showDirectory);
                         }
                         if (!string.IsNullOrWhiteSpace(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))
                         {
                             //Grab Season banner if required
-                            bannerResult = _bannerDownloader.QueueBannerDownload(episode.SeasonImage, seasonDirectory);
+                            _bannerDownloader.QueueBannerDownload(episode.SeasonImage, seasonDirectory);
                         }
                     }
                 }
@@ -222,6 +221,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             try
             {
                 FileOptions fileOptions = FileOptions.Asynchronous | FileOptions.SequentialScan;
+                //set buffer 1024
                 int bufferSize = (int)Math.Pow(2, 19);
 
                 using (FileStream sourceStream = new FileStream(fromFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, fileOptions))
