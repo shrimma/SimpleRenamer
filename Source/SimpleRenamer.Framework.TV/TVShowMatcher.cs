@@ -81,18 +81,26 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
 
             _logger.TraceMessage($"Searching for Show by Name: {showName}.", EventLevel.Verbose);
-            List<SeriesSearchData> searchResults = await _cache.GetOrAddAsync(showName, async () => await _tvdbManager.SearchSeriesByNameAsync(showName, cancellationToken));
-            //if theres only one match then scape the specific show and return this
-            if (searchResults?.Count == 1)
+            try
             {
-                _logger.TraceMessage($"Found only one show for Name: {showName}. So will grab all series data.", EventLevel.Verbose);
-                string seriesId = searchResults[0].Id.ToString();
-                return await _cache.GetOrAddAsync(seriesId, async () => await _tvdbManager.GetSeriesByIdAsync(seriesId, cancellationToken));
-            }
+                List<SeriesSearchData> searchResults = await _cache.GetOrAddAsync(showName, async () => await _tvdbManager.SearchSeriesByNameAsync(showName, cancellationToken));
+                //if theres only one match then scape the specific show and return this
+                if (searchResults?.Count == 1)
+                {
+                    _logger.TraceMessage($"Found only one show for Name: {showName}. So will grab all series data.", EventLevel.Verbose);
+                    string seriesId = searchResults[0].Id.ToString();
+                    return await _cache.GetOrAddAsync(seriesId, async () => await _tvdbManager.GetSeriesByIdAsync(seriesId, cancellationToken));
+                }
 
-            //else there were no matches or more than 1 possible match so return null
-            _logger.TraceMessage($"Found {searchResults?.Count} shows for Name: {showName}. So cannot match this accurately, must be matched by user.", EventLevel.Verbose);
-            return null;
+                //else there were no matches or more than 1 possible match so return null
+                _logger.TraceMessage($"Found {searchResults?.Count} shows for Name: {showName}. So cannot match this accurately, must be matched by user.", EventLevel.Verbose);
+                return null;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.TraceException(ex);
+                return null;
+            }
         }
 
         /// <summary>
@@ -108,10 +116,18 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 throw new ArgumentNullException(nameof(showId));
             }
 
-            _logger.TraceMessage($"Searching for Show details by ShowId: {showId}.", EventLevel.Verbose);
-            CompleteSeries series = await _cache.GetOrAddAsync(showId, async () => await _tvdbManager.GetSeriesByIdAsync(showId, cancellationToken));
-            _logger.TraceMessage($"Found Show details by ShowId: {showId}.", EventLevel.Verbose);
-            return series;
+            try
+            {
+                _logger.TraceMessage($"Searching for Show details by ShowId: {showId}.", EventLevel.Verbose);
+                CompleteSeries series = await _cache.GetOrAddAsync(showId, async () => await _tvdbManager.GetSeriesByIdAsync(showId, cancellationToken));
+                _logger.TraceMessage($"Found Show details by ShowId: {showId}.", EventLevel.Verbose);
+                return series;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.TraceException(ex);
+                return null;
+            }
         }
 
         /// <summary>
@@ -265,38 +281,47 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
             return await Task.Run(async () =>
             {
-                _logger.TraceMessage($"Get possible matches for show: {showName}.", EventLevel.Verbose);
-                ConcurrentBag<DetailView> shows = new ConcurrentBag<DetailView>();
-                List<SeriesSearchData> seriesSearchData = await _cache.GetOrAddAsync(showName, async () => await _tvdbManager.SearchSeriesByNameAsync(showName, cancellationToken));
-                if (seriesSearchData?.Count > 0)
+                try
                 {
-                    _parallelOptions.CancellationToken = cancellationToken;
-                    Parallel.ForEach(seriesSearchData, _parallelOptions, (series) =>
-                    {
-                        try
-                        {
-                            string desc = string.Empty;
-                            if (series.Overview?.Length > 50)
-                            {
-                                //TODO use Span
-                                desc = string.Format("{0}...", series.Overview.Substring(0, 50));
-                            }
-                            else if (series.Overview?.Length <= 50)
-                            {
-                                desc = series.Overview;
-                            }
-                            string airedDate = DateTime.TryParseExact(series.FirstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt) ? dt.Year.ToString() : "N/A";
-                            shows.Add(new DetailView(series.Id.ToString(), series.SeriesName, airedDate, desc));
-                        }
-                        catch (Exception)
-                        {
-                            //TODO just swallow this?
-                        }
-                    });
-                }
 
-                _logger.TraceMessage($"Found {shows.Count} possible matches for show: {showName}.", EventLevel.Verbose);
-                return shows.ToList();
+                    _logger.TraceMessage($"Get possible matches for show: {showName}.", EventLevel.Verbose);
+                    ConcurrentBag<DetailView> shows = new ConcurrentBag<DetailView>();
+                    List<SeriesSearchData> seriesSearchData = await _cache.GetOrAddAsync(showName, async () => await _tvdbManager.SearchSeriesByNameAsync(showName, cancellationToken));
+                    if (seriesSearchData?.Count > 0)
+                    {
+                        _parallelOptions.CancellationToken = cancellationToken;
+                        Parallel.ForEach(seriesSearchData, _parallelOptions, (series) =>
+                        {
+                            try
+                            {
+                                string desc = string.Empty;
+                                if (series.Overview?.Length > 50)
+                                {
+                                    //TODO use Span
+                                    desc = string.Format("{0}...", series.Overview.Substring(0, 50));
+                                }
+                                else if (series.Overview?.Length <= 50)
+                                {
+                                    desc = series.Overview;
+                                }
+                                string airedDate = DateTime.TryParseExact(series.FirstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt) ? dt.Year.ToString() : "N/A";
+                                shows.Add(new DetailView(series.Id.ToString(), series.SeriesName, airedDate, desc));
+                            }
+                            catch (Exception)
+                            {
+                                //TODO just swallow this?
+                            }
+                        });
+                    }
+
+                    _logger.TraceMessage($"Found {shows.Count} possible matches for show: {showName}.", EventLevel.Verbose);
+                    return shows.ToList();
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _logger.TraceException(ex);
+                    return null;
+                }
             }, cancellationToken);
         }
 
@@ -328,7 +353,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 cancellationToken.ThrowIfCancellationRequested();
                 _logger.TraceMessage($"Updating {episode.SourceFilePath} with Matched SeriesId {selectedSeriesId}.", EventLevel.Verbose);
                 string originalShowName = episode.ShowName;
-                CompleteSeries seriesInfo = await _cache.GetOrAddAsync(selectedSeriesId, async () => await SearchShowByIdAsync(selectedSeriesId, cancellationToken));
+                CompleteSeries seriesInfo = await SearchShowByIdAsync(selectedSeriesId, cancellationToken);
                 episode = UpdateFileWithSeriesDetails(episode, seriesInfo);
 
                 if (!string.IsNullOrWhiteSpace(episode.TVDBShowId))
@@ -360,29 +385,37 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 throw new ArgumentNullException(nameof(showId));
             }
 
-            _logger.TraceMessage($"Getting show and banner for ShowId: {showId}.", EventLevel.Verbose);
-            CompleteSeries matchedSeries = await _cache.GetOrAddAsync(showId, async () => await _tvdbManager.GetSeriesByIdAsync(showId, cancellationToken));
-            Uri bannerUri = null;
-
-            if (matchedSeries?.SeriesBanners?.Count > 0)
+            try
             {
-                SeriesImageQueryResult banner = matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault();
-                if (!string.IsNullOrWhiteSpace(banner?.FileName))
+                _logger.TraceMessage($"Getting show and banner for ShowId: {showId}.", EventLevel.Verbose);
+                CompleteSeries matchedSeries = await _cache.GetOrAddAsync(showId, async () => await _tvdbManager.GetSeriesByIdAsync(showId, cancellationToken));
+                Uri bannerUri = null;
+
+                if (matchedSeries?.SeriesBanners?.Count > 0)
                 {
-                    bannerUri = new Uri(_tvdbManager.GetBannerUri(banner.FileName));
+                    SeriesImageQueryResult banner = matchedSeries.SeriesBanners.OrderByDescending(s => s.RatingsInfo.Average).FirstOrDefault();
+                    if (!string.IsNullOrWhiteSpace(banner?.FileName))
+                    {
+                        bannerUri = new Uri(_tvdbManager.GetBannerUri(banner.FileName));
+                    }
+                    else
+                    {
+                        //TODO create a no image uri for banner
+                    }
                 }
                 else
                 {
-                    //TODO create a no image uri for banner
+                    //TODO create a no image found banner                
                 }
-            }
-            else
-            {
-                //TODO create a no image found banner                
-            }
 
-            _logger.TraceMessage($"Got show and banner for ShowId: {showId}.", EventLevel.Verbose);
-            return (matchedSeries, bannerUri);
+                _logger.TraceMessage($"Got show and banner for ShowId: {showId}.", EventLevel.Verbose);
+                return (matchedSeries, bannerUri);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.TraceException(ex);
+                throw;
+            }
         }
 
         protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)

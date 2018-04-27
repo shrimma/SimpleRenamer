@@ -93,7 +93,16 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 request.AddParameter("year", movieYear.ToString());
             }
 
-            return await _helper.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+            //execute the request and check we got a result
+            SearchContainer<SearchMovie> results = await _helper.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+            if (results != null)
+            {
+                return results;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unable to find any results for {movieName}");
+            }
         }
 
         /// <summary>
@@ -114,7 +123,15 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             request.AddParameter("append_to_response", "credits", ParameterType.QueryString);
 
             //execute the request
-            return await _helper.ExecuteRestRequestAsync<Common.Movie.Model.Movie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+            Common.Movie.Model.Movie result = await _helper.ExecuteRestRequestAsync<Common.Movie.Model.Movie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+            if (result != null)
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Failed to retrieve data for {movieId}");
+            }
         }
 
         /// <summary>
@@ -129,11 +146,20 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             {
                 throw new ArgumentNullException(nameof(movieId));
             }
+
             //create request
             IRestRequest request = new RestRequest(string.Format("/3/movie/{0}", movieId), Method.GET);
             request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
-            return await _helper.ExecuteRestRequestAsync<SearchMovie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+            SearchMovie result = await _helper.ExecuteRestRequestAsync<SearchMovie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+            if (result != null)
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unable to retrieve movie result for {movieId}.");
+            }
         }
 
         /// <summary>
@@ -158,7 +184,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 }
                 else
                 {
-                    return string.Empty;
+                    throw new InvalidOperationException("Unable to retrieve Poster URI path");
                 }
             }
 

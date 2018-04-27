@@ -64,34 +64,41 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         {
             _logger.TraceMessage($"Get possible matches for movie: {movieName}.", EventLevel.Verbose);
             ConcurrentBag<DetailView> movies = new ConcurrentBag<DetailView>();
-            SearchContainer<SearchMovie> results = await _cache.GetOrAddAsync(movieName, async () => await _tmdbManager.SearchMovieByNameAsync(movieName, cancellationToken));
-            if (results != null)
+            try
             {
-                _parallelOptions.CancellationToken = cancellationToken;
-                Parallel.ForEach(results.Results, _parallelOptions, (s) =>
+                SearchContainer<SearchMovie> results = await _cache.GetOrAddAsync(movieName, async () => await _tmdbManager.SearchMovieByNameAsync(movieName, cancellationToken));
+                if (results != null)
                 {
-                    try
+                    _parallelOptions.CancellationToken = cancellationToken;
+                    Parallel.ForEach(results.Results, _parallelOptions, (s) =>
                     {
-                        string desc = "N/A";
-                        if (!string.IsNullOrWhiteSpace(s.Overview))
+                        try
                         {
-                            if (s.Overview.Length > 50)
+                            string desc = "N/A";
+                            if (!string.IsNullOrWhiteSpace(s.Overview))
                             {
-                                //TODO use Span
-                                desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                                if (s.Overview.Length > 50)
+                                {
+                                    //TODO use Span
+                                    desc = string.Format("{0}...", s.Overview.Substring(0, 50));
+                                }
+                                else
+                                {
+                                    desc = s.Overview;
+                                }
                             }
-                            else
-                            {
-                                desc = s.Overview;
-                            }
+                            movies.Add(new DetailView(s.Id.ToString(), s.Title, s.ReleaseDate.HasValue ? s.ReleaseDate.Value.Year.ToString() : "N/A", desc));
                         }
-                        movies.Add(new DetailView(s.Id.ToString(), s.Title, s.ReleaseDate.HasValue ? s.ReleaseDate.Value.Year.ToString() : "N/A", desc));
-                    }
-                    catch (Exception)
-                    {
-                        //TODO just swalow this?
-                    }
-                });
+                        catch (Exception)
+                        {
+                            //TODO just swallow this?
+                        }
+                    });
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                //no movies found let clients handle this
             }
 
             _logger.TraceMessage($"Found {movies.Count} possible matches for movie: {movieName}.", EventLevel.Verbose);
@@ -108,21 +115,29 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             _logger.TraceMessage($"Scraping Movie Details for {movie.SourceFilePath}.", EventLevel.Verbose);
             OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Scraping details for file {0}", movie.SourceFilePath)));
 
-            SearchContainer<SearchMovie> results = await _cache.GetOrAddAsync(movie.ShowName, async () => await _tmdbManager.SearchMovieByNameAsync(movie.ShowName, cancellationToken, movie.Year));
-            //if only one result then we can safely match
-            if (results?.Results?.Count == 1)
+            try
             {
-                //if theres only one match then scape the specific show
-                movie.TMDBShowId = results.Results[0].Id;
-                movie.ShowImage = results.Results[0].PosterPath;
-                movie.NewFileName = _helper.RemoveSpecialCharacters(movie.ShowName);
-                _logger.TraceMessage($"Found exactly one result so can safely match {movie.SourceFilePath} with MovieId {movie.TMDBShowId}.", EventLevel.Verbose);
+                SearchContainer<SearchMovie> results = await _cache.GetOrAddAsync(movie.ShowName, async () => await _tmdbManager.SearchMovieByNameAsync(movie.ShowName, cancellationToken, movie.Year));
+                //if only one result then we can safely match
+                if (results?.Results?.Count == 1)
+                {
+                    //if theres only one match then scape the specific show
+                    movie.TMDBShowId = results.Results[0].Id;
+                    movie.ShowImage = results.Results[0].PosterPath;
+                    movie.NewFileName = _helper.RemoveSpecialCharacters(movie.ShowName);
+                    _logger.TraceMessage($"Found exactly one result so can safely match {movie.SourceFilePath} with MovieId {movie.TMDBShowId}.", EventLevel.Verbose);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Too many results found");
+                }
             }
-            else
+            catch (InvalidOperationException)
             {
+                //no movies found let clients handle this
                 movie.ActionThis = false;
                 movie.SkippedExactSelection = true;
-                _logger.TraceMessage($"Found {results?.Results?.Count} possible matches for {movie.SourceFilePath}. So must be manually matched by user.", EventLevel.Verbose);
+                _logger.TraceMessage($"{movie.SourceFilePath} must be manually matched by user.", EventLevel.Verbose);
             }
             return movie;
         }
@@ -142,24 +157,33 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 
             return await Task.Run(async () =>
             {
-                //id can be null if user didn't select a match
-                if (!string.IsNullOrWhiteSpace(movieId))
+                try
                 {
-                    _logger.TraceMessage($"Updating File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
-                    SearchMovie searchedMovie = await _cache.GetOrAddAsync(movieId, async () => await _tmdbManager.SearchMovieByIdAsync(movieId, cancellationToken));
-                    matchedFile.ActionThis = true;
-                    matchedFile.SkippedExactSelection = false;
-                    matchedFile.ShowName = searchedMovie.Title;
-                    matchedFile.TMDBShowId = searchedMovie.Id;
-                    matchedFile.Year = searchedMovie.ReleaseDate.HasValue ? searchedMovie.ReleaseDate.Value.Year : 0;
-                    matchedFile.ShowImage = searchedMovie.PosterPath;
-                    matchedFile.FileType = FileType.Movie;
-                    matchedFile.NewFileName = _helper.RemoveSpecialCharacters(searchedMovie.Title);
-                    _logger.TraceMessage($"Updated File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
+                    //id can be null if user didn't select a match
+                    if (!string.IsNullOrWhiteSpace(movieId))
+                    {
+                        _logger.TraceMessage($"Updating File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
+                        SearchMovie searchedMovie = await _cache.GetOrAddAsync(string.Format("SearchMovie{0}", movieId), async () => await _tmdbManager.SearchMovieByIdAsync(movieId, cancellationToken));
+                        matchedFile.ActionThis = true;
+                        matchedFile.SkippedExactSelection = false;
+                        matchedFile.ShowName = searchedMovie.Title;
+                        matchedFile.TMDBShowId = searchedMovie.Id;
+                        matchedFile.Year = searchedMovie.ReleaseDate.HasValue ? searchedMovie.ReleaseDate.Value.Year : 0;
+                        matchedFile.ShowImage = searchedMovie.PosterPath;
+                        matchedFile.FileType = FileType.Movie;
+                        matchedFile.NewFileName = _helper.RemoveSpecialCharacters(searchedMovie.Title);
+                        _logger.TraceMessage($"Updated File {matchedFile.SourceFilePath} with info for MovieId: {movieId}.", EventLevel.Verbose);
+                    }
+                    else
+                    {
+                        _logger.TraceMessage($"Did not update File {matchedFile.SourceFilePath} as no MovieId provided.", EventLevel.Verbose);
+                        matchedFile.ActionThis = false;
+                        matchedFile.SkippedExactSelection = true;
+                    }
                 }
-                else
+                catch (InvalidOperationException)
                 {
-                    _logger.TraceMessage($"Did not update File {matchedFile.SourceFilePath} as no MovieId provided.", EventLevel.Verbose);
+                    _logger.TraceMessage($"Did not update File {matchedFile.SourceFilePath} as unable to retrieve data.", EventLevel.Warning);
                     matchedFile.ActionThis = false;
                     matchedFile.SkippedExactSelection = true;
                 }
@@ -177,11 +201,18 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         public async Task<(Common.Movie.Model.Movie movie, Uri bannerUri)> GetMovieWithBannerAsync(string movieId, CancellationToken cancellationToken)
         {
             _logger.TraceMessage($"Getting MovieInfo for MovieId: {movieId}.", EventLevel.Verbose);
-            Common.Movie.Model.Movie matchedMovie = await _cache.GetOrAddAsync(movieId, async () => await _tmdbManager.GetMovieAsync(movieId, cancellationToken));
-            Uri bannerUri = string.IsNullOrWhiteSpace(matchedMovie.PosterPath) ? null : new Uri(await _cache.GetOrAddAsync(matchedMovie.PosterPath, async () => await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath, cancellationToken)));
-
-            _logger.TraceMessage($"Got MovieInfo for MovieId: {movieId}.", EventLevel.Verbose);
-            return (matchedMovie, bannerUri);
+            try
+            {
+                Common.Movie.Model.Movie matchedMovie = await _cache.GetOrAddAsync(string.Format("Movie{0}", movieId), async () => await _tmdbManager.GetMovieAsync(movieId, cancellationToken));
+                Uri bannerUri = string.IsNullOrWhiteSpace(matchedMovie.PosterPath) ? null : new Uri(await _cache.GetOrAddAsync(matchedMovie.PosterPath, async () => await _tmdbManager.GetPosterUriAsync(matchedMovie.PosterPath, cancellationToken)));
+                _logger.TraceMessage($"Got MovieInfo for MovieId: {movieId}.", EventLevel.Verbose);
+                return (matchedMovie, bannerUri);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.TraceException(ex);
+                throw;
+            }
         }
 
         protected virtual void OnProgressTextChanged(ProgressTextEventArgs e)

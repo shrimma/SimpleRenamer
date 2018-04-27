@@ -77,12 +77,12 @@ namespace Sarjee.SimpleRenamer.Common.TV.Model
         /// </exception>
         public CompleteSeries(Series series, List<SeriesActorsData> actors, List<BasicEpisode> episodes, List<SeriesImageQueryResult> posters, List<SeriesImageQueryResult> seasonPosters, List<SeriesImageQueryResult> seriesBanners)
         {
-            Series = series ?? throw new ArgumentNullException(nameof(series));
-            Actors = actors ?? throw new ArgumentNullException(nameof(actors));
-            Episodes = episodes ?? throw new ArgumentNullException(nameof(episodes));
-            Posters = posters ?? throw new ArgumentNullException(nameof(posters));
-            SeasonPosters = seasonPosters ?? throw new ArgumentNullException(nameof(seasonPosters));
-            SeriesBanners = seriesBanners ?? throw new ArgumentNullException(nameof(seriesBanners));
+            Series = series;
+            Actors = actors;
+            Episodes = episodes;
+            Posters = posters;
+            SeasonPosters = seasonPosters;
+            SeriesBanners = seriesBanners;
         }
 
         #region Equality
