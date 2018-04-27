@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Flurl;
+using Flurl.Http;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RestSharp;
 using Sarjee.SimpleRenamer.Common.Interface;
@@ -21,7 +23,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         private string _posterBaseUri;
         private const int _maxRetryCount = 10;
         private const int _maxBackoffSeconds = 2;
-        private readonly IRestClient _restClient;
+        private readonly Url _restClient;
         private readonly IHelper _helper;
         private readonly JsonSerializerSettings _jsonSerializerSettings;
         private const string _baseUrl = "https://api.themoviedb.org";
@@ -45,10 +47,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
 
             //create the rest client
-            _restClient = new RestClient(_baseUrl);
-            _restClient.AddDefaultHeader("content-type", "application/json");
-            _restClient.AddDefaultParameter("api_key", configManager.TmDbApiKey, ParameterType.QueryString);
-            _restClient.AddDefaultParameter("language", CultureInfo.CurrentCulture.Name, ParameterType.QueryString);
+            _restClient = _baseUrl.SetQueryParams(new { api_key = configManager.TmDbApiKey, language = CultureInfo.CurrentCulture.Name });
 
             //setup lease timeout to account for DNS changes
             ServicePoint sp = ServicePointManager.FindServicePoint(new Uri(_baseUrl));
@@ -84,16 +83,17 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 throw new ArgumentNullException(nameof(movieName));
             }
 
-            //create the request
-            IRestRequest request = new RestRequest("/3/search/movie", Method.GET);
-            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            request.AddParameter("query", movieName, ParameterType.QueryString);
+            //create request
+            Url request = _restClient
+                .AppendPathSegment("/3/search/movie")
+                .SetQueryParam("query", movieName);
             if (movieYear.HasValue)
             {
-                request.AddParameter("year", movieYear.ToString());
+                request.SetQueryParam("year", movieYear.ToString());
             }
 
-            return await _helper.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+            //execute the request
+            return await request.WithHeader("content-type", "application/json").GetJsonAsync<SearchContainer<SearchMovie>>(cancellationToken);
         }
 
         /// <summary>
@@ -108,13 +108,14 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             {
                 throw new ArgumentNullException(nameof(movieId));
             }
+
             //create the request
-            IRestRequest request = new RestRequest(string.Format("/3/movie/{0}", movieId), Method.GET);
-            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            request.AddParameter("append_to_response", "credits", ParameterType.QueryString);
+            Url request = _restClient
+                .AppendPathSegment(string.Format("/3/movie/{0}", movieId))
+                .SetQueryParam("append_to_response", "credits");
 
             //execute the request
-            return await _helper.ExecuteRestRequestAsync<Common.Movie.Model.Movie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+            return await request.WithHeader("content-type", "application/json").GetJsonAsync<Common.Movie.Model.Movie>(cancellationToken);
         }
 
         /// <summary>
@@ -129,11 +130,12 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             {
                 throw new ArgumentNullException(nameof(movieId));
             }
-            //create request
-            IRestRequest request = new RestRequest(string.Format("/3/movie/{0}", movieId), Method.GET);
-            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
 
-            return await _helper.ExecuteRestRequestAsync<SearchMovie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+            //create the request
+            Url request = _restClient.AppendPathSegment(string.Format("/3/movie/{0}", movieId));
+
+            //execute request
+            return await request.WithHeader("content-type", "application/json").GetJsonAsync<SearchMovie>(cancellationToken);
         }
 
         /// <summary>
@@ -166,12 +168,11 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         }
         private async Task<string> GetPosterBaseUriAsync(CancellationToken cancellationToken)
         {
-            //create the request
-            IRestRequest request = new RestRequest("/3/configuration", Method.GET);
-            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
+            Url request = _restClient.AppendPathSegment("/3/configuration");
 
-            //execute the request
-            TMDbConfig tmdbConfig = await _helper.ExecuteRestRequestAsync<TMDbConfig>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+
+            //execute the request            
+            TMDbConfig tmdbConfig = await request.WithHeader("content-type", "application/json").GetJsonAsync<TMDbConfig>(cancellationToken);
             if (!string.IsNullOrWhiteSpace(tmdbConfig?.Images?.SecureBaseUrl))
             {
                 return tmdbConfig.Images.SecureBaseUrl;
