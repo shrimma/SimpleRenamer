@@ -177,8 +177,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             string result = null;
             Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync("getPoster", CancellationToken.None);
 
-            action1.ShouldNotThrow();
-            result.Should().BeNullOrEmpty();
+            action1.ShouldThrow<InvalidOperationException>();
         }
 
         [TestMethod]
