@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net471</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Sarjee.SimpleRenamer.DependencyInjection</AssemblyName>
     <RootNamespace>Sarjee.SimpleRenamer.DependencyInjection</RootNamespace>
     <Authors>Sarjee</Authors>
     <Company>Sarjee</Company>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="LazyCache" Version="2.0.0-beta02" />
     <PackageReference Include="Ninject" Version="3.3.4" />
   </ItemGroup>
   <ItemGroup>

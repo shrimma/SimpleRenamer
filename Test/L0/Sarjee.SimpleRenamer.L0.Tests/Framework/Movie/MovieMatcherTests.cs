@@ -1,4 +1,6 @@
 ﻿using FluentAssertions;
+using LazyCache;
+using LazyCache.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
@@ -11,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
 {
@@ -22,6 +23,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         private Mock<ILogger> mockLogger;
         private Mock<ITmdbManager> mockTmdbManager;
         private Mock<IHelper> mockHelper;
+        private IAppCache mockCache;
 
         [TestInitialize]
         public void TestInitialize()
@@ -29,6 +31,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             mockLogger = mockRepository.Create<ILogger>();
             mockTmdbManager = mockRepository.Create<ITmdbManager>();
             mockHelper = mockRepository.Create<IHelper>();
+            mockCache = new MockCachingService
+            {
+                DefaultCachePolicy = new CacheDefaults()
+            };
         }
 
         private IMovieMatcher GetMovieMatcher(bool testable = false)
@@ -36,11 +42,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             IMovieMatcher movieMatcher = null;
             if (testable)
             {
-                movieMatcher = new TestableMovieMatcher(mockLogger.Object, mockTmdbManager.Object, mockHelper.Object);
+                movieMatcher = new TestableMovieMatcher(mockLogger.Object, mockTmdbManager.Object, mockHelper.Object, mockCache);
             }
             else
             {
-                movieMatcher = new MovieMatcher(mockLogger.Object, mockTmdbManager.Object, mockHelper.Object);
+                movieMatcher = new MovieMatcher(mockLogger.Object, mockTmdbManager.Object, mockHelper.Object, mockCache);
             }
             movieMatcher.Should().NotBeNull();
             movieMatcher.RaiseProgressEvent += MovieMatcher_RaiseProgressEvent;
@@ -57,13 +63,15 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void MovieMatcherCtor_NullArguments_ThrowsArgumentNullException()
         {
-            Action action1 = () => new MovieMatcher(null, null, null);
-            Action action2 = () => new MovieMatcher(mockLogger.Object, null, null);
-            Action action3 = () => new MovieMatcher(mockLogger.Object, mockTmdbManager.Object, null);
+            Action action1 = () => new MovieMatcher(null, null, null, null);
+            Action action2 = () => new MovieMatcher(mockLogger.Object, null, null, null);
+            Action action3 = () => new MovieMatcher(mockLogger.Object, mockTmdbManager.Object, null, null);
+            Action action4 = () => new MovieMatcher(mockLogger.Object, mockTmdbManager.Object, mockHelper.Object, null);
 
             action1.ShouldThrow<ArgumentNullException>();
             action2.ShouldThrow<ArgumentNullException>();
             action3.ShouldThrow<ArgumentNullException>();
+            action4.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]

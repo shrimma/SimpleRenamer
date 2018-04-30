@@ -20,10 +20,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IFileMatcher" />
     public class FileMatcher : IFileMatcher
     {
-        private List<RegexExpression> _regexExpressions;
+        private readonly List<RegexExpression> _regexExpressions;
+        private readonly ILogger _logger;
+        private readonly ParallelOptions _parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded };
         private List<(Regex regex, bool isForTv)> _activeRegex;
-        private ILogger _logger;
-        private ParallelOptions _parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded };
+
         /// <summary>
         /// Fired whenever some noticeable progress is made
         /// </summary>

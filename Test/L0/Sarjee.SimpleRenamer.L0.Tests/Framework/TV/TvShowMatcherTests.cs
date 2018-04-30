@@ -1,4 +1,6 @@
 ﻿using FluentAssertions;
+using LazyCache;
+using LazyCache.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sarjee.SimpleRenamer.Common.Interface;
@@ -11,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
 {
@@ -23,6 +24,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         private Mock<IConfigurationManager> mockConfigurationManager;
         private Mock<ITvdbManager> mockTvdbManager;
         private Mock<IHelper> mockHelper;
+        private IAppCache mockCache;
 
         [TestInitialize]
         public void TestInitialize()
@@ -31,6 +33,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
             mockTvdbManager = mockRepository.Create<ITvdbManager>();
             mockHelper = mockRepository.Create<IHelper>();
+            mockCache = new MockCachingService
+            {
+                DefaultCachePolicy = new CacheDefaults()
+            };
         }
 
         private ITVShowMatcher GetTVShowMatcher(bool testable = false)
@@ -38,11 +44,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             ITVShowMatcher tvShowMatcher = null;
             if (testable)
             {
-                tvShowMatcher = new TestableTvShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, mockHelper.Object);
+                tvShowMatcher = new TestableTvShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, mockHelper.Object, mockCache);
             }
             else
             {
-                tvShowMatcher = new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, mockHelper.Object);
+                tvShowMatcher = new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, mockHelper.Object, mockCache);
             }
             tvShowMatcher.Should().NotBeNull();
             tvShowMatcher.RaiseProgressEvent += TvShowMatcher_RaiseProgressEvent;
@@ -59,15 +65,17 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         [TestCategory(TestCategories.TV)]
         public void TVShowMatcherCtor_NullArguments_ThrowsArgumentNullException()
         {
-            Action action1 = () => new TVShowMatcher(null, null, null, null);
-            Action action2 = () => new TVShowMatcher(mockLogger.Object, null, null, null);
-            Action action3 = () => new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, null, null);
-            Action action4 = () => new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, null);
+            Action action1 = () => new TVShowMatcher(null, null, null, null, null);
+            Action action2 = () => new TVShowMatcher(mockLogger.Object, null, null, null, null);
+            Action action3 = () => new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, null, null, null);
+            Action action4 = () => new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, null, null);
+            Action action5 = () => new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, mockHelper.Object, null);
 
             action1.ShouldThrow<ArgumentNullException>();
             action2.ShouldThrow<ArgumentNullException>();
             action3.ShouldThrow<ArgumentNullException>();
             action4.ShouldThrow<ArgumentNullException>();
+            action5.ShouldThrow<ArgumentNullException>();
         }
 
         [TestMethod]

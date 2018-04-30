@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net471</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Sarjee.SimpleRenamer.Framework.Core</AssemblyName>
     <RootNamespace>Sarjee.SimpleRenamer.Framework.Core</RootNamespace>
     <Authors>Sarjee</Authors>

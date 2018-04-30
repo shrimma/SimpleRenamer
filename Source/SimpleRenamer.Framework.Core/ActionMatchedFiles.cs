@@ -19,12 +19,12 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IActionMatchedFiles" />
     public class ActionMatchedFiles : IActionMatchedFiles
     {
-        private ILogger _logger;
-        private IBackgroundQueue _backgroundQueue;
-        private IFileMover _fileMover;
-        private IConfigurationManager _configurationManager;
-        private IMessageSender _messageSender;
-        private ISettings _settings;
+        private readonly ILogger _logger;
+        private readonly IBackgroundQueue _backgroundQueue;
+        private readonly IFileMover _fileMover;
+        private readonly IConfigurationManager _configurationManager;
+        private readonly IMessageSender _messageSender;
+        private readonly ISettings _settings;
         /// <summary>
         /// Fired whenever a preprocessor action is completed on a file
         /// </summary>

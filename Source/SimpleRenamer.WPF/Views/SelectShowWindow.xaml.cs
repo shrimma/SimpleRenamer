@@ -6,6 +6,7 @@ using Sarjee.SimpleRenamer.EventArguments;
 using Sarjee.SimpleRenamer.WPF;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -89,10 +90,10 @@ namespace Sarjee.SimpleRenamer.Views
             ShowListBox.ItemsSource = null;
 
             //grab possible matches
-            List<DetailView> possibleMatches = await GetMatches(searchString, fileType, _cancellationTokenSource.Token);
+            List<DetailView> possibleMatches = await GetMatches(searchString, _cancellationTokenSource.Token);
 
             //if we have matches then enable UI elements
-            if (possibleMatches != null && possibleMatches.Count > 0)
+            if (possibleMatches?.Any() == true)
             {
                 ShowListBox.ItemsSource = possibleMatches;
                 EnableUi();
@@ -100,6 +101,7 @@ namespace Sarjee.SimpleRenamer.Views
             else
             {
                 //even if no matches we show the listbox to hide the progressspinner
+                //TODO popup a message to mention we couldn't find anything
                 ShowListBox.Visibility = Visibility.Visible;
             }
             SearchTextBox.Focus();
@@ -158,7 +160,7 @@ namespace Sarjee.SimpleRenamer.Views
             }
         }
 
-        private async Task<List<DetailView>> GetMatches(string searchText, FileType fileType, CancellationToken cancellationToken)
+        private async Task<List<DetailView>> GetMatches(string searchText, CancellationToken cancellationToken)
         {
             List<DetailView> possibleMatches = null;
             if (_currentFileType == FileType.TvShow)
@@ -175,7 +177,7 @@ namespace Sarjee.SimpleRenamer.Views
 
         private async void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            CancellationTokenSource cts = new CancellationTokenSource();
+            _cancellationTokenSource = new CancellationTokenSource();
             string searchText = e.Parameter.ToString();
             await SearchForMatches(this.Title, searchText, _currentFileType);
         }

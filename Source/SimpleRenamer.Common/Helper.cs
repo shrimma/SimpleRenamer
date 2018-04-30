@@ -162,6 +162,10 @@ namespace Sarjee.SimpleRenamer.Common
                     {
                         throw new UnauthorizedAccessException();
                     }
+                    else if (response?.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return null;
+                    }
                     //else throw the responses exception
                     else
                     {

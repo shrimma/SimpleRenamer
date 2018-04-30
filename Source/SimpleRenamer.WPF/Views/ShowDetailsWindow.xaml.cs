@@ -18,8 +18,8 @@ namespace Sarjee.SimpleRenamer.Views
     /// </summary>
     public partial class ShowDetailsWindow
     {
-        private ILogger _logger;
-        private ITVShowMatcher _showMatcher;
+        private readonly ILogger _logger;
+        private readonly ITVShowMatcher _showMatcher;
 
         public ShowDetailsWindow(ILogger logger, ITVShowMatcher showMatcher)
         {
@@ -82,7 +82,7 @@ namespace Sarjee.SimpleRenamer.Views
             ActorsListBox.ItemsSource = series.Actors;
 
             //set the episodes listbox
-            EpisodesListBox.ItemsSource = series.Episodes.OrderBy(x => x.AiredEpisodeNumber).OrderBy(x => x.AiredSeason);
+            EpisodesListBox.ItemsSource = series.Episodes.OrderBy(x => x.AiredEpisodeNumber).ThenBy(x => x.AiredSeason);
 
             //set the banner
             BitmapImage banner = new BitmapImage();

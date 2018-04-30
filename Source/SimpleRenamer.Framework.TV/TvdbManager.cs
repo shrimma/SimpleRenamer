@@ -19,13 +19,13 @@ namespace Sarjee.SimpleRenamer.Framework.TV
     /// <seealso cref="Sarjee.SimpleRenamer.Common.TV.Interface.ITvdbManager" />
     public class TvdbManager : ITvdbManager
     {
-        private string _apiKey;
         private const int _maxRetryCount = 10;
         private const int _maxBackoffSeconds = 2;
-        private IHelper _helper;
-        private IRestClient _restClient;
         private const string _baseUrl = "https://api.thetvdb.com";
-        private JsonSerializerSettings _jsonSerializerSettings;
+        private readonly string _apiKey;
+        private readonly IHelper _helper;
+        private readonly IRestClient _restClient;
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TvdbManager" /> class.
@@ -149,14 +149,13 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             SeriesImageQueryResults seasonPosters = getSeasonPostersTask.Result;
             SeriesImageQueryResults seriesBanners = getSeriesBannersTask.Result;
 
-            if (series != null && actors != null && episodes != null && seriesPosters != null && seasonPosters != null && seriesBanners != null)
+            if (series != null)
             {
-                return new CompleteSeries(series.Data, actors.Data, episodes.Data, seriesPosters.Data, seasonPosters.Data, seriesBanners.Data);
+                return new CompleteSeries(series?.Data, actors?.Data, episodes?.Data, seriesPosters?.Data, seasonPosters?.Data, seriesBanners?.Data);
             }
             else
             {
-                //TODO this should throw
-                return null;
+                throw new InvalidOperationException("Unable to retrieve all required data");
             }
         }
 
@@ -243,13 +242,20 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             IRestRequest request = new RestRequest(string.Format("/series/{0}/images/query", tmdbId), Method.GET);
             request.AddParameter("keyType", "season", ParameterType.QueryString);
 
-            //execute the request
-            SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
-            if (results == null)
+            try
             {
-                results = new SeriesImageQueryResults();
+                //execute the request
+                SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
+                if (results == null)
+                {
+                    results = new SeriesImageQueryResults();
+                }
+                return results;
             }
-            return results;
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -265,13 +271,20 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             IRestRequest request = new RestRequest(string.Format("/series/{0}/images/query", tmdbId), Method.GET);
             request.AddParameter("keyType", "series", ParameterType.QueryString);
 
-            //execute the request
-            SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
-            if (results == null)
+            try
             {
-                results = new SeriesImageQueryResults();
+                //execute the request
+                SeriesImageQueryResults results = await _helper.ExecuteRestRequestAsync<SeriesImageQueryResults>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken, () => Login(cancellationToken));
+                if (results == null)
+                {
+                    results = new SeriesImageQueryResults();
+                }
+                return results;
             }
-            return results;
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -306,7 +319,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             }
             else
             {
-                return null;
+                throw new InvalidOperationException($"Unable to find any results for {seriesName}.");
             }
         }
     }

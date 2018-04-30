@@ -18,9 +18,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IFileWatcher" />
     public class FileWatcher : IFileWatcher
     {
-        private ILogger _logger;
-        private IConfigurationManager _configurationManager;
-        private ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
+        private readonly ILogger _logger;
+        private readonly IConfigurationManager _configurationManager;
+        private readonly ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
         /// <summary>
         /// Fired whenever some noticeable progress is made

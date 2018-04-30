@@ -15,9 +15,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IFileMover" />
     public class FileMover : IFileMover
     {
-        private IBannerDownloader _bannerDownloader;
-        private ILogger _logger;
-        private ISettings _settings;
+        private readonly IBannerDownloader _bannerDownloader;
+        private readonly ILogger _logger;
+        private readonly ISettings _settings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileMover"/> class.
@@ -82,16 +82,15 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                     if (downloadBanner)
                     {
                         _logger.TraceMessage($"Downloading images for {episode.SourceFilePath}", EventLevel.Verbose);
-                        bool bannerResult;
                         if (!string.IsNullOrWhiteSpace(episode.ShowImage) && !File.Exists(Path.Combine(showDirectory, "Folder.jpg")))
                         {
                             //Grab Show banner if required
-                            bannerResult = _bannerDownloader.QueueBannerDownload(episode.ShowImage, showDirectory);
+                            _bannerDownloader.QueueBannerDownload(episode.ShowImage, showDirectory);
                         }
                         if (!string.IsNullOrWhiteSpace(episode.SeasonImage) && !File.Exists(Path.Combine(seasonDirectory, "Folder.jpg")))
                         {
                             //Grab Season banner if required
-                            bannerResult = _bannerDownloader.QueueBannerDownload(episode.SeasonImage, seasonDirectory);
+                            _bannerDownloader.QueueBannerDownload(episode.SeasonImage, seasonDirectory);
                         }
                     }
                 }
@@ -129,7 +128,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             _logger.TraceMessage($"Moving File {episode.SourceFilePath} to {episode.DestinationFilePath}.", EventLevel.Verbose);
             FileInfo fromFile = new FileInfo(episode.SourceFilePath);
             FileInfo toFile = new FileInfo(episode.DestinationFilePath);
-            if (QuickOperation(fromFile, toFile))
+            bool quickOperation = QuickOperation(fromFile, toFile);
+            if (quickOperation)
             {
                 OSMoveRename(fromFile, toFile);
             }
@@ -150,13 +150,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <returns></returns>
         private bool QuickOperation(FileInfo fromFile, FileInfo toFile)
         {
-            _logger.TraceMessage("QuickOperation - Start", EventLevel.Verbose);
             if ((fromFile == null) || (toFile == null) || (fromFile.Directory == null) || (toFile.Directory == null))
             {
                 return false;
             }
 
-            _logger.TraceMessage("QuickOperation - End", EventLevel.Verbose);
             return (_settings.RenameFiles && !_settings.CopyFiles && (fromFile.Directory.Root.FullName.ToLower() == toFile.Directory.Root.FullName.ToLower())); // same device ... TODO: UNC paths?
         }
 
@@ -222,12 +220,13 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
             try
             {
-                var fileOptions = FileOptions.Asynchronous | FileOptions.SequentialScan;
-                var bufferSize = 4096;
+                FileOptions fileOptions = FileOptions.Asynchronous | FileOptions.SequentialScan;
+                //set buffer 1024
+                int bufferSize = (int)Math.Pow(2, 19);
 
-                using (var sourceStream = new FileStream(fromFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, fileOptions))
+                using (FileStream sourceStream = new FileStream(fromFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, fileOptions))
                 {
-                    using (var destinationStream = new FileStream(toFile.FullName, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize, fileOptions))
+                    using (FileStream destinationStream = new FileStream(toFile.FullName, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize, fileOptions))
                     {
                         await sourceStream.CopyToAsync(destinationStream, bufferSize, cancellationToken);
                     }

@@ -10,8 +10,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 {
     public class ServiceBusSender : IMessageSender
     {
-        private ILogger _logger;
-        private IQueueClient _queueClient;
+        private readonly ILogger _logger;
+        private readonly IQueueClient _queueClient;
         private const string connectionString = "Endpoint=sb://sb-js-simplerenamer-test.servicebus.windows.net/;SharedAccessKeyName=Write;SharedAccessKey=blmnxHEbTBpI6FeZrXH4I5nAFYDIGrgAhacIcCA3QbA=;EntityPath=testing123";
 
         /// <summary>

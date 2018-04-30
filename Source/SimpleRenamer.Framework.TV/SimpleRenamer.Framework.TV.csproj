@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net471</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Sarjee.SimpleRenamer.Framework.TV</AssemblyName>
     <RootNamespace>Sarjee.SimpleRenamer.Framework.TV</RootNamespace>
     <Authors>Sarjee</Authors>
@@ -8,6 +8,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="LazyCache" Version="2.0.0-beta02" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SimpleRenamer.Common.TV\SimpleRenamer.Common.TV.csproj" />
