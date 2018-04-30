@@ -13,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 
 namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
 {
