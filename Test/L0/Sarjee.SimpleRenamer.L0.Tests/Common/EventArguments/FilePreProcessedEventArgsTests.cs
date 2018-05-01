@@ -19,7 +19,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.EventArguments
             FilePreProcessedEventArgs eventArgs = null;
             Action action1 = () => eventArgs = new FilePreProcessedEventArgs();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             eventArgs.Should().NotBeNull();
         }
         #endregion Constructor

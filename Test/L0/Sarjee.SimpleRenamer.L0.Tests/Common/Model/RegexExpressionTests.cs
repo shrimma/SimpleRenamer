@@ -22,7 +22,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Model
         {
             Action action1 = () => new RegexExpression(string.Empty, false, false);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -32,7 +32,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Model
             RegexExpression regexExpression = null;
             Action action1 = () => regexExpression = GetRegexExpression();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             regexExpression.Should().NotBeNull();
             regexExpression.Expression.Should().Be("expression");
             regexExpression.IsEnabled.Should().BeTrue();

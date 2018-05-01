@@ -39,8 +39,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             Action action1 = () => new BannerDownloader(null, null);
             Action action2 = () => new BannerDownloader(mockLogger.Object, null);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -50,7 +50,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             IBannerDownloader bannerDownloader = null;
             Action action1 = () => bannerDownloader = GetBannerDownloader();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             bannerDownloader.Should().NotBeNull();
         }
         #endregion Constructor
@@ -65,8 +65,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             Action action1 = () => bannerDownloader.QueueBannerDownload(string.Empty, string.Empty);
             Action action2 = () => bannerDownloader.QueueBannerDownload("bannerPath", string.Empty);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -79,7 +79,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             bool result = false;
             Action action1 = () => result = bannerDownloader.QueueBannerDownload("bannerPath", "destinationFolder");
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeTrue();
         }
         #endregion SaveBannerAsync

@@ -24,9 +24,9 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Model
             Action action2 = () => new Mapping("fileShowName", string.Empty, string.Empty);
             Action action3 = () => new Mapping("fileShowName", "tvdbShowName", string.Empty);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
-            action3.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
+            action3.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -36,7 +36,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Model
             Mapping mapping = null;
             Action action1 = () => mapping = GetMapping();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             mapping.Should().NotBeNull();
             mapping.FileShowName.Should().Be("fileShowName");
             mapping.TVDBShowName.Should().Be("tvdbShowName");
@@ -52,7 +52,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Model
             Mapping mapping = GetMapping();
             Action action1 = () => mapping.CustomFolderName = folderName;
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             mapping.CustomFolderName.Should().Be(folderName);
         }
     }

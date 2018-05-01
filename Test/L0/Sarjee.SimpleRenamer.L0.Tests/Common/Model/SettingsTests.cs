@@ -23,7 +23,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Model
             Settings settings = null;
             Action action1 = () => settings = GetSettings();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             settings.Should().NotBeNull();
         }
         #endregion Constructor

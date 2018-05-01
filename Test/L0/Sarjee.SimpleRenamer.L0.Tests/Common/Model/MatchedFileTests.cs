@@ -23,7 +23,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Model
             MatchedFile matchedFile = null;
             Action action1 = () => matchedFile = GetMatchedFile();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             matchedFile.Should().NotBeNull();
         }
         #endregion Constructor

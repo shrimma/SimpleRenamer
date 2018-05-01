@@ -29,7 +29,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IBackgroundQueue backgroundQueue = null;
             Action action1 = () => backgroundQueue = GetBackgroundQueue();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             backgroundQueue.Should().NotBeNull();
         }
         #endregion Constructor
@@ -42,7 +42,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
 
             Func<Task> action1 = async () => await await backgroundQueue.QueueTaskAsync(() => Task.Delay(TimeSpan.FromMilliseconds(10)));
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
         }
 
         [TestMethod]
@@ -53,7 +53,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
 
             Func<Task> action1 = async () => await backgroundQueue.QueueTaskAsync(() => Thread.Sleep(10));
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
         }
     }
 }

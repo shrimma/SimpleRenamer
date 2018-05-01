@@ -20,9 +20,9 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.EventArguments
             Action action2 = () => new ProgressTextEventArgs(string.Empty);
             Action action3 = () => new ProgressTextEventArgs("       ");
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
-            action3.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
+            action3.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -32,7 +32,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.EventArguments
             ProgressTextEventArgs eventArgs = null;
             Action action1 = () => eventArgs = new ProgressTextEventArgs("progressText");
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             eventArgs.Should().NotBeNull();
         }
         #endregion Constructor

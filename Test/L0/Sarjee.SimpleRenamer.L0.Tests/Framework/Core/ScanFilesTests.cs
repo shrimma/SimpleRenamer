@@ -62,12 +62,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             Action action5 = () => new ScanFiles(mockLogger.Object, mockConfigurationManager.Object, mockFileWatcher.Object, mockShowMatcher.Object, null, null);
             Action action6 = () => new ScanFiles(mockLogger.Object, mockConfigurationManager.Object, mockFileWatcher.Object, mockShowMatcher.Object, mockMovieMatcher.Object, null);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
-            action3.ShouldThrow<ArgumentNullException>();
-            action4.ShouldThrow<ArgumentNullException>();
-            action5.ShouldThrow<ArgumentNullException>();
-            action6.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
+            action3.Should().Throw<ArgumentNullException>();
+            action4.Should().Throw<ArgumentNullException>();
+            action5.Should().Throw<ArgumentNullException>();
+            action6.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -77,7 +77,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IScanFiles scanFiles = null;
             Action action1 = () => scanFiles = GetScanFiles();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             scanFiles.Should().NotBeNull();
         }
         #endregion Constructor
@@ -96,7 +96,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             List<MatchedFile> scannedFiles = null;
             Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(new CancellationToken());
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             scannedFiles.Should().NotBeNull();
             scannedFiles.Count.Should().Be(0);
         }
@@ -123,7 +123,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             List<MatchedFile> scannedFiles = null;
             Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
             scannedFiles.Count.Should().Be(1);
 
@@ -156,7 +156,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             List<MatchedFile> scannedFiles = null;
             Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
             scannedFiles.Count.Should().Be(1);
 
@@ -186,7 +186,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             List<MatchedFile> scannedFiles = null;
             Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
             scannedFiles.Count.Should().Be(2);
 
@@ -235,7 +235,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             List<MatchedFile> scannedFiles = null;
             Func<Task> action1 = async () => scannedFiles = await scanFiles.ScanAsync(CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             scannedFiles.Should().NotBeNullOrEmpty();
             scannedFiles.Count.Should().Be(4);
 

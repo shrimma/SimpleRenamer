@@ -37,7 +37,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
         {
             Action action1 = () => new Logger(null);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -47,7 +47,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
             IConfigurationManager configManager = new Mock<IConfigurationManager>().Object;
             Action action1 = () => new Logger(configManager);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -60,7 +60,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
             IConfigurationManager configManager = config.Object;
             Action action1 = () => new Logger(configManager);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -74,7 +74,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
             IConfigurationManager configManager = config.Object;
             Action action1 = () => new Logger(configManager);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -84,7 +84,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
             ILogger logger = null;
             Action action1 = () => logger = GetLogger();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             logger.Should().NotBeNull();
         }
         #endregion Constructor
@@ -102,12 +102,12 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
             Action action5 = () => logger.TraceMessage("hello world", EventLevel.Error);
             Action action6 = () => logger.TraceMessage("hello world", EventLevel.Critical);
 
-            action1.ShouldNotThrow();
-            action2.ShouldNotThrow();
-            action3.ShouldNotThrow();
-            action4.ShouldNotThrow();
-            action5.ShouldNotThrow();
-            action6.ShouldNotThrow();
+            action1.Should().NotThrow();
+            action2.Should().NotThrow();
+            action3.Should().NotThrow();
+            action4.Should().NotThrow();
+            action5.Should().NotThrow();
+            action6.Should().NotThrow();
         }
         #endregion TraceMessage
 
@@ -119,7 +119,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Logging
             ILogger logger = GetLogger();
 
             Action action1 = () => logger.TraceException(new ArgumentNullException("lolol"));
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
         }
         #endregion TraceException
     }

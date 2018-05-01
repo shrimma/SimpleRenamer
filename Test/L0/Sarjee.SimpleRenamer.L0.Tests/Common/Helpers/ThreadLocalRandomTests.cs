@@ -15,7 +15,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Helpers
             Random random = null;
             Action action1 = () => random = ThreadLocalRandom.NewRandom();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             random.Should().NotBeNull();
         }
 
@@ -26,7 +26,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Helpers
             Random random = null;
             Action action1 = () => random = ThreadLocalRandom.Instance;
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             random.Should().NotBeNull();
         }
 
@@ -37,7 +37,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Helpers
             int? result = null;
             Action action1 = () => result = ThreadLocalRandom.Next();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.HasValue.Should().BeTrue();
         }
@@ -49,7 +49,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Helpers
             int? result = null;
             Action action1 = () => result = ThreadLocalRandom.Next(10);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.HasValue.Should().BeTrue();
             result.Value.Should().BeLessOrEqualTo(10);
@@ -62,7 +62,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Helpers
             int? result = null;
             Action action1 = () => result = ThreadLocalRandom.Next(5, 10);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.HasValue.Should().BeTrue();
             result.Value.Should().BeLessOrEqualTo(10);
@@ -76,7 +76,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Helpers
             double? result = null;
             Action action1 = () => result = ThreadLocalRandom.NextDouble();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.HasValue.Should().BeTrue();
         }
@@ -88,7 +88,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Helpers
             byte[] bytes = new byte[5] { 0, 0, 0, 0, 0 };
             Action action1 = () => ThreadLocalRandom.NextBytes(bytes);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             bytes.Should().NotBeNull();
         }
     }
