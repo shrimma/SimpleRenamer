@@ -17,7 +17,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     {
         private readonly IBannerDownloader _bannerDownloader;
         private readonly ILogger _logger;
-        private readonly ISettings _settings;
+        private readonly IConfigurationManager _configurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileMover"/> class.
@@ -34,13 +34,8 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// </exception>
         public FileMover(ILogger logger, IConfigurationManager configManager, IBannerDownloader bannerDownloader)
         {
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
-
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _settings = configManager.Settings;
+            _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager);
             _bannerDownloader = bannerDownloader ?? throw new ArgumentNullException(nameof(bannerDownloader));
         }
 
@@ -61,11 +56,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 string showDirectory = string.Empty;
                 if (!string.IsNullOrWhiteSpace(mapping?.CustomFolderName))
                 {
-                    showDirectory = Path.Combine(_settings.DestinationFolderTV, mapping.CustomFolderName);
+                    showDirectory = Path.Combine(_configurationManager.Settings.DestinationFolderTV, mapping.CustomFolderName);
                 }
                 else
                 {
-                    showDirectory = Path.Combine(_settings.DestinationFolderTV, episode.ShowName);
+                    showDirectory = Path.Combine(_configurationManager.Settings.DestinationFolderTV, episode.ShowName);
                 }
                 string seasonDirectory = Path.Combine(showDirectory, string.Format("Season {0}", episode.Season));
                 episode.DestinationFilePath = Path.Combine(seasonDirectory, episode.NewFileName + ext);
@@ -103,7 +98,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             else if (episode.FileType == FileType.Movie)
             {
                 string folderName = episode.Year > 0 ? $"{episode.ShowName} ({episode.Year})" : $"{episode.ShowName}";
-                string movieDirectory = Path.Combine(_settings.DestinationFolderMovie, folderName);
+                string movieDirectory = Path.Combine(_configurationManager.Settings.DestinationFolderMovie, folderName);
                 episode.DestinationFilePath = Path.Combine(movieDirectory, episode.NewFileName + ext);
                 //create our destination folder if it doesn't already exist
                 if (!Directory.Exists(movieDirectory))
@@ -155,7 +150,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 return false;
             }
 
-            return (_settings.RenameFiles && !_settings.CopyFiles && (fromFile.Directory.Root.FullName.ToLower() == toFile.Directory.Root.FullName.ToLower())); // same device ... TODO: UNC paths?
+            return (_configurationManager.Settings.RenameFiles && !_configurationManager.Settings.CopyFiles && (fromFile.Directory.Root.FullName.ToLower() == toFile.Directory.Root.FullName.ToLower())); // same device ... TODO: UNC paths?
         }
 
         /// <summary>
@@ -235,7 +230,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 KeepTimestamps(fromFile, toFile);
 
                 // if that was a move/rename, delete the source
-                if (!_settings.CopyFiles)
+                if (!_configurationManager.Settings.CopyFiles)
                 {
                     fromFile.Delete();
                 }
