@@ -26,8 +26,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private const string _fileNameEpisodeNumber = "{Episode}";
         private const string _fileNameEpisodeName = "{EpisodeName}";
         private readonly ILogger _logger;
-        private readonly IConfigurationManager _configurationManager;
-        private readonly ISettings _settings;
+        private readonly IConfigurationManager _configurationManager;        
         private readonly ITvdbManager _tvdbManager;
         private readonly IHelper _helper;
         private readonly IAppCache _cache;
@@ -61,8 +60,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-            _tvdbManager = tvdbManager ?? throw new ArgumentNullException(nameof(tvdbManager));
-            _settings = _configurationManager.Settings;
+            _tvdbManager = tvdbManager ?? throw new ArgumentNullException(nameof(tvdbManager));            
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
@@ -207,7 +205,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         {
             _logger.TraceMessage($"Generating FileName for Show: {showName}, Season: {season}, Episode: {episodeNumber}.", EventLevel.Verbose);
 
-            string temp = _settings.NewFileNameFormat;
+            string temp = _configurationManager.Settings.NewFileNameFormat;
             if (temp.Contains(_fileNameShowName))
             {
                 temp = temp.Replace(_fileNameShowName, showName);

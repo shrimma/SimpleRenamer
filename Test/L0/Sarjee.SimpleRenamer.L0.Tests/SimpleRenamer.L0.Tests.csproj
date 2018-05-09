@@ -16,15 +16,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="RestSharp" Version="106.2.2" />
     <PackageReference Include="Castle.Core" version="4.2.1" />
-    <PackageReference Include="FluentAssertions" version="4.19.4" />
+    <PackageReference Include="FluentAssertions" version="5.3.0" />
     <PackageReference Include="LazyCache" version="2.0.0-beta02" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Primitives" version="2.0.0" />
-    <PackageReference Include="Moq" version="4.8.2" />    
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" version="4.4.0" />
+    <PackageReference Include="Moq" version="4.8.2" />
     <PackageReference Include="System.Threading.Tasks.Extensions" version="4.4.0" />
     <PackageReference Include="System.ValueTuple" version="4.4.0" />
   </ItemGroup>

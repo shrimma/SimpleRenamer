@@ -68,10 +68,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             Action action3 = () => new MovieMatcher(mockLogger.Object, mockTmdbManager.Object, null, null);
             Action action4 = () => new MovieMatcher(mockLogger.Object, mockTmdbManager.Object, mockHelper.Object, null);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
-            action3.ShouldThrow<ArgumentNullException>();
-            action4.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
+            action3.Should().Throw<ArgumentNullException>();
+            action4.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -81,7 +81,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             IMovieMatcher movieMatcher = null;
             Action action1 = () => movieMatcher = GetMovieMatcher();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             movieMatcher.Should().NotBeNull();
         }
         #endregion Constructor
@@ -104,7 +104,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             List<DetailView> result = null;
             Func<Task> action1 = async () => result = await movieMatcher.GetPossibleMoviesForFileAsync("showName", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.Count.Should().Be(2);
         }
@@ -123,7 +123,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
             Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input, CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.ActionThis.Should().BeFalse();
             result.SkippedExactSelection.Should().BeTrue();
@@ -142,7 +142,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
             Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input, CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.ActionThis.Should().BeFalse();
             result.SkippedExactSelection.Should().BeTrue();
@@ -163,7 +163,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
             Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input, CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.TMDBShowId.Should().Be(1);
         }
@@ -185,7 +185,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
             Func<Task> action1 = async () => result = await movieMatcher.ScrapeDetailsAsync(input, CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.ActionThis.Should().BeFalse();
             result.SkippedExactSelection.Should().BeTrue();
@@ -201,7 +201,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             MatchedFile result = null;
             Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovieAsync("movieId1", null, CancellationToken.None);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -214,7 +214,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
             Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovieAsync(string.Empty, input, CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.ActionThis.Should().BeFalse();
             result.SkippedExactSelection.Should().BeTrue();
@@ -235,7 +235,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             MatchedFile input = new MatchedFile(@"c:\movie", "movieTitle", 2015);
             Func<Task> action1 = async () => result = await movieMatcher.UpdateFileWithMatchedMovieAsync("movieId1", input, CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.TMDBShowId.Should().Be(1);
             result.ActionThis.Should().BeTrue();
@@ -256,10 +256,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             (SimpleRenamer.Common.Movie.Model.Movie movie, Uri image) result = (null, null);
             Func<Task> action1 = async () => result = await movieMatcher.GetMovieWithBannerAsync("1", new CancellationToken());
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.movie.Should().NotBeNull();
             result.image.Should().NotBeNull();
-            result.movie.Title.Equals(movieName);
+            result.movie.Title.Should().Be(movieName);
         }
 
         [TestMethod]
@@ -273,10 +273,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             (SimpleRenamer.Common.Movie.Model.Movie movie, Uri image) result = (null, null);
             Func<Task> action1 = async () => result = await movieMatcher.GetMovieWithBannerAsync("1", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.movie.Should().NotBeNull();
             result.image.Should().BeNull();
-            result.movie.Title.Equals(movieName);
+            result.movie.Title.Should().Be(movieName);
         }
         #endregion GetMovieWithBanner
     }

@@ -81,11 +81,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             Action action4 = () => new ActionMatchedFiles(mockLogger.Object, mockBackgroundQueue.Object, mockFileMover.Object, null, null);
             Action action5 = () => new ActionMatchedFiles(mockLogger.Object, mockBackgroundQueue.Object, mockFileMover.Object, mockConfigurationManager.Object, null);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
-            action3.ShouldThrow<ArgumentNullException>();
-            action4.ShouldThrow<ArgumentNullException>();
-            action5.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
+            action3.Should().Throw<ArgumentNullException>();
+            action4.Should().Throw<ArgumentNullException>();
+            action5.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -95,7 +95,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IActionMatchedFiles actionMatchedFiles = null;
             Action action1 = () => actionMatchedFiles = GetActionMatchedFiles();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             actionMatchedFiles.Should().NotBeNull();
         }
         #endregion Constructor
@@ -110,7 +110,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             bool result = false;
             Func<Task> action1 = async () => result = await actionMatchedFiles.ActionAsync(new ObservableCollection<MatchedFile>(), new CancellationToken());
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeTrue();
             mockMessageSender.Verify(x => x.SendAsync(It.IsAny<string>()), Times.Never);
         }
@@ -133,7 +133,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             bool result = false;
             Func<Task> action1 = async () => result = await actionMatchedFiles.ActionAsync(new ObservableCollection<MatchedFile> { spectre, pomPoko }, new CancellationToken());
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeTrue();
             mockFileMover.Verify(x => x.CreateDirectoriesAndQueueDownloadBanners(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(2));
             mockFileMover.Verify(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
@@ -159,7 +159,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             bool result = false;
             Func<Task> action1 = async () => result = await actionMatchedFiles.ActionAsync(new ObservableCollection<MatchedFile> { castle1, castle2 }, new CancellationToken());
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeTrue();
             mockFileMover.Verify(x => x.CreateDirectoriesAndQueueDownloadBanners(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(2));
             mockFileMover.Verify(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
@@ -189,7 +189,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             bool result = false;
             Func<Task> action1 = async () => result = await actionMatchedFiles.ActionAsync(new ObservableCollection<MatchedFile> { castle1, castle2, spectre, pomPoko }, new CancellationToken());
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeTrue();
             mockFileMover.Verify(x => x.CreateDirectoriesAndQueueDownloadBanners(It.IsAny<MatchedFile>(), null, It.IsAny<bool>()), Times.Exactly(4));
             mockFileMover.Verify(x => x.MoveFileAsync(It.IsAny<MatchedFile>(), It.IsAny<CancellationToken>()), Times.Exactly(4));

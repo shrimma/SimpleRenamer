@@ -19,7 +19,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.EventArguments
         {
             Action action1 = () => new FileMovedEventArgs(null);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -29,7 +29,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.EventArguments
             FileMovedEventArgs eventArgs = null;
             Action action1 = () => eventArgs = new FileMovedEventArgs(new MatchedFile("filepath", "fileName"));
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             eventArgs.Should().NotBeNull();
         }
         #endregion Constructor

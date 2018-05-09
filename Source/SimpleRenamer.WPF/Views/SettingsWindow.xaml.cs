@@ -18,7 +18,7 @@ namespace Sarjee.SimpleRenamer.Views
     /// </summary>
     public partial class SettingsWindow
     {
-        private Settings _originalSettings;
+        private ISettings _originalSettings;
         private ObservableCollection<string> _watchFolders;
         private ObservableCollection<string> _validExtensions;
         private IConfigurationManager _configurationManager;

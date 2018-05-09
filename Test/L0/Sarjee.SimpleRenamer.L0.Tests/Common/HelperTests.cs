@@ -41,7 +41,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IHelper helper = null;
             Action action1 = () => helper = GetHelper();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             helper.Should().NotBeNull();
         }
         #endregion Constructor
@@ -56,7 +56,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             bool result = true;
             Action action1 = () => result = helper.IsFileExtensionValid(string.Empty);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeFalse();
         }
 
@@ -69,7 +69,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             bool result = true;
             Action action1 = () => result = helper.IsFileExtensionValid(".");
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeFalse();
         }
 
@@ -82,7 +82,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             bool result = true;
             Action action1 = () => result = helper.IsFileExtensionValid("fil");
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeFalse();
         }
 
@@ -95,7 +95,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             bool result = true;
             Action action1 = () => result = helper.IsFileExtensionValid(".fil*");
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeFalse();
         }
 
@@ -108,7 +108,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             bool result = false;
             Action action1 = () => result = helper.IsFileExtensionValid(".fil");
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeTrue();
         }
         #endregion IsFileExtensionValid
@@ -127,7 +127,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             bool result = false;
             Action action1 = () => result = helper.AreListsEqual(list1, list2);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeTrue();
         }
 
@@ -152,7 +152,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             bool result = false;
             Action action1 = () => result = helper.AreListsEqual(list1, list2);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeTrue();
         }
 
@@ -175,7 +175,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             bool result = true;
             Action action1 = () => result = helper.AreListsEqual(list1, list2);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeFalse();
         }
 
@@ -199,7 +199,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             bool result = true;
             Action action1 = () => result = helper.AreListsEqual(list1, list2);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeFalse();
         }
 
@@ -223,7 +223,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             bool result = true;
             Action action1 = () => result = helper.AreListsEqual(list1, list2);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeFalse();
         }
         #endregion AreListsEqual
@@ -239,7 +239,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             string output = string.Empty;
             Action action1 = () => output = helper.RemoveSpecialCharacters(input);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             output.Should().Be("I");
         }
         #endregion RemoveSpecialCharacters
@@ -252,7 +252,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IHelper helper = GetHelper();
 
             Func<Task> action1 = async () => await helper.ExponentialDelayAsync(1, 1, 1, CancellationToken.None);
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
         }
 
         [TestMethod]
@@ -262,7 +262,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             IHelper helper = GetHelper();
 
             Func<Task> action1 = async () => await helper.ExponentialDelayAsync(500, 5, 1, CancellationToken.None);
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
         }
         #endregion ExponentialDelayAsync
 
@@ -276,7 +276,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             Token result = null;
             Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, CancellationToken.None, null);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
         }
 
@@ -289,7 +289,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             Token result = null;
             Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, CancellationToken.None, null);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeNull();
         }
 
@@ -302,7 +302,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             Token result = null;
             Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, CancellationToken.None, null);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeNull();
         }
 
@@ -315,7 +315,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             Token result = null;
             Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, CancellationToken.None, null);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -328,7 +328,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             Token result = null;
             Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, CancellationToken.None, null);
 
-            action1.ShouldThrow<UnauthorizedAccessException>();
+            action1.Should().Throw<UnauthorizedAccessException>();
             result.Should().BeNull();
         }
 
@@ -342,7 +342,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common
             Token result = null;
             Func<Task> action1 = async () => result = await helper.ExecuteRestRequestAsync<Token>(_restClient, new RestRequest(Method.GET), _jsonSerializerSettings, 1, 1, CancellationToken.None, async () => { await Task.Delay(TimeSpan.FromMilliseconds(1)); loginFailures++; });
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeNull();
             loginFailures.Should().BeGreaterThan(0);
         }

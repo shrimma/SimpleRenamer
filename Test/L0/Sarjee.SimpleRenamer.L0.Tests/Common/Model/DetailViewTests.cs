@@ -25,10 +25,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Model
             Action action3 = () => new DetailView("id", "showName", string.Empty, string.Empty);
             Action action4 = () => new DetailView("id", "showName", "year", string.Empty);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
-            action3.ShouldThrow<ArgumentNullException>();
-            action4.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
+            action3.Should().Throw<ArgumentNullException>();
+            action4.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -38,7 +38,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Common.Model
             DetailView detailView = null;
             Action action1 = () => detailView = GetDetailView();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             detailView.Should().NotBeNull();
 
             detailView.Id.Should().Be("id");

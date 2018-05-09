@@ -43,8 +43,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             Action action1 = () => new TvdbManager(null, null);
             Action action2 = () => new TvdbManager(mockConfigurationManager.Object, null);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -54,7 +54,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             ITvdbManager tvdbManager = null;
             Action action1 = () => tvdbManager = GetTvdbManager();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             tvdbManager.Should().NotBeNull();
         }
         #endregion Constructor
@@ -68,7 +68,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             List<SeriesSearchData> result = null;
             Func<Task> action1 = async () => result = await tvdbManager.SearchSeriesByNameAsync(string.Empty, CancellationToken.None);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -83,7 +83,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             List<SeriesSearchData> result = null;
             Func<Task> action1 = async () => result = await tvdbManager.SearchSeriesByNameAsync("seriesName", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.Count.Should().Be(2);
             result.Should().Contain(x => x.SeriesName.Equals("Castle"));
@@ -100,7 +100,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             CompleteSeries result = null;
             Func<Task> action1 = async () => result = await tvdbManager.GetSeriesByIdAsync(string.Empty, CancellationToken.None);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -118,7 +118,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             CompleteSeries result = null;
             Func<Task> action1 = async () => result = await tvdbManager.GetSeriesByIdAsync("tmdbId", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.Series.SeriesName.Should().Be("Game of Thrones");
             result.Actors.Count.Should().Be(1);
@@ -138,7 +138,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             string result = null;
             Action action1 = () => result = tvdbManager.GetBannerUri(string.Empty);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -150,7 +150,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             string result = null;
             Action action1 = () => result = tvdbManager.GetBannerUri("bannerPath");
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.Should().Contain("bannerPath");
             result.Should().Contain("tvdb");

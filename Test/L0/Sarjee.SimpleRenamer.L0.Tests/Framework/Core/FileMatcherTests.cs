@@ -55,8 +55,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             Action action1 = () => new FileMatcher(null, null);
             Action action2 = () => new FileMatcher(mockLogger.Object, null);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -66,7 +66,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IFileMatcher fileMatcher = null;
             Action action1 = () => fileMatcher = GetFileMatcher();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             fileMatcher.Should().NotBeNull();
         }
         #endregion Constructor
@@ -81,7 +81,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             List<MatchedFile> output = null;
             Func<Task> action1 = async () => output = await fileMatcher.SearchFilesAsync(input, new System.Threading.CancellationToken());
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -93,7 +93,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             List<MatchedFile> output = null;
             Func<Task> action1 = async () => output = await fileMatcher.SearchFilesAsync(input, new System.Threading.CancellationToken());
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
 
             output.Should().NotBeNull();
             bool containsCastle = output.Select(x => x.ShowName).Contains("Castle");

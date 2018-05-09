@@ -66,7 +66,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 if (Directory.Exists(folder) && Directory.GetFiles(folder, "*", _configurationManager.Settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Length > 0)
                 {
                     //search the folder for files with video extensions
-                    List<string> tempList = SearchThisFolder(folder, cancellationToken).GetAwaiter().GetResult();
+                    List<string> tempList = SearchThisFolderAsync(folder, cancellationToken).GetAwaiter().GetResult();
                     //if we find any files here add to the global list
                     if (tempList.Count > 0)
                     {
@@ -88,7 +88,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// <param name="directoryPath">The folder to search</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        private async Task<List<string>> SearchThisFolder(string directoryPath, CancellationToken cancellationToken)
+        private async Task<List<string>> SearchThisFolderAsync(string directoryPath, CancellationToken cancellationToken)
         {
             ConcurrentBag<string> foundFiles = new ConcurrentBag<string>();
             Task result = Task.Run(() => Parallel.ForEach(Directory.GetFiles(directoryPath, "*", _configurationManager.Settings.SubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly), _parallelOptions, (file) =>

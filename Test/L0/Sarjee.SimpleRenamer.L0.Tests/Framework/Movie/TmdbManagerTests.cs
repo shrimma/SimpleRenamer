@@ -42,8 +42,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             Action action1 = () => new TmdbManager(null, null);
             Action action2 = () => new TmdbManager(mockConfigurationManager.Object, null);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -53,7 +53,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             ITmdbManager tmdbManager = null;
             Action action1 = () => tmdbManager = GetTmdbManager();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             tmdbManager.Should().NotBeNull();
         }
         #endregion Constructor
@@ -67,7 +67,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             SearchContainer<SearchMovie> result = null;
             Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByNameAsync(string.Empty, CancellationToken.None, 2016);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -83,8 +83,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByNameAsync("searchByMovieName", CancellationToken.None);
             Func<Task> action2 = async () => result2 = await tmdbManager.SearchMovieByNameAsync("searchByMovieName", CancellationToken.None, 2016);
 
-            action1.ShouldNotThrow();
-            action2.ShouldNotThrow();
+            action1.Should().NotThrow();
+            action2.Should().NotThrow();
             result.Should().NotBeNull();
             result.TotalResults.Should().Be(2);
             result2.Should().NotBeNull();
@@ -102,7 +102,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             SearchMovie result = null;
             Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByIdAsync(string.Empty, CancellationToken.None);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -116,7 +116,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             SearchMovie result = null;
             Func<Task> action1 = async () => result = await tmdbManager.SearchMovieByIdAsync("id", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.Title.Should().Be("Fight Club");
         }
@@ -132,7 +132,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             SimpleRenamer.Common.Movie.Model.Movie result = null;
             Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync(string.Empty, CancellationToken.None);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -146,7 +146,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             SimpleRenamer.Common.Movie.Model.Movie result = null;
             Func<Task> action1 = async () => result = await tmdbManager.GetMovieAsync("getMovie", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.Title.Should().Be("Fight Club");
             result.Credits.Should().NotBeNull();
@@ -163,7 +163,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             string result = null;
             Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync(string.Empty, CancellationToken.None);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -177,7 +177,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             string result = null;
             Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync("getPoster", CancellationToken.None);
 
-            action1.ShouldThrow<InvalidOperationException>();
+            action1.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
@@ -190,7 +190,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
             string result = null;
             Func<Task> action1 = async () => result = await tmdbManager.GetPosterUriAsync("getPoster", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.Should().Contain("https");
         }

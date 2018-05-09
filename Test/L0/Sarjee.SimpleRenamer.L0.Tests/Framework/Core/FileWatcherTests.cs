@@ -124,8 +124,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             Action action1 = () => new FileWatcher(null, null);
             Action action2 = () => new FileWatcher(mockLogger.Object, null);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -135,7 +135,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IFileWatcher fileWatcher = null;
             Action action1 = () => fileWatcher = GetFileWatcher();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             fileWatcher.Should().NotBeNull();
         }
         #endregion Constructor
@@ -151,10 +151,10 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             List<string> emptyList = new List<string>();
             List<string> filesFound = null;
             Func<Task> action1 = async () => filesFound = await fileWatcher.SearchFoldersAsync(new System.Threading.CancellationToken());
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
 
             filesFound.Count.Should().Be(emptyList.Count);
-            filesFound.ShouldBeEquivalentTo(emptyList);
+            filesFound.Should().BeEquivalentTo(emptyList);
         }
 
         [TestMethod]
@@ -167,7 +167,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
 
             List<string> filesFound = null;
             Func<Task> action1 = async () => filesFound = await fileWatcher.SearchFoldersAsync(new System.Threading.CancellationToken());
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
 
             filesFound.Count.Should().Be(1);
         }

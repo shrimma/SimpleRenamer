@@ -40,9 +40,9 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             Action action2 = () => new FileMover(mockLogger.Object, null, null);
             Action action3 = () => new FileMover(mockLogger.Object, mockConfigurationManager.Object, null);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
-            action3.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
+            action3.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -52,7 +52,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Core
             IFileMover fileMover = null;
             Action action1 = () => fileMover = GetFileMover();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             fileMover.Should().NotBeNull();
         }
         #endregion Constructor

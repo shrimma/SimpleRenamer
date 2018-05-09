@@ -71,11 +71,11 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             Action action4 = () => new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, null, null);
             Action action5 = () => new TVShowMatcher(mockLogger.Object, mockConfigurationManager.Object, mockTvdbManager.Object, mockHelper.Object, null);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
-            action3.ShouldThrow<ArgumentNullException>();
-            action4.ShouldThrow<ArgumentNullException>();
-            action5.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
+            action3.Should().Throw<ArgumentNullException>();
+            action4.Should().Throw<ArgumentNullException>();
+            action5.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -85,7 +85,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             ITVShowMatcher tvShowMatcher = null;
             Action action1 = () => tvShowMatcher = GetTVShowMatcher();
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             tvShowMatcher.Should().NotBeNull();
         }
         #endregion Constructor
@@ -99,7 +99,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             CompleteSeries result = null;
             Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByNameAsync(string.Empty, CancellationToken.None);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -117,7 +117,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             CompleteSeries result = null;
             Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByNameAsync("showName", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.Series.Id.Should().Be(outputSeries.Series.Id);
             result.Series.SeriesName.Should().Be(outputSeries.Series.SeriesName);
@@ -136,7 +136,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             CompleteSeries result = null;
             Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByNameAsync("showName", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeNull();
         }
 
@@ -150,7 +150,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             CompleteSeries result = null;
             Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByNameAsync("showName", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().BeNull();
         }
         #endregion SearchShowByNameAsync
@@ -164,7 +164,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             CompleteSeries result = null;
             Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByIdAsync(string.Empty, CancellationToken.None);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -180,7 +180,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             CompleteSeries result = null;
             Func<Task> action1 = async () => result = await tvShowMatcher.SearchShowByIdAsync("showId", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.Series.Id.Should().Be(outputSeries.Series.Id);
             result.Series.SeriesName.Should().Be(outputSeries.Series.SeriesName);
@@ -199,8 +199,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             Action action1 = () => result1 = tvShowMatcher.UpdateFileWithSeriesDetails(null, null);
             Action action2 = () => result2 = tvShowMatcher.UpdateFileWithSeriesDetails(new MatchedFile(@"c:\filePath", "Showname", "1", "1"), null);
 
-            action1.ShouldThrow<ArgumentNullException>();
-            action2.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
+            action2.Should().Throw<ArgumentNullException>();
             result1.Should().BeNull();
             result2.Should().BeNull();
         }
@@ -219,7 +219,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             MatchedFile result = null;
             Action action1 = () => result = tvShowMatcher.UpdateFileWithSeriesDetails(fileInput, seriesInput);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.ShowName.Should().Be(seriesInput.Series.SeriesName);
             result.EpisodeName.Should().Be(seriesInput.Episodes[0].EpisodeName);
@@ -239,7 +239,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             MatchedFile result = null;
             Action action1 = () => result = tvShowMatcher.FixShowsFromMappings(null);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -257,7 +257,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             MatchedFile result = null;
             Action action1 = () => result = tvShowMatcher.FixShowsFromMappings(fileInput);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.ShowName.Should().Be(mapping.TVDBShowName);
             result.TVDBShowId.Should().Be(mapping.TVDBShowID);
@@ -274,7 +274,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             List<DetailView> result = null;
             Func<Task> action1 = async () => result = await tvShowMatcher.GetPossibleShowsForEpisodeAsync(string.Empty, CancellationToken.None);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.Should().BeNull();
         }
 
@@ -290,7 +290,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             List<DetailView> result = null;
             Func<Task> action1 = async () => result = await tvShowMatcher.GetPossibleShowsForEpisodeAsync("showName", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.Count.Should().Be(2);
         }
@@ -306,7 +306,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             MatchedFile result1 = null;
             Func<Task> action1 = async () => result1 = await tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync("id", null, CancellationToken.None);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result1.Should().BeNull();
         }
 
@@ -320,7 +320,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             MatchedFile result = null;
             Func<Task> action1 = async () => result = await tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync(string.Empty, fileInput, CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.ActionThis.Should().BeFalse();
             result.SkippedExactSelection.Should().BeTrue();
@@ -344,7 +344,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             MatchedFile result = null;
             Func<Task> action1 = async () => result = await tvShowMatcher.UpdateEpisodeWithMatchedSeriesAsync("tvdbId", fileInput, CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.ActionThis.Should().BeTrue();
             result.SkippedExactSelection.Should().BeFalse();
@@ -362,7 +362,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             (CompleteSeries series, Uri banner) result = (null, null);
             Func<Task> action1 = async () => result = await tvShowMatcher.GetShowWithBannerAsync(string.Empty, CancellationToken.None);
 
-            action1.ShouldThrow<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();
             result.series.Should().BeNull();
             result.banner.Should().BeNull();
         }
@@ -380,7 +380,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
             (CompleteSeries series, Uri banner) result = (null, null);
             Func<Task> action1 = async () => result = await tvShowMatcher.GetShowWithBannerAsync("showId", CancellationToken.None);
 
-            action1.ShouldNotThrow();
+            action1.Should().NotThrow();
             result.Should().NotBeNull();
             result.series.Should().NotBeNull();
             result.banner.Should().NotBeNull();
