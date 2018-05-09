@@ -9,7 +9,8 @@
     <StartupObject />
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>    
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <ApplicationIcon>Icons\tv.ico</ApplicationIcon>    
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />
