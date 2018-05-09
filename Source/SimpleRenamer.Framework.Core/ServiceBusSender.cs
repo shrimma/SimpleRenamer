@@ -23,7 +23,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
 
             ServiceBusConnectionStringBuilder sbcsb = new ServiceBusConnectionStringBuilder(connectionString)
             {
-                TransportType = TransportType.Amqp,
+                TransportType = TransportType.Amqp                
             };
             _queueClient = new QueueClient(sbcsb, retryPolicy: RetryPolicy.Default);
         }

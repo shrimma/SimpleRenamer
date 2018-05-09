@@ -23,8 +23,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private readonly IBackgroundQueue _backgroundQueue;
         private readonly IFileMover _fileMover;
         private readonly IConfigurationManager _configurationManager;
-        private readonly IMessageSender _messageSender;
-        private readonly ISettings _settings;
+        private readonly IMessageSender _messageSender;        
         /// <summary>
         /// Fired whenever a preprocessor action is completed on a file
         /// </summary>
@@ -60,8 +59,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             _backgroundQueue = backgroundQueue ?? throw new ArgumentNullException(nameof(backgroundQueue));
             _fileMover = fileMover ?? throw new ArgumentNullException(nameof(fileMover));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-            _messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
-            _settings = _configurationManager.Settings;
+            _messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));            
         }
 
         /// <summary>
@@ -224,11 +222,11 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 {
                     OnFileMoved(new FileMovedEventArgs(file));
                     OnProgressTextChanged(new ProgressTextEventArgs(string.Format("Finished moving file to {0}.", file.DestinationFilePath)));
-                    _logger.TraceMessage(string.Format("Successfully {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, _settings.CopyFiles ? "copied" : "moved"));
+                    _logger.TraceMessage(string.Format("Successfully {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, _configurationManager.Settings.CopyFiles ? "copied" : "moved"));
                 }
                 else
                 {
-                    _logger.TraceMessage(string.Format("Failed to {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, _settings.CopyFiles ? "copy" : "move"));
+                    _logger.TraceMessage(string.Format("Failed to {2} {0} to {1}", file.SourceFilePath, file.DestinationFilePath, _configurationManager.Settings.CopyFiles ? "copy" : "move"));
                 }
             }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1, CancellationToken = cancellationToken });
             //actually move/copy the files one at a time

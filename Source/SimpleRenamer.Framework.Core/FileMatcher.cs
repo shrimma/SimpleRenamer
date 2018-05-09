@@ -20,7 +20,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IFileMatcher" />
     public class FileMatcher : IFileMatcher
     {
-        private readonly List<RegexExpression> _regexExpressions;
+        private readonly IConfigurationManager _configurationManager;
         private readonly ILogger _logger;
         private readonly ParallelOptions _parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded };
         private List<(Regex regex, bool isForTv)> _activeRegex;
@@ -41,13 +41,9 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         /// logger
         /// </exception>
         public FileMatcher(ILogger logger, IConfigurationManager configManager)
-        {
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
+        {            
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _regexExpressions = configManager.RegexExpressions;
+            _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
         }
 
         /// <summary>
@@ -96,7 +92,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         {
             //add only the active regexp
             _activeRegex = new List<(Regex regex, bool isForTv)>();
-            foreach (RegexExpression exp in _regexExpressions)
+            foreach (RegexExpression exp in _configurationManager.RegexExpressions)
             {
                 if (exp.IsEnabled)
                 {

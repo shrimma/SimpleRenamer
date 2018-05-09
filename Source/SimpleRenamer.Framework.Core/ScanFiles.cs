@@ -27,8 +27,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
         private readonly IFileWatcher _fileWatcher;
         private readonly ITVShowMatcher _tvShowMatcher;
         private readonly IMovieMatcher _movieMatcher;
-        private readonly IFileMatcher _fileMatcher;
-        private readonly ISettings _settings;
+        private readonly IFileMatcher _fileMatcher;        
         private readonly ParallelOptions _parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
         /// <summary>
         /// Fired whenever some noticeable progress is made
@@ -64,8 +63,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             _fileWatcher = fileWatcher ?? throw new ArgumentNullException(nameof(fileWatcher));
             _tvShowMatcher = showMatcher ?? throw new ArgumentNullException(nameof(showMatcher));
             _movieMatcher = movieMatcher ?? throw new ArgumentNullException(nameof(movieMatcher));
-            _fileMatcher = fileMatcher ?? throw new ArgumentNullException(nameof(fileMatcher));
-            _settings = _configurationManager.Settings;
+            _fileMatcher = fileMatcher ?? throw new ArgumentNullException(nameof(fileMatcher));            
             _fileWatcher.RaiseProgressEvent += RaiseProgress;
             _fileMatcher.RaiseProgressEvent += RaiseProgress;
             _tvShowMatcher.RaiseProgressEvent += RaiseProgress;
@@ -235,7 +233,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 //only add the file if it needs renaming/moving
-                string destinationDirectory = Path.Combine(_settings.DestinationFolderTV, file.ShowName, string.Format("Season {0}", file.Season));
+                string destinationDirectory = Path.Combine(_configurationManager.Settings.DestinationFolderTV, file.ShowName, string.Format("Season {0}", file.Season));
                 string destinationFilePath = Path.Combine(destinationDirectory, file.NewFileName + Path.GetExtension(file.SourceFilePath));
                 if (!file.SourceFilePath.Equals(destinationFilePath))
                 {
@@ -270,7 +268,7 @@ namespace Sarjee.SimpleRenamer.Framework.Core
                 file = await _movieMatcher.ScrapeDetailsAsync(file, cancellationToken);
 
                 //only add the file if it needs renaming/moving
-                string movieDirectory = Path.Combine(_settings.DestinationFolderMovie, $"{file.ShowName} ({file.Season})");
+                string movieDirectory = Path.Combine(_configurationManager.Settings.DestinationFolderMovie, $"{file.ShowName} ({file.Season})");
                 string destinationFilePath = Path.Combine(movieDirectory, file.ShowName + Path.GetExtension(file.SourceFilePath));
                 if (!file.SourceFilePath.Equals(destinationFilePath))
                 {
