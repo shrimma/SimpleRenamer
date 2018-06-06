@@ -1,9 +1,14 @@
-﻿using Ninject;
-using Ninject.Parameters;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Sarjee.SimpleRenamer.Common;
 using Sarjee.SimpleRenamer.Common.Interface;
+using Sarjee.SimpleRenamer.Common.Movie.Interface;
+using Sarjee.SimpleRenamer.Common.TV.Interface;
+using Sarjee.SimpleRenamer.Framework.Core;
+using Sarjee.SimpleRenamer.Framework.Movie;
+using Sarjee.SimpleRenamer.Framework.TV;
+using Sarjee.SimpleRenamer.Logging;
 using System;
-using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 
 namespace Sarjee.SimpleRenamer.DependencyInjection
 {
@@ -12,19 +17,21 @@ namespace Sarjee.SimpleRenamer.DependencyInjection
     /// </summary>
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Interface.IDependencyInjectionContext" />
     /// <seealso cref="System.IDisposable" />
-    public class DependencyInjectionContext : IDependencyInjectionContext, IDisposable
+    public class DependencyInjectionContext : IDependencyInjectionContext
     {
-        private IKernel _kernel;
+        protected IServiceCollection _serviceCollection;
+        private IServiceProvider _serviceProvider;
 
         /// <summary>
         /// Starts the process of setting up dependency injection
         /// </summary>
         public void Initialize()
-        {
-            // Order of the modules is important.
-            _kernel = new StandardKernel();
-            _kernel.Load(Assembly.GetExecutingAssembly());
-            _kernel.Bind<IDependencyInjectionContext>().ToConstant<DependencyInjectionContext>(this);
+        {            
+            _serviceCollection = new ServiceCollection();            
+            AddActionDependencies();
+            AddFrameworkDependencies();
+            AddScanDependencies();            
+            _serviceProvider = _serviceCollection.BuildServiceProvider();
         }
 
         /// <summary>
@@ -37,27 +44,7 @@ namespace Sarjee.SimpleRenamer.DependencyInjection
         /// <inheritdoc />
         public T GetService<T>()
         {
-            return _kernel.Get<T>();
-        }
-
-        /// <summary>
-        /// Gets the service object of the specified type.
-        /// </summary>
-        /// <typeparam name="T">The type of service</typeparam>
-        /// <param name="constructorArguments">List of key value pair for any constructor arguments - Key is argument name and value is argument value</param>
-        /// <returns>
-        /// The service if it exists
-        /// </returns>
-        /// <inheritdoc />
-        public T GetService<T>(List<KeyValuePair<string, object>> constructorArguments)
-        {
-            List<ConstructorArgument> arguments = new List<ConstructorArgument>();
-            foreach (var param in constructorArguments)
-            {
-                arguments.Add(new ConstructorArgument(param.Key, param.Value));
-            }
-
-            return _kernel.Get<T>(arguments.ToArray());
+            return _serviceProvider.GetRequiredService<T>();
         }
 
         /// <summary>
@@ -67,51 +54,71 @@ namespace Sarjee.SimpleRenamer.DependencyInjection
         /// <param name="context">Context to use for the constant binding</param>
         public void BindConstant<T>(T context)
         {
-            _kernel.Bind<T>().ToConstant(context);
+            BindConstant(new Func<T>(() => context));
         }
 
         /// <summary>
-        /// Releases the service object
+        /// Binds the constant using a factory (lazy instantiation)
         /// </summary>
-        /// <param name="serviceToRelease">The service to release</param>
-        /// <exception cref="System.ArgumentNullException">serviceToRelease</exception>
-        /// <inheritdoc />
+        /// <typeparam name="T"></typeparam>
+        /// <param name="lazyContextFactory">The context factory - only called if type not bound.</param>
+        private void BindConstant<T>(Func<T> lazyContextFactory)
+        {
+            lock (_serviceCollection)
+            {
+                //check if there is a singleton instance of the same type already
+                ServiceDescriptor existingServiceDescriptor = _serviceCollection.FirstOrDefault(x => x.ServiceType == typeof(T) && x.Lifetime == ServiceLifetime.Singleton && x.ImplementationInstance != null);
+                if (existingServiceDescriptor == null)
+                {
+                    //this binds this instance as singleton
+                    _serviceCollection.AddSingleton(typeof(T), lazyContextFactory.Invoke());
+                    _serviceProvider = _serviceCollection.BuildServiceProvider();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Releases the service.
+        /// </summary>
+        /// <param name="serviceToRelease">The service to release.</param>
         public void ReleaseService(object serviceToRelease)
         {
-            if (serviceToRelease == null)
+            lock (_serviceCollection)
             {
-                throw new ArgumentNullException("serviceToRelease");
-            }
-
-            _kernel.Release(serviceToRelease);
-        }
-
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
+                ServiceDescriptor existingServiceDescriptor = _serviceCollection.FirstOrDefault(x => x.ServiceType == serviceToRelease.GetType());
+                if (existingServiceDescriptor != null)
                 {
-                    if (_kernel != null)
-                    {
-                        _kernel.Dispose();
-                        _kernel = null;
-                    }
+                    _serviceCollection.Remove(existingServiceDescriptor);
                 }
-
-                disposedValue = true;
             }
+        }        
+
+        private void AddActionDependencies()
+        {
+            _serviceCollection.AddSingleton<IFileMover, FileMover>();
+            _serviceCollection.AddSingleton<IActionMatchedFiles, ActionMatchedFiles>();
+            _serviceCollection.AddSingleton<IBannerDownloader, BannerDownloader>();
         }
 
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
+        private void AddFrameworkDependencies()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
+            _serviceCollection.AddSingleton<ILogger, Logger>();
+            _serviceCollection.AddSingleton<IBackgroundQueue, BackgroundQueue>();
+            _serviceCollection.AddSingleton<IHelper, Helper>();
+            _serviceCollection.AddTransient<IMessageSender, ServiceBusSender>();
         }
-        #endregion        
+
+        private void AddScanDependencies()
+        {            
+            _serviceCollection.AddOptions();
+            _serviceCollection.AddLazyCache();
+            _serviceCollection.AddSingleton<IFileMatcher, FileMatcher>();
+            _serviceCollection.AddSingleton<IFileWatcher, FileWatcher>();
+            _serviceCollection.AddSingleton<ITVShowMatcher, TVShowMatcher>();
+            _serviceCollection.AddSingleton<IMovieMatcher, MovieMatcher>();
+            _serviceCollection.AddSingleton<IScanFiles, ScanFiles>();
+            _serviceCollection.AddSingleton<ITmdbManager, TmdbManager>();
+            _serviceCollection.AddSingleton<ITvdbManager, TvdbManager>();
+        }
     }
 }

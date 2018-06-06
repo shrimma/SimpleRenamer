@@ -33,8 +33,7 @@ namespace Sarjee.SimpleRenamer
         //here are all our interfaces
         private readonly ILogger _logger;
         private readonly ITVShowMatcher _tvShowMatcher;
-        private readonly IMovieMatcher _movieMatcher;
-        private readonly IDependencyInjectionContext _injectionContext;
+        private readonly IMovieMatcher _movieMatcher;        
         private readonly IScanFiles _scanFiles;
         private readonly IActionMatchedFiles _actionMatchedFiles;
         private readonly IConfigurationManager _configurationManager;
@@ -57,7 +56,10 @@ namespace Sarjee.SimpleRenamer
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _tvShowMatcher = tvShowMatcher ?? throw new ArgumentNullException(nameof(tvShowMatcher));
             _movieMatcher = movieMatcher ?? throw new ArgumentNullException(nameof(movieMatcher));
-            _injectionContext = injectionContext ?? throw new ArgumentNullException(nameof(injectionContext));
+            if (injectionContext == null)
+            {
+                throw new ArgumentNullException(nameof(injectionContext));
+            }
             _scanFiles = scanFiles ?? throw new ArgumentNullException(nameof(scanFiles));
             _actionMatchedFiles = actionMatchedFiles ?? throw new ArgumentNullException(nameof(actionMatchedFiles));
             _configurationManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
@@ -84,10 +86,11 @@ namespace Sarjee.SimpleRenamer
                     ThemeManager.ChangeAppStyle(System.Windows.Application.Current, currentAccent, currentAppTheme);
 
                     //grab windows
-                    _showDetailsWindow = _injectionContext.GetService<ShowDetailsWindow>();
-                    _movieDetailsWindow = _injectionContext.GetService<MovieDetailsWindow>();
-                    _settingsWindow = _injectionContext.GetService<SettingsWindow>();
-                    _selectShowWindow = _injectionContext.GetService<SelectShowWindow>();
+                    IHelper helper = injectionContext.GetService<IHelper>();
+                    _showDetailsWindow = new ShowDetailsWindow(_logger, _tvShowMatcher);
+                    _movieDetailsWindow = new MovieDetailsWindow(_logger, _movieMatcher);                    
+                    _settingsWindow = new SettingsWindow(_configurationManager, helper, new AddExtensionsWindow(helper), new RegexExpressionsWindow(_configurationManager, helper));
+                    _selectShowWindow = new SelectShowWindow(_logger, _tvShowMatcher, _movieMatcher, _showDetailsWindow, _movieDetailsWindow);
                     _selectShowWindow.RaiseSelectShowWindowEvent += SelectShowWindow_RaiseSelectShowWindowEvent;
                     scannedEpisodes = new ObservableCollection<MatchedFile>();
 
@@ -107,7 +110,6 @@ namespace Sarjee.SimpleRenamer
                     _scanFiles.RaiseProgressEvent += ProgressTextEvent;
                     ScanButton.IsEnabled = IsScanEnabled();
                     this.Closing += MainWindow_Closing;
-
                 };
             }
             catch (Exception ex)

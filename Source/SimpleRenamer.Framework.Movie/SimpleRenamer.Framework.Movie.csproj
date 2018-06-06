@@ -10,7 +10,7 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="LazyCache" Version="2.0.0-beta02" />
+    <PackageReference Include="LazyCache" Version="2.0.0-beta03" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SimpleRenamer.Common.Movie\SimpleRenamer.Common.Movie.csproj" />

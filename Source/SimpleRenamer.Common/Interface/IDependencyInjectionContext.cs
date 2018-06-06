@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Sarjee.SimpleRenamer.Common.Interface
+﻿namespace Sarjee.SimpleRenamer.Common.Interface
 {
     /// <summary>
     /// DependencyInjectionContext Interface
     /// </summary>
-    public interface IDependencyInjectionContext : IDisposable
+    public interface IDependencyInjectionContext
     {
         /// <summary>
         /// Initializes the dependency injection context
@@ -18,15 +15,7 @@ namespace Sarjee.SimpleRenamer.Common.Interface
         /// </summary>
         /// <typeparam name="T">The type of service</typeparam>
         /// <returns>The service if it exists</returns>
-        T GetService<T>();
-
-        /// <summary>
-        /// Gets the service object of the specified type.
-        /// </summary>
-        /// <typeparam name="T">The type of service</typeparam>
-        /// <param name="constructorArguments">List of key value pair for any constructor arguments - Key is argument name and value is argument value</param>
-        /// <returns>The service if it exists</returns>
-        T GetService<T>(List<KeyValuePair<string, object>> constructorArguments);
+        T GetService<T>();        
 
         /// <summary>
         /// Bind a context to a constant

@@ -11,16 +11,22 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MSTest.TestAdapter" Version="1.2.1" />
-    <PackageReference Include="MSTest.TestFramework" Version="1.2.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.3.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="RestSharp" Version="106.2.2" />
+    <PackageReference Include="RestSharp" Version="106.3.0" />
     <PackageReference Include="Castle.Core" version="4.2.1" />
-    <PackageReference Include="FluentAssertions" version="5.3.0" />
-    <PackageReference Include="LazyCache" version="2.0.0-beta02" />
-    <PackageReference Include="Moq" version="4.8.2" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" version="4.4.0" />
-    <PackageReference Include="System.ValueTuple" version="4.4.0" />
+    <PackageReference Include="FluentAssertions" version="5.3.2" />
+    <PackageReference Include="LazyCache" version="2.0.0-beta03" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" version="2.1.0" />
+    <PackageReference Include="Moq" version="4.8.2" />    
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" version="4.5.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" version="4.5.0" />
+    <PackageReference Include="System.ValueTuple" version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

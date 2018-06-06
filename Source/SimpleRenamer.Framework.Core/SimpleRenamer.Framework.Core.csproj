@@ -7,8 +7,8 @@
     <Company>Sarjee</Company>
   </PropertyGroup>
   <ItemGroup>    
-    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="2.0.0" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.8.0" />
+    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.0.2" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.9.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SimpleRenamer.Common.Movie\SimpleRenamer.Common.Movie.csproj" />
