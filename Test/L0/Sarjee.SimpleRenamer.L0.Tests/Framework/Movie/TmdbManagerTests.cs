@@ -17,19 +17,17 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
     public class TmdbManagerTests
     {
         private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
-        private Mock<IConfigurationManager> mockConfigurationManager;
-        private Mock<IHelper> mockHelper;
+        private Mock<ITmdbClient> mockTmdbClient;        
 
         [TestInitialize]
         public void TestInitialize()
         {
-            mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
-            mockHelper = mockRepository.Create<IHelper>();
+            mockTmdbClient = mockRepository.Create<ITmdbClient>();            
         }
 
         private ITmdbManager GetTmdbManager()
         {
-            ITmdbManager tmdbManager = new TmdbManager(mockConfigurationManager.Object, mockHelper.Object);
+            ITmdbManager tmdbManager = new TmdbManager(mockTmdbClient.Object);
             tmdbManager.Should().NotBeNull();
             return tmdbManager;
         }
@@ -39,11 +37,9 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManagerCtor_NullArguments_ThrowsArgumentNullException()
         {
-            Action action1 = () => new TmdbManager(null, null);
-            Action action2 = () => new TmdbManager(mockConfigurationManager.Object, null);
+            Action action1 = () => new TmdbManager(null);
 
-            action1.Should().Throw<ArgumentNullException>();
-            action2.Should().Throw<ArgumentNullException>();
+            action1.Should().Throw<ArgumentNullException>();            
         }
 
         [TestMethod]
@@ -74,8 +70,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestMethod]
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_SearchMovieByNameAsync_Success()
-        {
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new SearchContainer<SearchMovie>() { Page = 1, TotalPages = 1, TotalResults = 2 });
+        {            
             ITmdbManager tmdbManager = GetTmdbManager();
 
             SearchContainer<SearchMovie> result = null;
@@ -110,7 +105,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_SearchMovieByIdAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SearchMovie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new SearchMovie() { Title = "Fight Club" });
+            //mockHelper.Setup(x => x.ExecuteRestRequestAsync<SearchMovie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new SearchMovie() { Title = "Fight Club" });
             ITmdbManager tmdbManager = GetTmdbManager();
 
             SearchMovie result = null;
@@ -140,7 +135,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetMovieAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<SimpleRenamer.Common.Movie.Model.Movie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = "Fight Club", Credits = new Credits() });
+            //mockHelper.Setup(x => x.ExecuteRestRequestAsync<SimpleRenamer.Common.Movie.Model.Movie>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new SimpleRenamer.Common.Movie.Model.Movie() { Title = "Fight Club", Credits = new Credits() });
             ITmdbManager tmdbManager = GetTmdbManager();
 
             SimpleRenamer.Common.Movie.Model.Movie result = null;
@@ -171,7 +166,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetPosterUriAsync_Null_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new TMDbConfig());
+            //mockHelper.Setup(x => x.ExecuteRestRequestAsync<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new TMDbConfig());
             ITmdbManager tmdbManager = GetTmdbManager();
 
             string result = null;
@@ -184,7 +179,7 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.Movie
         [TestCategory(TestCategories.Movie)]
         public void TmdbManager_GetPosterUriAsync_Success()
         {
-            mockHelper.Setup(x => x.ExecuteRestRequestAsync<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new TMDbConfig() { Images = new ConfigImageTypes() { SecureBaseUrl = "https://www.uri.com" } });
+            //mockHelper.Setup(x => x.ExecuteRestRequestAsync<TMDbConfig>(It.IsAny<IRestClient>(), It.IsAny<IRestRequest>(), It.IsAny<JsonSerializerSettings>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>(), null)).ReturnsAsync(new TMDbConfig() { Images = new ConfigImageTypes() { SecureBaseUrl = "https://www.uri.com" } });
             ITmdbManager tmdbManager = GetTmdbManager();
 
             string result = null;

@@ -1,12 +1,6 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using RestSharp;
-using Sarjee.SimpleRenamer.Common.Interface;
-using Sarjee.SimpleRenamer.Common.Movie.Interface;
+﻿using Sarjee.SimpleRenamer.Common.Movie.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Model;
 using System;
-using System.Globalization;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,13 +12,8 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
     /// <seealso cref="Sarjee.SimpleRenamer.Common.Movie.Interface.ITmdbManager" />
     public class TmdbManager : ITmdbManager
     {
-        private string _posterBaseUri;
-        private const int _maxRetryCount = 10;
-        private const int _maxBackoffSeconds = 2;
-        private readonly IRestClient _restClient;
-        private readonly IHelper _helper;
-        private readonly JsonSerializerSettings _jsonSerializerSettings;
-        private const string _baseUrl = "https://api.themoviedb.org";
+        private string _posterBaseUri;                      
+        private readonly ITmdbClient _tmdbClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TmdbManager"/> class.
@@ -36,38 +25,10 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         /// or
         /// retryHelper
         /// </exception>
-        public TmdbManager(IConfigurationManager configManager, IHelper helper)
-        {
-            if (configManager == null)
-            {
-                throw new ArgumentNullException(nameof(configManager));
-            }
-            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
-
-            //create the rest client
-            _restClient = new RestClient(_baseUrl);
-            _restClient.AddDefaultHeader("content-type", "application/json");
-            _restClient.AddDefaultParameter("api_key", configManager.TmDbApiKey, ParameterType.QueryString);
-            _restClient.AddDefaultParameter("language", CultureInfo.CurrentCulture.Name, ParameterType.QueryString);
-
-            //setup lease timeout to account for DNS changes
-            ServicePoint sp = ServicePointManager.FindServicePoint(new Uri(_baseUrl));
-            sp.ConnectionLeaseTimeout = 60 * 1000; // 1 minute
-
-            _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
-        }
-
-        /// <summary>
-        /// Handles the deserialization error.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="errorArgs">The <see cref="ErrorEventArgs"/> instance containing the event data.</param>
-        public void HandleDeserializationError(object sender, ErrorEventArgs errorArgs)
-        {
-            //TODO log the error
-            //errorArgs.ErrorContext.Error.Message;
-            errorArgs.ErrorContext.Handled = true;
-        }
+        public TmdbManager(ITmdbClient tmdbClient)
+        {                     
+            _tmdbClient = tmdbClient ?? throw new ArgumentNullException(nameof(tmdbClient));
+        }       
 
         /// <summary>
         /// Searches the movie by name.
@@ -84,17 +45,8 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 throw new ArgumentNullException(nameof(movieName));
             }
 
-            //create the request
-            IRestRequest request = new RestRequest("/3/search/movie", Method.GET);
-            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            request.AddParameter("query", movieName, ParameterType.QueryString);
-            if (movieYear.HasValue)
-            {
-                request.AddParameter("year", movieYear.ToString());
-            }
-
             //execute the request and check we got a result
-            SearchContainer<SearchMovie> results = await _helper.ExecuteRestRequestAsync<SearchContainer<SearchMovie>>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+            SearchContainer<SearchMovie> results = await _tmdbClient.SearchMovieByNameAsync(movieName, cancellationToken, movieYear);
             if (results != null)
             {
                 return results;
@@ -117,13 +69,9 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             {
                 throw new ArgumentNullException(nameof(movieId));
             }
-            //create the request
-            IRestRequest request = new RestRequest(string.Format("/3/movie/{0}", movieId), Method.GET);
-            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-            request.AddParameter("append_to_response", "credits", ParameterType.QueryString);
 
-            //execute the request
-            Common.Movie.Model.Movie result = await _helper.ExecuteRestRequestAsync<Common.Movie.Model.Movie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+
+            Common.Movie.Model.Movie result = await _tmdbClient.GetMovieAsync(movieId, cancellationToken);
             if (result != null)
             {
                 return result;
@@ -147,11 +95,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 throw new ArgumentNullException(nameof(movieId));
             }
 
-            //create request
-            IRestRequest request = new RestRequest(string.Format("/3/movie/{0}", movieId), Method.GET);
-            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-
-            SearchMovie result = await _helper.ExecuteRestRequestAsync<SearchMovie>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+            SearchMovie result = await _tmdbClient.SearchMovieByIdAsync(movieId, cancellationToken);
             if (result != null)
             {
                 return result;
@@ -192,12 +136,8 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
         }
         private async Task<string> GetPosterBaseUriAsync(CancellationToken cancellationToken)
         {
-            //create the request
-            IRestRequest request = new RestRequest("/3/configuration", Method.GET);
-            request.AddParameter("application/json", "{}", ParameterType.RequestBody);
-
             //execute the request
-            TMDbConfig tmdbConfig = await _helper.ExecuteRestRequestAsync<TMDbConfig>(_restClient, request, _jsonSerializerSettings, _maxRetryCount, _maxBackoffSeconds, cancellationToken);
+            TMDbConfig tmdbConfig = await _tmdbClient.GetTmdbConfigAsync(cancellationToken);
             if (!string.IsNullOrWhiteSpace(tmdbConfig?.Images?.SecureBaseUrl))
             {
                 return tmdbConfig.Images.SecureBaseUrl;
