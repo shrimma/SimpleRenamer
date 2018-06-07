@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Polly;
 using Sarjee.SimpleRenamer.Common;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
@@ -112,6 +113,17 @@ namespace Sarjee.SimpleRenamer.DependencyInjection
         {            
             _serviceCollection.AddOptions();
             _serviceCollection.AddLazyCache();
+            _serviceCollection.AddHttpClient<ITvdbClient, TvdbClient>(client =>
+            {
+                client.BaseAddress = new Uri("https://api.thetvdb.com");
+                client.DefaultRequestHeaders.Add("content-type", "application/json");                
+            })
+            .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
+            {
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromSeconds(5),
+                TimeSpan.FromSeconds(10)
+            }));
             _serviceCollection.AddSingleton<IFileMatcher, FileMatcher>();
             _serviceCollection.AddSingleton<IFileWatcher, FileWatcher>();
             _serviceCollection.AddSingleton<ITVShowMatcher, TVShowMatcher>();
