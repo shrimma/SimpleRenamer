@@ -15,6 +15,19 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 {
     public class TvdbClient : ITvdbClient
     {
+        //URIs
+        private const string _loginUri = "login";
+        private const string _getSeriesUri = "series/{0}";
+        private const string _getActorsUri = _getSeriesUri + "/actors";
+        private const string _getEpisodesUri = _getSeriesUri + "/episodes";
+        private const string _queryImagesUri = _getSeriesUri + "/images/query?keyType={1}";
+        private const string _searchSeriesUri = "/search/series?name={0}";
+
+        //HTTP bits
+        private const string _jsonMediaType = "application/json";
+        private const string _authorizationHeader = "Authorization";
+        private const string _bearerToken = "Bearer {0}";
+
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly Auth _auth;
@@ -55,9 +68,9 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private async Task LoginAsync()
         {            
             //create new request
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "login")
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, _loginUri)
             {
-                Content = new StringContent(_auth.ToJson(), Encoding.UTF8, "application/json")
+                Content = new StringContent(_auth.ToJson(), Encoding.UTF8, _jsonMediaType)
             };
 
             //execute request and get response
@@ -68,17 +81,17 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             //if we got a response then add the authorization header
             if (token != null)
             {
-                if (_httpClient.DefaultRequestHeaders.Contains("Authorization"))
+                if (_httpClient.DefaultRequestHeaders.Contains(_authorizationHeader))
                 {
-                    _httpClient.DefaultRequestHeaders.Remove("Authorization");
+                    _httpClient.DefaultRequestHeaders.Remove(_authorizationHeader);
                 }
-                _httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", token._Token));
+                _httpClient.DefaultRequestHeaders.Add(_authorizationHeader, string.Format(_bearerToken, token._Token));
             }            
         }
 
         public async Task<SeriesData> GetSeriesAsync(string tmdbId, CancellationToken cancellationToken)
         {            
-            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("series/{0}", tmdbId), ct), cancellationToken);
+            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format(_getSeriesUri, tmdbId), ct), cancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<SeriesData>(responseContent, _jsonSerializerSettings);            
@@ -86,7 +99,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         public async Task<SeriesActors> GetActorsAsync(string tmdbId, CancellationToken cancellationToken)
         {            
-            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("/series/{0}/actors", tmdbId), ct), cancellationToken);
+            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format(_getActorsUri, tmdbId), ct), cancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<SeriesActors>(responseContent, _jsonSerializerSettings);
@@ -94,7 +107,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         public async Task<SeriesEpisodes> GetEpisodesAsync(string tmdbId, CancellationToken cancellationToken)
         {            
-            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("/series/{0}/episodes", tmdbId), ct), cancellationToken);
+            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format(_getEpisodesUri, tmdbId), ct), cancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<SeriesEpisodes>(responseContent, _jsonSerializerSettings);
@@ -102,7 +115,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         public async Task<SeriesImageQueryResults> QuerySeriesImagesAsync(string tmdbId, string imageType, CancellationToken cancellationToken)
         {            
-            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("/series/{0}/images/query?keyType={1}", tmdbId, imageType), ct), cancellationToken);
+            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format(_queryImagesUri, tmdbId, imageType), ct), cancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<SeriesImageQueryResults>(responseContent, _jsonSerializerSettings);            
@@ -110,7 +123,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
 
         public async Task<SeriesSearchDataList> SearchSeriesByNameAsync(string seriesName, CancellationToken cancellationToken)
         {                      
-            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("/search/series?name={0}", seriesName), ct), cancellationToken);
+            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format(_searchSeriesUri, seriesName), ct), cancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<SeriesSearchDataList>(responseContent, _jsonSerializerSettings);            
