@@ -121,15 +121,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             //if we havent grabbed the base uri yet this session
             if (string.IsNullOrWhiteSpace(_posterBaseUri))
             {
-                string posterUri = await GetPosterBaseUriAsync(cancellationToken);
-                if (!string.IsNullOrWhiteSpace(posterUri))
-                {
-                    _posterBaseUri = posterUri;
-                }
-                else
-                {
-                    throw new InvalidOperationException("Unable to retrieve Poster URI path");
-                }
+                _posterBaseUri = await GetPosterBaseUriAsync(cancellationToken);            
             }
 
             return string.Format("{0}w342{1}", _posterBaseUri, posterPath);
@@ -144,7 +136,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             }
             else
             {
-                return string.Empty;
+                throw new InvalidOperationException("Unable to retrieve Poster URI path");
             }
         }
     }
