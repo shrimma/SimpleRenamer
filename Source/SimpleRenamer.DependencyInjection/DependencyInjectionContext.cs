@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Polly;
+using Polly.Extensions.Http;
+using Polly.Retry;
+using Polly.Timeout;
 using Sarjee.SimpleRenamer.Common;
 using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.Movie.Interface;
@@ -10,6 +13,7 @@ using Sarjee.SimpleRenamer.Framework.TV;
 using Sarjee.SimpleRenamer.Logging;
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
 
 namespace Sarjee.SimpleRenamer.DependencyInjection
@@ -23,6 +27,17 @@ namespace Sarjee.SimpleRenamer.DependencyInjection
     {
         protected IServiceCollection _serviceCollection;
         private IServiceProvider _serviceProvider;
+        private readonly RetryPolicy<HttpResponseMessage> _transientRetryPolicy = HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .Or<TimeoutRejectedException>() // thrown by Polly's TimeoutPolicy if the inner call times out
+            .WaitAndRetryAsync(new[]
+            {
+                TimeSpan.FromMilliseconds(100),
+                TimeSpan.FromMilliseconds(200),
+                TimeSpan.FromMilliseconds(500),
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromSeconds(2)
+            });
 
         /// <summary>
         /// Starts the process of setting up dependency injection
@@ -119,14 +134,13 @@ namespace Sarjee.SimpleRenamer.DependencyInjection
                 client.BaseAddress = new Uri("https://api.thetvdb.com");
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
-            .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
+            .AddPolicyHandler(_transientRetryPolicy);
+            _serviceCollection.AddHttpClient<ITmdbClient, TmdbClient>(client =>
             {
-                TimeSpan.FromMilliseconds(100),
-                TimeSpan.FromMilliseconds(200),
-                TimeSpan.FromMilliseconds(500),
-                TimeSpan.FromSeconds(1),
-                TimeSpan.FromSeconds(2)
-            }));
+                client.BaseAddress = new Uri("https://api.themoviedb.org");
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddPolicyHandler(_transientRetryPolicy);
             _serviceCollection.AddSingleton<IFileMatcher, FileMatcher>();
             _serviceCollection.AddSingleton<IFileWatcher, FileWatcher>();
             _serviceCollection.AddSingleton<ITVShowMatcher, TVShowMatcher>();
