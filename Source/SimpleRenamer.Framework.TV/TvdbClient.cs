@@ -61,7 +61,6 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 Content = new StringContent(_auth.ToJson(), Encoding.UTF8, "application/json")
             };
 
-
             //execute request and get response
             HttpResponseMessage response = await _httpClient.SendAsync(request);
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -70,37 +69,32 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             //if we got a response then add the authorization header
             if (token != null)
             {
-                if (_httpClient.DefaultRequestHeaders.Contains("Bearer"))
+                if (_httpClient.DefaultRequestHeaders.Contains("Authorization"))
                 {
-                    _httpClient.DefaultRequestHeaders.Remove("Bearer");
+                    _httpClient.DefaultRequestHeaders.Remove("Authorization");
                 }
-                _httpClient.DefaultRequestHeaders.Add("Bearer", token._Token);
+                _httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", token._Token));
             }            
         }
 
         public async Task<SeriesData> GetSeriesAsync(string tmdbId, CancellationToken cancellationToken)
-        {
-            //create the request
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format("series/{0}", tmdbId));
-
-            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.SendAsync(request, ct), cancellationToken);
+        {            
+            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("series/{0}", tmdbId), ct), cancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<SeriesData>(responseContent);            
         }
 
         public async Task<SeriesActors> GetActorsAsync(string tmdbId, CancellationToken cancellationToken)
-        {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format("/series/{0}/actors", tmdbId));
-            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.SendAsync(request, ct), cancellationToken);
+        {            
+            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("/series/{0}/actors", tmdbId), ct), cancellationToken);
             string responseContent = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<SeriesActors>(responseContent);
         }
 
         public async Task<SeriesEpisodes> GetEpisodesAsync(string tmdbId, CancellationToken cancellationToken)
-        {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format("/series/{0}/episodes", tmdbId));
-            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.SendAsync(request, ct), cancellationToken);
+        {            
+            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("/series/{0}/episodes", tmdbId), ct), cancellationToken);
             string responseContent = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<SeriesEpisodes>(responseContent);
         }
@@ -121,9 +115,8 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         }
 
         private async Task<SeriesImageQueryResults> GetImagesAsync(string tmdbId, string imageType, CancellationToken cancellationToken)
-        {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format("/series/{0}/images/query?keyType={1}", tmdbId, imageType));
-            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.SendAsync(request, ct), cancellationToken);
+        {            
+            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("/series/{0}/images/query?keyType={1}", tmdbId, imageType), ct), cancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync();
             SeriesImageQueryResults results = JsonConvert.DeserializeObject<SeriesImageQueryResults>(responseContent);
