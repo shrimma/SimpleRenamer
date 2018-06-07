@@ -13,21 +13,17 @@ namespace Sarjee.SimpleRenamer.Framework.TV
     /// </summary>
     /// <seealso cref="Sarjee.SimpleRenamer.Common.TV.Interface.ITvdbManager" />
     public class TvdbManager : ITvdbManager
-    {                
-        private readonly IHelper _helper;
-        private readonly ITvdbClient _tvdbClient;        
+    {                        
+        private readonly ITvdbClient _tvdbClient;
+        private const string _bannerBaseUri = "http://thetvdb.com/banners/";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TvdbManager" /> class.
         /// </summary>
-        /// <param name="configManager">The configuration manager.</param>
-        /// <param name="helper">The helper.</param>
-        /// <exception cref="ArgumentNullException">
-        
-        /// </exception>       
-        public TvdbManager(IHelper helper, ITvdbClient tvdbClient)
-        {            
-            _helper = helper ?? throw new ArgumentNullException(nameof(helper));
+        /// <param name="tvdbClient">The TVDB client.</param>
+        /// <exception cref="ArgumentNullException">tvdbClient</exception>
+        public TvdbManager(ITvdbClient tvdbClient)
+        {                        
             _tvdbClient = tvdbClient ?? throw new ArgumentNullException(nameof(tvdbClient));
         }                
 
@@ -43,7 +39,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
                 throw new ArgumentNullException(nameof(bannerPath));
             }
 
-            return string.Format("http://thetvdb.com/banners/{0}", bannerPath);
+            return string.Concat(_bannerBaseUri, bannerPath);
         }
 
         /// <summary>
@@ -69,14 +65,14 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             //get episodes                        
             Task<SeriesEpisodes> getEpisodesTask = _tvdbClient.GetEpisodesAsync(tmdbId, cancellationToken);
             //get series posters            
-            Task<SeriesImageQueryResults> getSeriesPostersTask = _tvdbClient.GetSeriesPostersAsync(tmdbId, cancellationToken);
+            Task<SeriesImageQueryResults> getSeriesPostersTask = QuerySeriesImagesAsync(tmdbId, "posters", cancellationToken);
             //wait for episodes and series posters
             await Task.WhenAll(getEpisodesTask, getSeriesPostersTask);
 
             //get season specific posters                        
-            Task<SeriesImageQueryResults> getSeasonPostersTask = _tvdbClient.GetSeasonPostersAsync(tmdbId, cancellationToken);
+            Task<SeriesImageQueryResults> getSeasonPostersTask = QuerySeriesImagesAsync(tmdbId, "season", cancellationToken);
             //get series banners            
-            Task<SeriesImageQueryResults> getSeriesBannersTask = _tvdbClient.GetSeriesBannersAsync(tmdbId, cancellationToken);
+            Task<SeriesImageQueryResults> getSeriesBannersTask = QuerySeriesImagesAsync(tmdbId, "series", cancellationToken);
             //wait for season and series posters
             await Task.WhenAll(getSeasonPostersTask, getSeasonPostersTask);
 
@@ -105,14 +101,35 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">seriesName</exception>
-        public Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName, CancellationToken cancellationToken)
+        public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(seriesName))
             {
                 throw new ArgumentNullException(nameof(seriesName));
             }
 
-            return _tvdbClient.SearchSeriesByNameAsync(seriesName, cancellationToken);            
+            SeriesSearchDataList searchData = await _tvdbClient.SearchSeriesByNameAsync(seriesName, cancellationToken);
+            if (searchData?.SearchResults != null)
+            {
+                return searchData.SearchResults;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unable to find any results for {seriesName}.");
+            }            
+        }        
+
+        private async Task<SeriesImageQueryResults> QuerySeriesImagesAsync(string tmdbId, string imageKeyType, CancellationToken cancellationToken)
+        {
+            SeriesImageQueryResults results = await _tvdbClient.QuerySeriesImagesAsync(tmdbId, imageKeyType, cancellationToken);
+            if (results == null)
+            {
+                return new SeriesImageQueryResults();
+            }
+            else
+            {
+                return results;
+            }
         }
     }
 }

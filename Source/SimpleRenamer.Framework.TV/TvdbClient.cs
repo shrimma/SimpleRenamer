@@ -18,9 +18,8 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly Auth _auth;
+        private readonly Policy<HttpResponseMessage> _authorizationPolicy;
         private readonly JsonSerializerSettings _jsonSerializerSettings;
-
-        private Policy<HttpResponseMessage> _authorizationPolicy;
 
         public TvdbClient(HttpClient httpClient, ILogger logger, IConfigurationManager configurationManager)
         {
@@ -64,7 +63,7 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             //execute request and get response
             HttpResponseMessage response = await _httpClient.SendAsync(request);
             string responseContent = await response.Content.ReadAsStringAsync();
-            Token token = JsonConvert.DeserializeObject<Token>(responseContent);
+            Token token = JsonConvert.DeserializeObject<Token>(responseContent, _jsonSerializerSettings);
 
             //if we got a response then add the authorization header
             if (token != null)
@@ -82,68 +81,39 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("series/{0}", tmdbId), ct), cancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<SeriesData>(responseContent);            
+            return JsonConvert.DeserializeObject<SeriesData>(responseContent, _jsonSerializerSettings);            
         }
 
         public async Task<SeriesActors> GetActorsAsync(string tmdbId, CancellationToken cancellationToken)
         {            
             HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("/series/{0}/actors", tmdbId), ct), cancellationToken);
+
             string responseContent = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<SeriesActors>(responseContent);
+            return JsonConvert.DeserializeObject<SeriesActors>(responseContent, _jsonSerializerSettings);
         }
 
         public async Task<SeriesEpisodes> GetEpisodesAsync(string tmdbId, CancellationToken cancellationToken)
         {            
             HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("/series/{0}/episodes", tmdbId), ct), cancellationToken);
+
             string responseContent = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<SeriesEpisodes>(responseContent);
-        }
+            return JsonConvert.DeserializeObject<SeriesEpisodes>(responseContent, _jsonSerializerSettings);
+        }        
 
-        public Task<SeriesImageQueryResults> GetSeriesPostersAsync(string tmdbId, CancellationToken cancellationToken)
-        {
-            return GetImagesAsync(tmdbId, "poster", cancellationToken);            
-        }
-
-        public Task<SeriesImageQueryResults> GetSeasonPostersAsync(string tmdbId, CancellationToken cancellationToken)
-        {
-            return GetImagesAsync(tmdbId, "season", cancellationToken);            
-        }
-
-        public Task<SeriesImageQueryResults> GetSeriesBannersAsync(string tmdbId, CancellationToken cancellationToken)
-        {
-            return GetImagesAsync(tmdbId, "series", cancellationToken);
-        }
-
-        private async Task<SeriesImageQueryResults> GetImagesAsync(string tmdbId, string imageType, CancellationToken cancellationToken)
+        public async Task<SeriesImageQueryResults> QuerySeriesImagesAsync(string tmdbId, string imageType, CancellationToken cancellationToken)
         {            
             HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("/series/{0}/images/query?keyType={1}", tmdbId, imageType), ct), cancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync();
-            SeriesImageQueryResults results = JsonConvert.DeserializeObject<SeriesImageQueryResults>(responseContent);
-            if (results == null)
-            {
-                return new SeriesImageQueryResults();
-            }
-            else
-            {
-                return results;
-            }
+            return JsonConvert.DeserializeObject<SeriesImageQueryResults>(responseContent, _jsonSerializerSettings);            
         }
 
-        public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName, CancellationToken cancellationToken)
+        public async Task<SeriesSearchDataList> SearchSeriesByNameAsync(string seriesName, CancellationToken cancellationToken)
         {                      
             HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("/search/series?name={0}", seriesName), ct), cancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync();
-            SeriesSearchDataList searchData = JsonConvert.DeserializeObject<SeriesSearchDataList>(responseContent);
-            if (searchData?.SearchResults != null)
-            {
-                return searchData.SearchResults;
-            }
-            else
-            {
-                throw new InvalidOperationException($"Unable to find any results for {seriesName}.");
-            }
+            return JsonConvert.DeserializeObject<SeriesSearchDataList>(responseContent, _jsonSerializerSettings);            
         }
     }
 }
