@@ -10,6 +10,7 @@ using Sarjee.SimpleRenamer.Framework.TV;
 using Sarjee.SimpleRenamer.Logging;
 using System;
 using System.Linq;
+using System.Net.Http.Headers;
 
 namespace Sarjee.SimpleRenamer.DependencyInjection
 {
@@ -115,13 +116,16 @@ namespace Sarjee.SimpleRenamer.DependencyInjection
             _serviceCollection.AddLazyCache();
             _serviceCollection.AddHttpClient<ITvdbClient, TvdbClient>(client =>
             {
-                client.BaseAddress = new Uri("https://api.thetvdb.com");                                
+                client.BaseAddress = new Uri("https://api.thetvdb.com");
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
             .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
             {
+                TimeSpan.FromMilliseconds(100),
+                TimeSpan.FromMilliseconds(200),
+                TimeSpan.FromMilliseconds(500),
                 TimeSpan.FromSeconds(1),
-                TimeSpan.FromSeconds(5),
-                TimeSpan.FromSeconds(10)
+                TimeSpan.FromSeconds(2)
             }));
             _serviceCollection.AddSingleton<IFileMatcher, FileMatcher>();
             _serviceCollection.AddSingleton<IFileWatcher, FileWatcher>();
