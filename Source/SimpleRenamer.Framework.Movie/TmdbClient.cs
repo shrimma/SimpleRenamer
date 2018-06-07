@@ -12,6 +12,13 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
 {
     public class TmdbClient : ITmdbClient
     {
+        private const string _baseQueryParameterTemplate = "?api_key={0}&language={1}";
+        private const string _searchMovieById = "/3/movie/{0}{1}";        
+        private const string _searchMovieByNameUri = "/3/search/movie{0}&query={1}";
+        private const string _searchMovieByNameAndYearUri = _searchMovieByNameUri + "&year={2}";
+        private const string _getMovieUri = _searchMovieById + "&append_to_response=credits";
+        private const string _getConfigurationUri = "/3/configuration{0}";
+
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly string _baseQueryParameters;
@@ -27,7 +34,7 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             }
 
             _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
-            _baseQueryParameters = string.Format("?api_key={0}&language={1}", configurationManager.TmDbApiKey, CultureInfo.CurrentCulture.Name);            
+            _baseQueryParameters = string.Format(_baseQueryParameterTemplate, configurationManager.TmDbApiKey, CultureInfo.CurrentCulture.Name);            
         }
         
         private void HandleDeserializationError(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs errorArgs)
@@ -37,6 +44,19 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
             errorArgs.ErrorContext.Handled = true;
         }
 
+        public async Task<SearchMovie> SearchMovieByIdAsync(string movieId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(movieId))
+            {
+                throw new ArgumentNullException(nameof(movieId));
+            }
+
+            HttpResponseMessage response = await _httpClient.GetAsync(string.Format(_searchMovieById, movieId, _baseQueryParameters));
+            string responseContent = await response.Content.ReadAsStringAsync();
+
+            return JsonConvert.DeserializeObject<SearchMovie>(responseContent, _jsonSerializerSettings);
+        }
+
         public async Task<SearchContainer<SearchMovie>> SearchMovieByNameAsync(string movieName, CancellationToken cancellationToken, int? movieYear = null)
         {
             if (string.IsNullOrWhiteSpace(movieName))
@@ -44,17 +64,17 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 throw new ArgumentNullException(nameof(movieName));
             }
 
-            string queryString = string.Empty;
+            string searchUri = string.Empty;
             if (movieYear.HasValue)
             {
-                queryString = string.Format("{0}&query={1}&year={2}", _baseQueryParameters, movieName, movieYear);
+                searchUri = string.Format(_searchMovieByNameAndYearUri, _baseQueryParameters, movieName, movieYear);
             }
             else
             {
-                queryString = string.Format("{0}&query={1}", _baseQueryParameters, movieName);
+                searchUri = string.Format(_searchMovieByNameUri, _baseQueryParameters, movieName);
             }
 
-            HttpResponseMessage response = await _httpClient.GetAsync(string.Format("/3/search/movie{0}", queryString));
+            HttpResponseMessage response = await _httpClient.GetAsync(searchUri);
             string responseContent = await response.Content.ReadAsStringAsync();
 
             return JsonConvert.DeserializeObject<SearchContainer<SearchMovie>>(responseContent, _jsonSerializerSettings);                        
@@ -67,28 +87,15 @@ namespace Sarjee.SimpleRenamer.Framework.Movie
                 throw new ArgumentNullException(nameof(movieId));
             }            
 
-            HttpResponseMessage response = await _httpClient.GetAsync(string.Format("/3/movie/{0}{1}&append_to_response=credits", movieId, _baseQueryParameters));
+            HttpResponseMessage response = await _httpClient.GetAsync(string.Format(_getMovieUri, movieId, _baseQueryParameters));
             string responseContent = await response.Content.ReadAsStringAsync();
 
             return JsonConvert.DeserializeObject<Common.Movie.Model.Movie>(responseContent, _jsonSerializerSettings);                        
-        }
-
-        public async Task<SearchMovie> SearchMovieByIdAsync(string movieId, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(movieId))
-            {
-                throw new ArgumentNullException(nameof(movieId));
-            }            
-
-            HttpResponseMessage response = await _httpClient.GetAsync(string.Format("/3/movie/{0}{1}", movieId, _baseQueryParameters));
-            string responseContent = await response.Content.ReadAsStringAsync();
-
-            return JsonConvert.DeserializeObject<SearchMovie>(responseContent, _jsonSerializerSettings);                        
-        }
+        }        
 
         public async Task<TMDbConfig> GetTmdbConfigAsync(CancellationToken cancellationToken)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(string.Format("/3/configuration{0}", _baseQueryParameters));
+            HttpResponseMessage response = await _httpClient.GetAsync(string.Format(_getConfigurationUri, _baseQueryParameters));
             string responseContent = await response.Content.ReadAsStringAsync();
 
             return JsonConvert.DeserializeObject<TMDbConfig>(responseContent, _jsonSerializerSettings);                        
