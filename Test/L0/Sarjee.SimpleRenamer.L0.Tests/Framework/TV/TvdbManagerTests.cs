@@ -17,20 +17,20 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
     [TestClass]
     public class TvdbManagerTests
     {
-        private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);
-        private Mock<IConfigurationManager> mockConfigurationManager;
+        private static MockRepository mockRepository = new MockRepository(MockBehavior.Loose);        
         private Mock<IHelper> mockHelper;
+        private Mock<ITvdbClient> mockTvdbClient;
 
         [TestInitialize]
         public void TestInitialize()
-        {
-            mockConfigurationManager = mockRepository.Create<IConfigurationManager>();
+        {            
             mockHelper = mockRepository.Create<IHelper>();
+            mockTvdbClient = mockRepository.Create<ITvdbClient>();
         }
 
         private ITvdbManager GetTvdbManager()
         {
-            ITvdbManager tvdbManager = new TvdbManager(mockConfigurationManager.Object, mockHelper.Object);
+            ITvdbManager tvdbManager = new TvdbManager(mockHelper.Object, mockTvdbClient.Object);
             tvdbManager.Should().NotBeNull();
             return tvdbManager;
         }
@@ -40,8 +40,8 @@ namespace Sarjee.SimpleRenamer.L0.Tests.Framework.TV
         [TestCategory(TestCategories.TV)]
         public void TvdbManagerCtor_NullArguments_ThrowsArgumentNullException()
         {
-            Action action1 = () => new TvdbManager(null, null);
-            Action action2 = () => new TvdbManager(mockConfigurationManager.Object, null);
+            Action action1 = () => new TvdbManager(null, mockTvdbClient.Object);
+            Action action2 = () => new TvdbManager(mockHelper.Object, null);
 
             action1.Should().Throw<ArgumentNullException>();
             action2.Should().Throw<ArgumentNullException>();

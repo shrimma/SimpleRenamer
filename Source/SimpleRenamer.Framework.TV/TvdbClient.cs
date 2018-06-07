@@ -1,11 +1,13 @@
 ﻿using Newtonsoft.Json;
 using Polly;
+using Sarjee.SimpleRenamer.Common.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Interface;
 using Sarjee.SimpleRenamer.Common.TV.Model;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,13 +16,24 @@ namespace Sarjee.SimpleRenamer.Framework.TV
     public class TvdbClient : ITvdbClient
     {
         private readonly HttpClient _httpClient;
-        private readonly string _apiKey;
+        private readonly ILogger _logger;
+        private readonly Auth _auth;
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
 
         private Policy<HttpResponseMessage> _authorizationPolicy;
 
-        public TvdbClient(HttpClient httpClient)
+        public TvdbClient(HttpClient httpClient, ILogger logger, IConfigurationManager configurationManager)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            if (configurationManager == null)
+            {
+                throw new ArgumentNullException(nameof(configurationManager));
+            }
+            _auth = new Auth
+            {
+                Apikey = configurationManager.TvDbApiKey
+            };
 
             //create polly retry policy
             _authorizationPolicy = Policy
@@ -29,20 +42,23 @@ namespace Sarjee.SimpleRenamer.Framework.TV
             {                        
                 await LoginAsync();
             });
+
+            _jsonSerializerSettings = new JsonSerializerSettings { Error = HandleDeserializationError };
+        }
+
+        private void HandleDeserializationError(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs errorArgs)
+        {
+            //TODO log the error
+            //errorArgs.ErrorContext.Error.Message;
+            errorArgs.ErrorContext.Handled = true;
         }
 
         private async Task LoginAsync()
-        {
-            //create rest request
-            Auth auth = new Auth()
-            {
-                Apikey = _apiKey
-            };
-
+        {            
             //create new request
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "login")
             {
-                Content = new StringContent(auth.ToJson())
+                Content = new StringContent(_auth.ToJson(), Encoding.UTF8, "application/json")
             };
 
 
@@ -122,9 +138,8 @@ namespace Sarjee.SimpleRenamer.Framework.TV
         }
 
         public async Task<List<SeriesSearchData>> SearchSeriesByNameAsync(string seriesName, CancellationToken cancellationToken)
-        {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format("/search/series?name={0}", seriesName));
-            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.SendAsync(request, ct), cancellationToken);
+        {                      
+            HttpResponseMessage response = await _authorizationPolicy.ExecuteAsync((ct) => _httpClient.GetAsync(string.Format("/search/series?name={0}", seriesName), ct), cancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync();
             SeriesSearchDataList searchData = JsonConvert.DeserializeObject<SeriesSearchDataList>(responseContent);

@@ -115,8 +115,7 @@ namespace Sarjee.SimpleRenamer.DependencyInjection
             _serviceCollection.AddLazyCache();
             _serviceCollection.AddHttpClient<ITvdbClient, TvdbClient>(client =>
             {
-                client.BaseAddress = new Uri("https://api.thetvdb.com");
-                client.DefaultRequestHeaders.Add("content-type", "application/json");                
+                client.BaseAddress = new Uri("https://api.thetvdb.com");                                
             })
             .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
             {
